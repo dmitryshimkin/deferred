@@ -28,6 +28,6 @@ Deferred.prototype = {
   },
 
   valueOf: function () {
-    
+    //
   }
 };
