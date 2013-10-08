@@ -1,0 +1,22 @@
+{
+  "name": "deferred",
+  "preferGlobal": false,
+  "version": "0.1.0",
+  "author": "Dmitry Shimkin <dmitryshimkin@gmail.com>",
+  "description": "Promises/A+ with error handling and context support",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dmitryshimkin/deferred.git"
+  },
+  "keywords": [
+    "async",
+    "deferred",
+    "promise"
+  ],
+  "devDependencies": {
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.6"
+  }
+}
