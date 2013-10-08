@@ -10,16 +10,22 @@ module.exports = function(grunt) {
       dev: {
         files: {
           'build/deferred.js': [
-            'src/**/*.js',
-            'src/*.js'
+            'src/lang/type.js',
+            'src/lang/each.js',
+            'src/Promise.js',
+            'src/Deferred.js',
+            'src/when.js'
           ]
         }
       },
       test: {
         files: {
           'build/deferred.test.js': [
-            'src/**/*.js',
-            'src/*.js'
+            'src/lang/type.js',
+            'src/lang/each.js',
+            'src/Promise.js',
+            'src/Deferred.js',
+            'src/when.js'
           ]
         }
       }
