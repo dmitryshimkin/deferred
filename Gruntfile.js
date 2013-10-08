@@ -10,6 +10,7 @@ module.exports = function(grunt) {
       dev: {
         files: {
           'build/deferred.js': [
+            'src/lang/noop.js',
             'src/lang/type.js',
             'src/lang/each.js',
             'src/Promise.js',
@@ -21,6 +22,7 @@ module.exports = function(grunt) {
       test: {
         files: {
           'build/deferred.test.js': [
+            'src/lang/noop.js',
             'src/lang/type.js',
             'src/lang/each.js',
             'src/Promise.js',
