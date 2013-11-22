@@ -37,7 +37,7 @@ module.exports = function(grunt) {
       dev: {
         src: 'build/deferred.test.js',
         options: {
-          specs: 'test/spec/deferred.spec.js',
+          specs: 'test/spec/Deferred.spec.js',
           template: require('grunt-template-jasmine-istanbul'),
           templateOptions: {
             coverage: 'test/report/coverage.json',
