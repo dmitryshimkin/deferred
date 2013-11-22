@@ -1,44 +1,117 @@
+
+/**
+ *
+ */
+
 var Promise = function () {
+  this._state = 'PENDING';
   this._callbacks = {
     done: [],
     fail: []
   };
 };
 
-var fn = Promise.prototype;
+var proto = Promise.prototype;
 
-fn['always'] = function () {
-  console.log('always');
+/**
+ *
+ */
+
+proto['always'] = function () {
+  this['then'].apply(this, arguments);
+  return this;
 };
 
-fn['done'] = function () {
-  console.log('done');
+/**
+ *
+ */
+
+proto['done'] = function (cb, ctx) {
+  this._callbacks['done'].push({
+    fn: cb,
+    ctx: ctx
+  });
+  return this;
 };
 
-fn['fail'] = function () {
-  console.log('fail');
+/**
+ *
+ */
+
+proto['fail'] = function (cb, ctx) {
+  this._callbacks['fail'].push({
+    fn: cb,
+    ctx: ctx
+  });
+  return this;
 };
 
-fn['isRejected'] = function () {
-  console.log('isRejected');
+/**
+ *
+ */
+
+proto['isRejected'] = function () {
+  //
 };
 
-fn['isResolved'] = function () {
-  console.log('isResolved');
+/**
+ *
+ */
+
+proto['isResolved'] = function () {
+  //
 };
 
-fn['pipe'] = function () {
-  console.log('pipe');
+/**
+ *
+ */
+
+proto['pipe'] = function () {
+  //
 };
 
-fn['progress'] = function () {
-  console.log('progress');
+/**
+ *
+ */
+
+proto['progress'] = function () {
+  //
 };
 
-fn['then'] = function () {
-  console.log('then');
+/**
+ *
+ */
+
+proto['then'] = function () {
+  this['done'].apply(this, arguments);
+  this['fail'].apply(this, arguments);
+  return this;
 };
 
-fn['valueOf'] = function () {
-  console.log('valueOf');
+/**
+ *
+ */
+
+var reject = function () {
+  notify(this._callbacks['fail']);
+};
+
+/**
+ *
+ */
+
+var resolve = function () {
+  notify(this._callbacks['done']);
+};
+
+/**
+ *
+ */
+
+var notify = function (callbacks) {
+  var callback;
+  for (var i = 0, l = callbacks.length; i < l; i++) {
+    callback = callbacks[i];
+    callback.fn.call(callback.ctx);
+  }
 };
