@@ -6,8 +6,8 @@
 
 var Deferred = function () {
   this['promise'] = new Promise();
-  this._state = Deferred.state.PENDING;
-  this._value = void(0);
+  this.reason = void(0);
+  this.value = void(0);
 };
 
 Deferred.prototype = {
@@ -53,32 +53,39 @@ Deferred.prototype = {
   },
 
   /**
-   *
+   * Translates promise into rejected state
+   * @param [reason] {*} Reason
+   * @public
    */
 
   reject: function (reason) {
-    if (this.state === Deferred.state.PENDING) {
+    var states = Promise.state;
+    var promise = this['promise'];
+
+    if (promise._state === states.PENDING) {
       this.reason = reason;
-      this.state = Deferred.state.REJECTED;
-      reject.call(this.promise);
+      promise._state = states.REJECTED;
+      notifyFail.call(promise);
     }
+    return this;
   },
 
   /**
-   *
+   * Translates promise into resolved state
+   * @param [value] {*}
+   * @public
    */
 
   resolve: function (value) {
-    if (this._state === Deferred.state.PENDING) {
-      this._value = value;
-      this._state = Deferred.state.RESOLVED;
-      resolve.call(this.promise);
+    var states = Promise.state;
+    var promise = this['promise'];
+
+    if (promise._state === states.PENDING) {
+      this.value = value;
+      promise._state = states.RESOLVED;
+      notifyDone.call(promise);
     }
+
+    return this;
   }
 };
-
-Deferred.state = {};
-
-Deferred.state.PENDING = 0;
-Deferred.state.RESOLVED = 1;
-Deferred.state.REJECTED = 2;

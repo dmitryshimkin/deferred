@@ -1,101 +1,227 @@
 var noop = function () {};
 
 
+
+/**
+ *
+ */
+
 var Promise = function () {
-
+  this._state = Promise.state.PENDING;
+  this._callbacks = {
+    done: [],
+    fail: []
+  };
 };
 
-var fn = Promise.prototype;
+var proto = Promise.prototype;
 
-fn['always'] = function () {
-  console.log('always');
+/**
+ *
+ */
+
+proto['always'] = function () {
+  this['then'].apply(this, arguments);
+  return this;
 };
 
-fn['done'] = function () {
-  console.log('done');
+/**
+ *
+ */
+
+proto['done'] = function (cb, ctx) {
+  var state = this._state;
+  var states = Promise.state;
+
+  if (state === states.PENDING) {
+    this._callbacks['done'].push({
+      fn: cb,
+      ctx: ctx
+    });
+  } else if (state === state.RESOLVED) {
+    console.log('add done handler to resolved promise - invoke instantly');
+  }
+
+  return this;
 };
 
-fn['fail'] = function () {
-  console.log('fail');
+/**
+ *
+ */
+
+proto['fail'] = function (cb, ctx) {
+  var state = this._state;
+  var states = Promise.state;
+
+  if (state === states.PENDING) {
+    this._callbacks['fail'].push({
+      fn: cb,
+      ctx: ctx
+    });
+  } else if (state === states.REJECTED) {
+    console.log('add done handler to rejected promise - invoke instantly');
+  }
+  return this;
 };
 
-fn['isRejected'] = function () {
-  console.log('isRejected');
+/**
+ *
+ */
+
+proto['isPending'] = function () {
+  return this._state === Promise.state.PENDING;
 };
 
-fn['isResolved'] = function () {
-  console.log('isResolved');
+/**
+ *
+ */
+
+proto['isRejected'] = function () {
+  return this._state === Promise.state.REJECTED;
 };
 
-fn['pipe'] = function () {
-  console.log('pipe');
+/**
+ *
+ */
+
+proto['isResolved'] = function () {
+  return this._state === Promise.state.RESOLVED;
 };
 
-fn['progress'] = function () {
-  console.log('progress');
+/**
+ *
+ */
+
+proto['then'] = function () {
+  this['done'].apply(this, arguments);
+  this['fail'].apply(this, arguments);
+  return this;
 };
 
-//state: function () {
-  //
-//},
+/**
+ *
+ */
 
-fn['then'] = function () {
-  console.log('then');
+var notifyFail = function () {
+  notify(this._callbacks['fail']);
 };
 
-fn['valueOf'] = function () {
-  console.log('valueOf');
+/**
+ *
+ */
+
+var notifyDone = function () {
+  notify(this._callbacks['done']);
 };
+
+/**
+ *
+ */
+
+var notify = function (callbacks) {
+  var callback;
+  for (var i = 0, l = callbacks.length; i < l; i++) {
+    callback = callbacks[i];
+    callback.fn.call(callback.ctx);
+  }
+};
+
+Promise.state = {
+  PENDING: 0,
+  RESOLVED: 1,
+  REJECTED: 2
+};
+
+/**
+ * Deferred class
+ * @class
+ */
+
 var Deferred = function () {
-  this.state = Deferred.state['PENDING'];
+  this['promise'] = new Promise();
+  this.reason = void(0);
   this.value = void(0);
 };
 
 Deferred.prototype = {
+
+  /**
+   *
+   */
+
   fail: function () {
-    //
+    return this.promise.fail.apply(this['promise'], arguments);
   },
+
+  /**
+   *
+   */
 
   done: function () {
-    //
+    return this.promise.done.apply(this['promise'], arguments);
   },
+
+  /**
+   *
+   */
 
   notify: function () {
-    //
+    return this.promise['notify'].apply(this['promise'], arguments);
   },
+
+  /**
+   *
+   */
 
   progress: function () {
-    //
+    return this.promise['progress'].apply(this['promise'], arguments);
   },
+
+  /**
+   *
+   */
 
   promise: function () {
-    return new Promise();
+    return this.promise;
   },
+
+  /**
+   * Translates promise into rejected state
+   * @param [reason] {*} Reason
+   * @public
+   */
 
   reject: function (reason) {
-    if (this.state === Deferred.state['PENDING']) {
+    var states = Promise.state;
+    var promise = this['promise'];
+
+    if (promise._state === states.PENDING) {
       this.reason = reason;
-      this.state = Deferred.state['REJECTED'];
+      promise._state = states.REJECTED;
+      notifyFail.call(promise);
     }
+    return this;
   },
+
+  /**
+   * Translates promise into resolved state
+   * @param [value] {*}
+   * @public
+   */
 
   resolve: function (value) {
-    if (this.state === Deferred.state['PENDING']) {
-      this.value = value;
-      this.state = Deferred.state['RESOLVED'];
-    }
-  },
+    var states = Promise.state;
+    var promise = this['promise'];
 
-  valueOf: function () {
-    //
+    if (promise._state === states.PENDING) {
+      this.value = value;
+      promise._state = states.RESOLVED;
+      notifyDone.call(promise);
+    }
+
+    return this;
   }
 };
-
-Deferred.state = {};
-
-Deferred.state['PENDING'] = 0;
-Deferred.state['RESOLVED'] = 1;
-Deferred.state['REJECTED'] = 2;
 Deferred.when = function () {
 
 };
