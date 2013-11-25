@@ -114,13 +114,35 @@
         var spy = jasmine.createSpy('done');
 
         d
-          .resolve()
-          .done(spy);
+          .done(spy)
+          .resolve();
 
         expect(spy).toHaveBeenCalled();
       });
 
       it('resolved promise', function () {
+        var d = new Deferred();
+        var spy1 = jasmine.createSpy('done1');
+        var spy2 = jasmine.createSpy('done2');
+        var spy3 = jasmine.createSpy('done3');
+
+        d
+          .done(spy1)
+          .resolve()
+          .done(spy2)
+          .done(spy3);
+
+        expect(spy1).toHaveBeenCalled();
+        expect(spy1.calls.length).toBe(1);
+
+        expect(spy2).toHaveBeenCalled();
+        expect(spy2.calls.length).toBe(1);
+
+        expect(spy3).toHaveBeenCalled();
+        expect(spy3.calls.length).toBe(1);
+      });
+
+      it('nested', function () {
 
       });
     });

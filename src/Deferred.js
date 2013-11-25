@@ -17,7 +17,8 @@ Deferred.prototype = {
    */
 
   fail: function () {
-    return this.promise.fail.apply(this['promise'], arguments);
+    this.promise.fail.apply(this['promise'], arguments);
+    return this;
   },
 
   /**
@@ -25,23 +26,8 @@ Deferred.prototype = {
    */
 
   done: function () {
-    return this.promise.done.apply(this['promise'], arguments);
-  },
-
-  /**
-   *
-   */
-
-  notify: function () {
-    return this.promise['notify'].apply(this['promise'], arguments);
-  },
-
-  /**
-   *
-   */
-
-  progress: function () {
-    return this.promise['progress'].apply(this['promise'], arguments);
+    this.promise.done.apply(this['promise'], arguments);
+    return this;
   },
 
   /**
@@ -67,6 +53,7 @@ Deferred.prototype = {
       promise._state = states.REJECTED;
       notifyFail.call(promise);
     }
+
     return this;
   },
 

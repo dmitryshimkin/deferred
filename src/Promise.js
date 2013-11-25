@@ -35,8 +35,8 @@ proto['done'] = function (cb, ctx) {
       fn: cb,
       ctx: ctx
     });
-  } else if (state === state.RESOLVED) {
-    console.log('add done handler to resolved promise - invoke instantly');
+  } else if (state === states.RESOLVED) {
+    cb.call(ctx);
   }
 
   return this;
@@ -56,7 +56,7 @@ proto['fail'] = function (cb, ctx) {
       ctx: ctx
     });
   } else if (state === states.REJECTED) {
-    console.log('add done handler to rejected promise - invoke instantly');
+    cb.call(ctx);
   }
   return this;
 };
@@ -70,7 +70,8 @@ proto['isPending'] = function () {
 };
 
 /**
- *
+ * Returns true, if promise is rejected
+ * @returns {Boolean}
  */
 
 proto['isRejected'] = function () {
@@ -78,7 +79,9 @@ proto['isRejected'] = function () {
 };
 
 /**
- *
+ * Returns true, if promise is resolved
+ * @returns {Boolean}
+ * @public
  */
 
 proto['isResolved'] = function () {
