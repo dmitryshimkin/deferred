@@ -14,10 +14,19 @@
       __log = [];
     });
 
-    // exists
+    // constructor
 
-    it('should exists', function () {
-      expect(window.Deferred).toBeDefined();
+    describe('constructor', function () {
+
+      it('class', function () {
+        expect(window.Deferred).toBeDefined();
+      });
+
+      it('instanceof', function () {
+        var d = new Deferred();
+        expect(d instanceof Deferred).toBe(true);
+      });
+
     });
 
     // done
@@ -282,6 +291,56 @@
       });
     });
 
+    // always
+
+    describe('always', function () {
+
+    });
+
+    /**
+     * The Promise Resolution Procedure
+     * http://promises-aplus.github.io/promises-spec/
+     *
+     * The promise resolution procedure is an abstract operation taking as input a promise and a value,
+     * which we denote as [[Resolve]](promise, x). If x is a thenable, it attempts to make promise adopt
+     * the state of x, under the assumption that x behaves at least somewhat like a promise.
+     * Otherwise, it fulfills promise with the value x.
+     *
+     * This treatment of thenables allows promise implementations to interoperate, as long as they expose
+     * a Promises/A+-compliant then method. It also allows Promises/A+ implementations
+     * to “assimilate” nonconformant implementations with reasonable then methods.
+     *
+     * To run [[Resolve]](promise, x), perform the following steps:
+     *
+     * 2.3.1   If promise and x refer to the same object, reject promise with a TypeError as the reason.
+     *   2.3.2   If x is a promise, adopt its state 3.4:
+     *     2.3.2.1   If x is pending, promise must remain pending until x is fulfilled or rejected.
+     *     2.3.2.2   If/when x is fulfilled, fulfill promise with the same value.
+     *     2.3.2.3   If/when x is rejected, reject promise with the same reason.
+     *   2.3.3.  Otherwise, if x is an object or function,
+     *     2.3.3.1   Let then be x.then. 3.5
+     *     2.3.3.2   If retrieving the property x.then results in a thrown exception e,
+     *               reject promise with e as the reason.
+     *     2.3.3.3   If then is a function, call it with x as this, first argument resolvePromise,
+     *               and second argument rejectPromise, where:
+     *       2.3.3.3.1   If/when resolvePromise is called with a value y, run [[Resolve]](promise, y).
+     *       2.3.3.3.2   If/when rejectPromise is called with a reason r, reject promise with r.
+     *       2.3.3.3.3   If both resolvePromise and rejectPromise are called, or multiple calls
+     *                   to the same argument are made, the first call takes precedence,
+     *                   and any further calls are ignored.
+     *       2.3.3.3.4   If calling then throws an exception e,
+     *         2.3.3.3.4.1   If resolvePromise or rejectPromise have been called, ignore it.
+     *         2.3.3.3.4.2   Otherwise, reject promise with e as the reason.
+     *   2.3.3.4   If then is not a function, fulfill promise with x.
+     * 2.3.4   If x is not an object or function, fulfill promise with x.
+     *
+     * If a promise is resolved with a thenable that participates in a circular thenable chain,
+     * such that the recursive nature of [[Resolve]](promise, thenable) eventually
+     * causes [[Resolve]](promise, thenable) to be called again, following the above algorithm
+     * will lead to infinite recursion. Implementations are encouraged, but not required,
+     * to detect such recursion and reject promise with an informative TypeError as the reason.
+     */
+
     describe('resolve', function () {
 
       it('isResolved', function () {
@@ -333,12 +392,15 @@
 
         d.done(spy1);
         d.resolve('foo', 'bar', data);
+        d.resolve('another value');
         d.done(spy2);
 
         expect(spy1).toHaveBeenCalledWith('foo', 'bar', data);
         expect(spy2).toHaveBeenCalledWith('foo', 'bar', data);
       });
     });
+
+    // reject
 
     describe('reject', function () {
 
@@ -391,6 +453,7 @@
 
         d.fail(spy1);
         d.reject('foo', 'bar', data);
+        d.reject('another value');
         d.fail(spy2);
 
         expect(spy1).toHaveBeenCalledWith('foo', 'bar', data);
@@ -398,6 +461,39 @@
       });
     });
 
+    // then
+
+    describe('then', function () {
+      //
+    });
+
+    // when
+
+    describe('when', function () {
+      //
+    });
+
+    // any
+
+    describe('any', function () {
+      //
+    });
+
+    // helpers
+
+    describe('helpers', function () {
+
+      it('isPromise', function () {
+        //
+      });
+
+      it('isDeferred', function () {
+        //
+      });
+
+    });
+
     // nested subscriptions and state changing
+
   });
 }());

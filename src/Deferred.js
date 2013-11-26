@@ -9,6 +9,20 @@ var Deferred = function () {
 };
 
 /**
+ * Checks whether
+ * @param arg
+ * @returns {boolean}
+ */
+
+Deferred.isPromise = function (arg) {
+  return typeof arg === 'object' && typeof arg['then'] === 'function';
+};
+
+Deferred.isDeferred = function (arg) {
+  return this.isPromise(arg) && typeof arg['resolve'] === 'function' && typeof arg['reject'] === 'function';
+};
+
+/**
  * Translates promise into rejected state
  * @public
  */
@@ -46,7 +60,7 @@ Deferred.prototype['resolve'] = function () {
 
 // proxy some promise methods in deferred object
 
-var methods = ['done', 'fail', 'isPending', 'isRejected', 'isResolved'];
+var methods = ['done', 'fail', 'isPending', 'isRejected', 'isResolved', 'then'];
 var method;
 
 var createMethod = function (method) {

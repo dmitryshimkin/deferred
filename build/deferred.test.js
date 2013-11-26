@@ -1,6 +1,3 @@
-var noop = function () {};
-
-
 
 /**
  *
@@ -114,13 +111,28 @@ proto['isResolved'] = function () {
 };
 
 /**
- *
+ * Adds onResolve or onReject listener
+ * @param onResolve {Function}
+ * @param onReject {Function}
+ * @param [ctx] {Object} Context for listeners
  * @public
  */
 
-proto['then'] = function () {
-  this['done'].apply(this, arguments);
-  this['fail'].apply(this, arguments);
+proto['then'] = function (onResolve, onReject, ctx) {
+  var lastArg = arguments[arguments.length - 1];
+
+  if (lastArg && typeof lastArg !== 'function') {
+    ctx = lastArg;
+  }
+
+  if (typeof onResolve === 'function') {
+    this.done(onResolve, ctx);
+  }
+
+  if (typeof onReject === 'function') {
+    this.fail(onReject, ctx);
+  }
+
   return this;
 };
 
@@ -131,6 +143,20 @@ proto['then'] = function () {
 
 var Deferred = function () {
   this['promise'] = new Promise();
+};
+
+/**
+ * Checks whether
+ * @param arg
+ * @returns {boolean}
+ */
+
+Deferred.isPromise = function (arg) {
+  return typeof arg === 'object' && typeof arg['then'] === 'function';
+};
+
+Deferred.isDeferred = function (arg) {
+  return this.isPromise(arg) && typeof arg['resolve'] === 'function' && typeof arg['reject'] === 'function';
 };
 
 /**
@@ -171,7 +197,7 @@ Deferred.prototype['resolve'] = function () {
 
 // proxy some promise methods in deferred object
 
-var methods = ['done', 'fail', 'isPending', 'isRejected', 'isResolved'];
+var methods = ['done', 'fail', 'isPending', 'isRejected', 'isResolved', 'then'];
 var method;
 
 var createMethod = function (method) {

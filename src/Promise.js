@@ -111,12 +111,27 @@ proto['isResolved'] = function () {
 };
 
 /**
- *
+ * Adds onResolve or onReject listener
+ * @param onResolve {Function}
+ * @param onReject {Function}
+ * @param [ctx] {Object} Context for listeners
  * @public
  */
 
-proto['then'] = function () {
-  this['done'].apply(this, arguments);
-  this['fail'].apply(this, arguments);
+proto['then'] = function (onResolve, onReject, ctx) {
+  var lastArg = arguments[arguments.length - 1];
+
+  if (lastArg && typeof lastArg !== 'function') {
+    ctx = lastArg;
+  }
+
+  if (typeof onResolve === 'function') {
+    this.done(onResolve, ctx);
+  }
+
+  if (typeof onReject === 'function') {
+    this.fail(onReject, ctx);
+  }
+
   return this;
 };
