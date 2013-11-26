@@ -10,17 +10,16 @@ var Deferred = function () {
 
 /**
  * Translates promise into rejected state
- * @param [reason] {*} Reason
  * @public
  */
 
-Deferred.prototype['reject'] = function (reason) {
+Deferred.prototype['reject'] = function () {
   var states = Promise.state;
   var promise = this['promise'];
 
   if (promise._state === states.PENDING) {
-    this.reason = reason;
     promise._state = states.REJECTED;
+    promise._value = arguments;
     notifyFail.call(promise);
   }
 
@@ -66,7 +65,7 @@ for (var i = 0, l = methods.length; i < l; i++) {
 // Private methods
 
 var notifyFail = function () {
-  notify(this._callbacks['fail']);
+  notify(this._callbacks['fail'], this._value);
 };
 
 var notifyDone = function () {

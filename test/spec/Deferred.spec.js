@@ -398,8 +398,6 @@
       });
     });
 
-    // reject (check double reject, check reject of resolved)
-
     // nested subscriptions and state changing
   });
 }());
