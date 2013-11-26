@@ -6,73 +6,77 @@
 
 var Deferred = function () {
   this['promise'] = new Promise();
-  this.reason = void(0);
-  this.value = void(0);
 };
 
-Deferred.prototype = {
+/**
+ * Translates promise into rejected state
+ * @param [reason] {*} Reason
+ * @public
+ */
 
-  /**
-   *
-   */
+Deferred.prototype['reject'] = function (reason) {
+  var states = Promise.state;
+  var promise = this['promise'];
 
-  fail: function () {
-    this.promise.fail.apply(this['promise'], arguments);
-    return this;
-  },
+  if (promise._state === states.PENDING) {
+    this.reason = reason;
+    promise._state = states.REJECTED;
+    notifyFail.call(promise);
+  }
 
-  /**
-   *
-   */
+  return this;
+};
 
-  done: function () {
-    this.promise.done.apply(this['promise'], arguments);
-    return this;
-  },
+/**
+ * Translates promise into resolved state
+ * @public
+ */
 
-  /**
-   *
-   */
+Deferred.prototype['resolve'] = function () {
+  var states = Promise.state;
+  var promise = this['promise'];
 
-  promise: function () {
-    return this.promise;
-  },
+  if (promise._state === states.PENDING) {
+    promise._state = states.RESOLVED;
+    promise._value = arguments;
+    notifyDone.call(promise);
+  }
 
-  /**
-   * Translates promise into rejected state
-   * @param [reason] {*} Reason
-   * @public
-   */
+  return this;
+};
 
-  reject: function (reason) {
-    var states = Promise.state;
-    var promise = this['promise'];
+// proxy some promise methods in deferred object
 
-    if (promise._state === states.PENDING) {
-      this.reason = reason;
-      promise._state = states.REJECTED;
-      notifyFail.call(promise);
-    }
+var methods = ['done', 'fail', 'isPending', 'isRejected', 'isResolved'];
+var method;
 
-    return this;
-  },
+var createMethod = function (method) {
+  return function () {
+    var promise = this.promise;
+    var result = promise[method].apply(promise, arguments);
+    return typeof result === 'boolean' ? result : this;
+  }
+};
 
-  /**
-   * Translates promise into resolved state
-   * @param [value] {*}
-   * @public
-   */
+for (var i = 0, l = methods.length; i < l; i++) {
+  method = methods[i];
+  Deferred.prototype[method] = createMethod(method);
+}
 
-  resolve: function (value) {
-    var states = Promise.state;
-    var promise = this['promise'];
+// Private methods
 
-    if (promise._state === states.PENDING) {
-      this.value = value;
-      promise._state = states.RESOLVED;
-      notifyDone.call(promise);
-    }
+var notifyFail = function () {
+  notify(this._callbacks['fail']);
+};
 
-    return this;
+var notifyDone = function () {
+  notify(this._callbacks['done'], this._value);
+};
+
+var notify = function (callbacks, args) {
+  var callback;
+  for (var i = 0, l = callbacks.length; i < l; i++) {
+    callback = callbacks[i];
+    callback.fn.apply(callback.ctx, args);
   }
 };

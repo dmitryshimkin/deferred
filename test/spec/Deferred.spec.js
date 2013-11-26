@@ -282,6 +282,64 @@
       });
     });
 
+    describe('resolve', function () {
+
+      it('isResolved', function () {
+        var d = new Deferred();
+        expect(d.isPending()).toBe(true);
+        d.resolve();
+        expect(d.isResolved()).toBe(true);
+      });
+
+      it('already resolved', function () {
+        var d = new Deferred();
+
+        var spy1 = jasmine.createSpy('done1');
+        var spy2 = jasmine.createSpy('done2');
+
+        d.done(spy1);
+        d.resolve();
+        d.done(spy2);
+        d.resolve();
+
+        expect(spy1).toHaveBeenCalled();
+        expect(spy1.calls.length).toBe(1);
+
+        expect(spy2).toHaveBeenCalled();
+        expect(spy2.calls.length).toBe(1);
+      });
+
+      it('already rejected', function () {
+        var d = new Deferred();
+
+        var spy1 = jasmine.createSpy('done1');
+        var spy2 = jasmine.createSpy('done2');
+
+        d.done(spy1);
+        d.reject();
+        d.done(spy2);
+        d.resolve();
+
+        expect(spy1).not.toHaveBeenCalled();
+        expect(spy2).not.toHaveBeenCalled();
+      });
+
+      it('value', function () {
+        var d = new Deferred();
+        var data = { foo: 'bar' };
+
+        var spy1 = jasmine.createSpy('done1');
+        var spy2 = jasmine.createSpy('done2');
+
+        d.done(spy1);
+        d.resolve('foo', 'bar', data);
+        d.done(spy2);
+
+        expect(spy1).toHaveBeenCalledWith('foo', 'bar', data);
+        expect(spy2).toHaveBeenCalledWith('foo', 'bar', data);
+      });
+    });
+
     // resolve (check double resolve, check resolve of rejected)
 
     // reject (check double reject, check reject of resolved)

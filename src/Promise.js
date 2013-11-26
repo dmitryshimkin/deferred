@@ -5,16 +5,27 @@
 
 var Promise = function () {
   this._state = Promise.state.PENDING;
+  this._value = [];
   this._callbacks = {
     done: [],
     fail: []
   };
 };
 
+Promise.state = {
+  PENDING: 0,
+  RESOLVED: 1,
+  REJECTED: 2
+};
+
 var proto = Promise.prototype;
 
 /**
- *
+ * Adds onChangeState listener
+ * @param cb {Function} Listener
+ * @param [ctx] {Object} Listener context
+ * @returns {Object} Instance
+ * @public
  */
 
 proto['always'] = function () {
@@ -23,7 +34,11 @@ proto['always'] = function () {
 };
 
 /**
- *
+ * Adds onResolve listener
+ * @param cb {Function} Listener
+ * @param [ctx] {Object} Listener context
+ * @returns {Object} Instance
+ * @public
  */
 
 proto['done'] = function (cb, ctx) {
@@ -36,14 +51,18 @@ proto['done'] = function (cb, ctx) {
       ctx: ctx
     });
   } else if (state === states.RESOLVED) {
-    cb.call(ctx);
+    cb.apply(ctx, this._value);
   }
 
   return this;
 };
 
 /**
- *
+ * Adds onReject listener
+ * @param cb {Function} Listener
+ * @param [ctx] {Object} Listener context
+ * @returns {Object} Instance
+ * @public
  */
 
 proto['fail'] = function (cb, ctx) {
@@ -56,13 +75,15 @@ proto['fail'] = function (cb, ctx) {
       ctx: ctx
     });
   } else if (state === states.REJECTED) {
-    cb.call(ctx);
+    cb.apply(ctx, this._value);
   }
   return this;
 };
 
 /**
- *
+ * Returns true, if promise has pending state
+ * @returns {Boolean}
+ * @public
  */
 
 proto['isPending'] = function () {
@@ -72,6 +93,7 @@ proto['isPending'] = function () {
 /**
  * Returns true, if promise is rejected
  * @returns {Boolean}
+ * @public
  */
 
 proto['isRejected'] = function () {
@@ -90,44 +112,11 @@ proto['isResolved'] = function () {
 
 /**
  *
+ * @public
  */
 
 proto['then'] = function () {
   this['done'].apply(this, arguments);
   this['fail'].apply(this, arguments);
   return this;
-};
-
-/**
- *
- */
-
-var notifyFail = function () {
-  notify(this._callbacks['fail']);
-};
-
-/**
- *
- */
-
-var notifyDone = function () {
-  notify(this._callbacks['done']);
-};
-
-/**
- *
- */
-
-var notify = function (callbacks) {
-  var callback;
-  for (var i = 0, l = callbacks.length; i < l; i++) {
-    callback = callbacks[i];
-    callback.fn.call(callback.ctx);
-  }
-};
-
-Promise.state = {
-  PENDING: 0,
-  RESOLVED: 1,
-  REJECTED: 2
 };
