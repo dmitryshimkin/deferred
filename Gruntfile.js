@@ -54,6 +54,8 @@ module.exports = function(grunt) {
             'test/specs/promise.spec.js'
           ],
           template: require('grunt-template-jasmine-istanbul'),
+          outfile: 'test.html',
+          keepRunner: true,
           templateOptions: {
             coverage: 'test/report/coverage.json',
             report: [
