@@ -15,7 +15,7 @@ var Deferred = function () {
  */
 
 Deferred.isPromise = function (arg) {
-  return typeof arg === 'object' && typeof arg['then'] === 'function';
+  return arg instanceof Promise || arg instanceof Deferred;
 };
 
 Deferred.isDeferred = function (arg) {

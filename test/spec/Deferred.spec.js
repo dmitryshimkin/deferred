@@ -9,9 +9,12 @@
   // Deferred
   describe('Deferred', function () {
     var __log = [];
+    var data = { foo: 'bar' };
+    var d;
 
     beforeEach(function () {
       __log = [];
+      d = new Deferred();
     });
 
     // constructor
@@ -23,7 +26,6 @@
       });
 
       it('instanceof', function () {
-        var d = new Deferred();
         expect(d instanceof Deferred).toBe(true);
       });
 
@@ -34,7 +36,6 @@
     describe('done', function () {
 
       it('handler', function () {
-        var d = new Deferred();
         var spy = jasmine.createSpy('done');
         var resolved = false;
 
@@ -57,7 +58,6 @@
       });
 
       it ('handler with context', function () {
-        var d = new Deferred();
         var resolved = false;
         var ctx;
         var obj = {
@@ -85,7 +85,6 @@
       });
 
       it('many handlers', function () {
-        var d = new Deferred();
         var resolved = false;
 
         var handler1 = function () {
@@ -123,7 +122,6 @@
       });
 
       it('sync call', function () {
-        var d = new Deferred();
         var spy = jasmine.createSpy('done');
 
         d
@@ -134,7 +132,6 @@
       });
 
       it('resolved promise', function () {
-        var d = new Deferred();
         var spy1 = jasmine.createSpy('done1');
         var spy2 = jasmine.createSpy('done2');
         var spy3 = jasmine.createSpy('done3');
@@ -165,7 +162,6 @@
     describe('fail', function () {
 
       it('handler', function () {
-        var d = new Deferred();
         var spy = jasmine.createSpy('fail');
         var rejected = false;
 
@@ -188,7 +184,6 @@
       });
 
       it ('handler with context', function () {
-        var d = new Deferred();
         var rejected = false;
         var ctx;
         var obj = {
@@ -216,7 +211,6 @@
       });
 
       it('many handlers', function () {
-        var d = new Deferred();
         var rejected = false;
 
         var handler1 = function () {
@@ -254,7 +248,6 @@
       });
 
       it('sync call', function () {
-        var d = new Deferred();
         var spy = jasmine.createSpy('fail');
 
         d
@@ -348,15 +341,12 @@
     describe('resolve', function () {
 
       it('isResolved', function () {
-        var d = new Deferred();
         expect(d.isPending()).toBe(true);
         d.resolve();
         expect(d.isResolved()).toBe(true);
       });
 
       it('already resolved', function () {
-        var d = new Deferred();
-
         var spy1 = jasmine.createSpy('done1');
         var spy2 = jasmine.createSpy('done2');
 
@@ -373,8 +363,6 @@
       });
 
       it('already rejected', function () {
-        var d = new Deferred();
-
         var spy1 = jasmine.createSpy('done1');
         var spy2 = jasmine.createSpy('done2');
 
@@ -388,9 +376,6 @@
       });
 
       xit('value', function () {
-        var d = new Deferred();
-        var data = { foo: 'bar' };
-
         var spy1 = jasmine.createSpy('done1');
         var spy2 = jasmine.createSpy('done2');
 
@@ -408,33 +393,103 @@
 
         // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
         it('the same', function () {
-          var d = new Deferred();
-          var x = new Deferred();
+          var x = d;
+          var reason;
 
+          d.fail(function () {
+            reason = arguments[0];
+          });
 
-          //expect(true).toBe(false);
+          d.resolve(x);
+
+          expect(reason instanceof TypeError).toBe(true);
         });
 
         // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
         it('fulfilled', function () {
-          //
+          var x = new Deferred();
+          var spy = jasmine.createSpy('done');
+
+          d.done(spy);
+
+          x.resolve('foo', data);
+          d.resolve(x);
+
+          expect(spy).toHaveBeenCalledWith('foo', data);
         });
 
         // 2.3.2.3. If/when x is rejected, reject promise with the same reason.
         it('rejected', function () {
-          //
+          var x = new Deferred();
+          var spy = jasmine.createSpy('fail');
+
+          d.fail(spy);
+
+          x.reject('foo', data);
+          d.resolve(x);
+
+          expect(spy).toHaveBeenCalledWith('foo', data);
         });
 
         // 2.3.2.1. If x is pending, promise must remain pending until x is fulfilled or rejected.
         describe('pending', function () {
+
           // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
           it('fulfill', function () {
-            //
+            var x = new Deferred();
+            var spy = jasmine.createSpy('done');
+            var done = false;
+            var isPending;
+
+            runs(function () {
+              d.done(spy);
+              d.resolve(x);
+
+              isPending = d.isPending();
+
+              setTimeout(function () {
+                x.resolve('foo', data);
+                done = true;
+              }, 20);
+            });
+
+            waitsFor(function () {
+              return done;
+            }, 'timeout', 40);
+
+            runs(function () {
+              expect(isPending).toBe(true);
+              expect(spy).toHaveBeenCalledWith('foo', data);
+            });
           });
 
           // 2.3.2.3. If/when x is rejected, reject promise with the same reason.
           it('reject', function () {
-            //
+            var x = new Deferred();
+            var spy = jasmine.createSpy('fail');
+            var done = false;
+            var isPending;
+
+            runs(function () {
+              d.fail(spy);
+              d.resolve(x);
+
+              isPending = d.isPending();
+
+              setTimeout(function () {
+                x.reject('foo', data);
+                done = true;
+              }, 20);
+            });
+
+            waitsFor(function () {
+              return done;
+            }, 'timeout', 40);
+
+            runs(function () {
+              expect(isPending).toBe(true);
+              expect(spy).toHaveBeenCalledWith('foo', data);
+            });
           });
         });
       });
@@ -442,9 +497,21 @@
       // 2.3.3. Otherwise, if x is an object or function,
       describe('with object', function () {
 
-        // 2.3.3.2. If retrieving the property x.then results in a thrown exception e
+        // 2.3.3.2. If retrieving the property x.then results in a thrown exception e,
+        //          reject promise with e as the reason.
         it('exception', function () {
-          //
+          var x = {};
+          var spy = jasmine.createSpy('fail');
+          var e = new TypeError;
+
+          x.__defineGetter__('then', function () {
+            throw e;
+          });
+
+          d.fail(spy);
+          d.resolve(x);
+
+          expect(spy).toHaveBeenCalledWith(e);
         });
 
         // 2.3.3.3. If then is a function, call it with x as this, first argument resolvePromise,
@@ -453,19 +520,99 @@
 
           // 2.3.3.3.1. If/when resolvePromise is called with a value y, run [[Resolve]](promise, y).
           it('resolvePromise called', function () {
-            //
+            var isPending;
+            var done = false;
+            var spy = jasmine.createSpy('done');
+            var x = {
+              then: function (resolvePromise, rejectPromise) {
+                setTimeout(function () {
+                  resolvePromise('foo', data);
+                  done = true;
+                }, 20);
+              }
+            };
+
+            runs(function () {
+              d.done(spy);
+              d.resolve(x);
+              isPending = d.isPending();
+            });
+
+            waitsFor(function () {
+              return done;
+            }, 'timeout', 40);
+
+            runs(function () {
+              expect(isPending).toBe(true);
+              expect(spy).toHaveBeenCalledWith('foo', data);
+            });
           });
 
           // 2.3.3.3.2. If/when rejectPromise is called with a reason r, reject promise with r.
           it('rejectPromise called', function () {
-            //
+            var isPending;
+            var done = false;
+            var spy = jasmine.createSpy('fail');
+            var x = {
+              then: function (resolvePromise, rejectPromise) {
+                setTimeout(function () {
+                  rejectPromise('foo', data);
+                  done = true;
+                }, 20);
+              }
+            };
+
+            runs(function () {
+              d.fail(spy);
+              d.resolve(x);
+              isPending = d.isPending();
+            });
+
+            waitsFor(function () {
+              return done;
+            }, 'timeout', 40);
+
+            runs(function () {
+              expect(isPending).toBe(true);
+              expect(spy).toHaveBeenCalledWith('foo', data);
+            });
           });
 
           // 2.3.3.3.3. If both resolvePromise and rejectPromise are called, or multiple calls
           //            to the same argument are made, the first call takes precedence,
           //            and any further calls are ignored.
           it('both called', function() {
-            //
+            var isPending;
+            var done = false;
+            var doneSpy = jasmine.createSpy('done');
+            var failSpy = jasmine.createSpy('fail');
+            var x = {
+              then: function (resolvePromise, rejectPromise) {
+                setTimeout(function () {
+                  resolvePromise('foo', data);
+                  rejectPromise('foo', data);
+                  done = true;
+                }, 20);
+              }
+            };
+
+            runs(function () {
+              d
+                .done(doneSpy)
+                .fail(failSpy)
+                .resolve(x);
+              isPending = d.isPending();
+            });
+
+            waitsFor(function () {
+              return done;
+            }, 'timeout', 40);
+
+            runs(function () {
+              expect(isPending).toBe(true);
+              expect(doneSpy).toHaveBeenCalledWith('foo', data);
+              expect(failSpy).not.toHaveBeenCalledWith('foo', data);
+            });
           });
 
           // 2.3.3.3.4. If calling then throws an exception e,
@@ -496,7 +643,7 @@
 
       // 2.3.4. If x is not an object or function, fulfill promise with x.
       describe('with value', function () {
-        //
+        //var
       });
     });
 
@@ -505,15 +652,12 @@
     describe('reject', function () {
 
       it('isRejected', function () {
-        var d = new Deferred();
         expect(d.isPending()).toBe(true);
         d.reject();
         expect(d.isRejected()).toBe(true);
       });
 
       it('already rejected', function () {
-        var d = new Deferred();
-
         var spy1 = jasmine.createSpy('fail1');
         var spy2 = jasmine.createSpy('fail2');
 
@@ -530,8 +674,6 @@
       });
 
       it('already resolved', function () {
-        var d = new Deferred();
-
         var spy1 = jasmine.createSpy('fail1');
         var spy2 = jasmine.createSpy('fail2');
 
@@ -545,9 +687,6 @@
       });
 
       it('value', function () {
-        var d = new Deferred();
-        var data = { foo: 'bar' };
-
         var spy1 = jasmine.createSpy('fail1');
         var spy2 = jasmine.createSpy('fail2');
 

@@ -136,6 +136,7 @@ proto['then'] = function (onResolve, onReject, ctx) {
   return this;
 };
 
+
 /**
  * Deferred class
  * @class
@@ -152,7 +153,7 @@ var Deferred = function () {
  */
 
 Deferred.isPromise = function (arg) {
-  return typeof arg === 'object' && typeof arg['then'] === 'function';
+  return arg instanceof Promise || arg instanceof Deferred;
 };
 
 Deferred.isDeferred = function (arg) {
@@ -230,6 +231,7 @@ var notify = function (callbacks, args) {
     callback.fn.apply(callback.ctx, args);
   }
 };
+
 Deferred.when = function () {
 
 };
