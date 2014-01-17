@@ -409,16 +409,30 @@
         });
 
         // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
-        xit('fulfilled', function () {
-          var x = new Deferred();
-          var spy = jasmine.createSpy('done');
+        describe('fulfilled', function () {
+          it('promise', function () {
+            var x = new Deferred();
+            var spy = jasmine.createSpy('done');
 
-          d.done(spy);
+            d.done(spy);
 
-          x.resolve('foo', data);
-          d.resolve(x);
+            x.resolve('foo', data);
+            d.resolve(x);
 
-          expect(spy).toHaveBeenCalledWith('foo', data);
+            expect(spy).toHaveBeenCalledWith('foo', data);
+          });
+
+          it('deferred', function () {
+            var x = new Deferred();
+            var spy = jasmine.createSpy('done');
+
+            d.done(spy);
+
+            x.resolve('foo', data);
+            d.resolve(x.promise);
+
+            expect(spy).toHaveBeenCalledWith('foo', data);
+          });
         });
 
         // 2.3.2.3. If/when x is rejected, reject promise with the same reason.

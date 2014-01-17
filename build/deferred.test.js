@@ -157,7 +157,7 @@ Deferred.isPromise = function (arg) {
 };
 
 Deferred.isDeferred = function (arg) {
-  return this.isPromise(arg) && typeof arg['resolve'] === 'function' && typeof arg['reject'] === 'function';
+  return arg instanceof Deferred;
 };
 
 /**
@@ -197,6 +197,21 @@ Deferred.prototype['resolve'] = function (x) {
     var e = new TypeError('Promise and argument refer to the same object');
     this.reject(e);
     return this;
+  }
+
+  var isDeferred = x instanceof Deferred;
+  var isPromise = x instanceof Promise;
+
+  // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
+  if (isDeferred || isPromise) {
+    if (x.isResolved) {
+      promise._state = states.RESOLVED;
+      promise._value = isDeferred ? x.promise._value : x._value; // @TODO: refactor
+
+      notifyDone.call(promise);
+
+      return this;
+    }
   }
 
   promise._state = states.RESOLVED;
