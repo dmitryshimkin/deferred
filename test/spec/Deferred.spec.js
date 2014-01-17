@@ -375,19 +375,6 @@
         expect(spy2).not.toHaveBeenCalled();
       });
 
-      xit('value', function () {
-        var spy1 = jasmine.createSpy('done1');
-        var spy2 = jasmine.createSpy('done2');
-
-        d.done(spy1);
-        d.resolve('foo', 'bar', data);
-        d.resolve('another value');
-        d.done(spy2);
-
-        expect(spy1).toHaveBeenCalledWith('foo', 'bar', data);
-        expect(spy2).toHaveBeenCalledWith('foo', 'bar', data);
-      });
-
       // 2.3.2. If x is a promise, adopt its state 3.4:
       describe('with promise', function () {
 
@@ -618,32 +605,83 @@
           // 2.3.3.3.4. If calling then throws an exception e,
           describe('exception thrown', function () {
 
-            //2.3.3.3.4.1   If resolvePromise or rejectPromise have been called, ignore it.
+            //2.3.3.3.4.1. If resolvePromise or rejectPromise have been called, ignore it.
             it('after resolvePromise', function () {
-              //
+              var done = false;
+              var spy = jasmine.createSpy('done');
+              var x = {
+                then: function (resolvePromise, rejectPromise) {
+                  resolvePromise('foo', data);
+                  throw new Error;
+                }
+              };
+
+              d.done(spy);
+              d.resolve(x);
+
+              expect(spy).toHaveBeenCalledWith('foo', data);
             });
 
             //2.3.3.3.4.1   If resolvePromise or rejectPromise have been called, ignore it.
             it('after rejectPromise', function () {
-              //
+              var done = false;
+              var spy = jasmine.createSpy('fail');
+              var x = {
+                then: function (resolvePromise, rejectPromise) {
+                  rejectPromise('foo', data);
+                  throw new Error;
+                }
+              };
+
+              d.fail(spy);
+              d.resolve(x);
+
+              expect(spy).toHaveBeenCalledWith('foo', data);
             });
 
             // 2.3.3.3.4.2. Otherwise, reject promise with e as the reason.
             it('before resolvePromise/rejectPromise', function () {
-              //
+              var done = false;
+              var spy = jasmine.createSpy('fail');
+              var e = new Error;
+              var x = {
+                then: function () {
+                  throw e;
+                }
+              };
+
+              d.fail(spy);
+              d.resolve(x);
+
+              expect(spy).toHaveBeenCalledWith(e);
             });
           });
         });
 
         // 2.3.3.4. If then is not a function, fulfill promise with x.
         it('no then', function () {
-          //
+          var x = {
+            then: {}
+          };
+
+          var spy = jasmine.createSpy('done');
+
+          d.done(spy);
+          d.resolve(x);
+
+          expect(spy).toHaveBeenCalledWith(x);
         });
       });
 
       // 2.3.4. If x is not an object or function, fulfill promise with x.
       describe('with value', function () {
-        //var
+        var x = 'foo';
+        var spy = jasmine.createSpy('done');
+
+        d.done(spy);
+        d.resolve(x, data);
+
+        expect(spy).toHaveBeenCalledWith('foo', data);
       });
     });
 

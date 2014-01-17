@@ -33,6 +33,8 @@ module.exports = function(grunt) {
         options: {
           specs: 'test/spec/Deferred.spec.js',
           template: require('grunt-template-jasmine-istanbul'),
+          outfile: 'test.html',
+          keepRunner: true,
           templateOptions: {
             coverage: 'test/report/coverage.json',
             report: [
@@ -54,8 +56,6 @@ module.exports = function(grunt) {
             'test/specs/promise.spec.js'
           ],
           template: require('grunt-template-jasmine-istanbul'),
-          outfile: 'test.html',
-          keepRunner: true,
           templateOptions: {
             coverage: 'test/report/coverage.json',
             report: [
