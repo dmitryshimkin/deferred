@@ -340,6 +340,7 @@
 
     describe('resolve', function () {
 
+      // @TODO: move from this describe
       it('isResolved', function () {
         expect(d.isPending()).toBe(true);
         d.resolve();
@@ -379,21 +380,36 @@
       describe('with promise', function () {
 
         // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
-        it('the same', function () {
-          var x = d;
-          var reason;
+        describe('the same', function () {
+          it('deferred', function () {
+            var x = d;
+            var reason;
 
-          d.fail(function () {
-            reason = arguments[0];
+            d.fail(function () {
+              reason = arguments[0];
+            });
+
+            d.resolve(x);
+
+            expect(reason instanceof TypeError).toBe(true);
           });
 
-          d.resolve(x);
+          it('promise', function () {
+            var x = d.promise;
+            var reason;
 
-          expect(reason instanceof TypeError).toBe(true);
+            d.fail(function () {
+              reason = arguments[0];
+            });
+
+            d.resolve(x);
+
+            expect(reason instanceof TypeError).toBe(true);
+          });
         });
 
         // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
-        it('fulfilled', function () {
+        xit('fulfilled', function () {
           var x = new Deferred();
           var spy = jasmine.createSpy('done');
 
@@ -406,7 +422,7 @@
         });
 
         // 2.3.2.3. If/when x is rejected, reject promise with the same reason.
-        it('rejected', function () {
+        xit('rejected', function () {
           var x = new Deferred();
           var spy = jasmine.createSpy('fail');
 
@@ -419,7 +435,7 @@
         });
 
         // 2.3.2.1. If x is pending, promise must remain pending until x is fulfilled or rejected.
-        describe('pending', function () {
+        xdescribe('pending', function () {
 
           // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
           it('fulfill', function () {
@@ -482,7 +498,7 @@
       });
 
       // 2.3.3. Otherwise, if x is an object or function,
-      describe('with object', function () {
+      xdescribe('with object', function () {
 
         // 2.3.3.2. If retrieving the property x.then results in a thrown exception e,
         //          reject promise with e as the reason.
@@ -675,6 +691,7 @@
 
       // 2.3.4. If x is not an object or function, fulfill promise with x.
       describe('with value', function () {
+        var d = new Deferred();
         var x = 'foo';
         var spy = jasmine.createSpy('done');
 

@@ -183,15 +183,26 @@ Deferred.prototype['reject'] = function () {
  * @public
  */
 
-Deferred.prototype['resolve'] = function () {
+Deferred.prototype['resolve'] = function (x) {
   var states = Promise.state;
   var promise = this['promise'];
 
-  if (promise._state === states.PENDING) {
-    promise._state = states.RESOLVED;
-    promise._value = arguments;
-    notifyDone.call(promise);
+  // ignore non-pending promises
+  if (promise._state !== states.PENDING) {
+    return this;
   }
+
+  // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
+  if (x === this || x === promise) {
+    var e = new TypeError('Promise and argument refer to the same object');
+    this.reject(e);
+    return this;
+  }
+
+  promise._state = states.RESOLVED;
+  promise._value = arguments;
+
+  notifyDone.call(promise);
 
   return this;
 };
