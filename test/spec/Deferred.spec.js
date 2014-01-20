@@ -530,7 +530,7 @@
 
         // 2.3.3.2. If retrieving the property x.then results in a thrown exception e,
         //          reject promise with e as the reason.
-        xit('exception', function () {
+        it('exception', function () {
           var x = {};
           var spy = jasmine.createSpy('fail');
           var e = new TypeError;

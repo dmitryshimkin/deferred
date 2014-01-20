@@ -51,7 +51,6 @@ Deferred.prototype['resolve'] = function (x) {
   var PENDING = states.PENDING;
   var RESOLVED = states.RESOLVED;
   var value;
-  var self = this;
 
   // ignore non-pending promises
   if (promise._state !== states.PENDING) {
@@ -67,6 +66,18 @@ Deferred.prototype['resolve'] = function (x) {
 
   var isDeferred = x instanceof Deferred;
   var isPromise = x instanceof Promise;
+
+  var xType = typeof x;
+
+  // 2.3.3.2. If retrieving the property x.then results in a thrown exception e, reject promise with e as the reason
+  if (x !== null && (xType === 'object' || xType === 'function')) {
+    try {
+      var then = x.then;
+    } catch (e) {
+      this.reject(e);
+      return this;
+    }
+  }
 
   if (isDeferred || isPromise) {
     value = isDeferred ? x.promise._value : x._value;  // @TODO: refactor
