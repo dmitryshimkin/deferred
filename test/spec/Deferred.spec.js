@@ -463,7 +463,7 @@
         });
 
         // 2.3.2.1. If x is pending, promise must remain pending until x is fulfilled or rejected.
-        xdescribe('pending', function () {
+        describe('pending', function () {
 
           // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
           it('fulfill', function () {
@@ -526,11 +526,11 @@
       });
 
       // 2.3.3. Otherwise, if x is an object or function,
-      xdescribe('with object', function () {
+      describe('with object', function () {
 
         // 2.3.3.2. If retrieving the property x.then results in a thrown exception e,
         //          reject promise with e as the reason.
-        it('exception', function () {
+        xit('exception', function () {
           var x = {};
           var spy = jasmine.createSpy('fail');
           var e = new TypeError;
@@ -547,10 +547,10 @@
 
         // 2.3.3.3. If then is a function, call it with x as this, first argument resolvePromise,
         // and second argument rejectPromise, where:
-        describe('has method then', function () {
+        xdescribe('has method then', function () {
 
           // 2.3.3.3.1. If/when resolvePromise is called with a value y, run [[Resolve]](promise, y).
-          it('resolvePromise called', function () {
+          xit('resolvePromise called', function () {
             var isPending;
             var done = false;
             var spy = jasmine.createSpy('done');
@@ -703,7 +703,7 @@
         });
 
         // 2.3.3.4. If then is not a function, fulfill promise with x.
-        it('no then', function () {
+        xit('no then', function () {
           var x = {
             then: {}
           };

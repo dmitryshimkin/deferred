@@ -48,7 +48,10 @@ Deferred.prototype['reject'] = function () {
 Deferred.prototype['resolve'] = function (x) {
   var states = Promise.state;
   var promise = this['promise'];
+  var PENDING = states.PENDING;
+  var RESOLVED = states.RESOLVED;
   var value;
+  var self = this;
 
   // ignore non-pending promises
   if (promise._state !== states.PENDING) {
@@ -68,24 +71,57 @@ Deferred.prototype['resolve'] = function (x) {
   if (isDeferred || isPromise) {
     value = isDeferred ? x.promise._value : x._value;  // @TODO: refactor
 
-    // 2.3.2.3. If/when x is rejected, reject promise with the same reason.
+    // 2.3.2.3. If x is rejected, reject promise with the same reason.
     if (x.isRejected()) {
       this.reject.apply(this, value);
       return this;
     }
 
-    // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
+    // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
     if (x.isResolved()) {
-      promise._state = states.RESOLVED;
+      promise._state = RESOLVED;
       promise._value = value;
 
       notifyDone.call(promise);
 
       return this;
     }
+
+    // 2.3.2.2. when x is fulfilled, fulfill promise with the same value.
+    var onResolve = function () {
+      if (promise._state !== PENDING) {
+        return false;
+      }
+
+      value = isDeferred ? x.promise._value : x._value;  // @TODO: refactor
+
+      promise._state = RESOLVED;
+      promise._value = arguments;
+
+      notifyDone.call(promise);
+
+      return true;
+    };
+
+    // 2.3.2.3. When x is rejected, reject promise with the same reason.
+    var onReject = function () {
+      if (promise._state !== PENDING) {
+        return false;
+      }
+
+      value = isDeferred ? x.promise._value : x._value;  // @TODO: refactor
+
+      this.reject.apply(this, value);
+
+      return true;
+    };
+
+    x.then(onResolve, onReject, this);
+
+    return this;
   }
 
-  promise._state = states.RESOLVED;
+  promise._state = RESOLVED;
   promise._value = arguments;
 
   notifyDone.call(promise);
