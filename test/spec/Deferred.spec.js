@@ -612,7 +612,7 @@
           // 2.3.3.3.3. If both resolvePromise and rejectPromise are called, or multiple calls
           //            to the same argument are made, the first call takes precedence,
           //            and any further calls are ignored.
-          xit('both called', function() {
+          it('both called', function() {
             var isPending;
             var done = false;
             var doneSpy = jasmine.createSpy('done');
@@ -647,7 +647,7 @@
           });
 
           // 2.3.3.3.4. If calling then throws an exception e,
-          xdescribe('exception thrown', function () {
+          describe('exception thrown', function () {
 
             //2.3.3.3.4.1. If resolvePromise or rejectPromise have been called, ignore it.
             it('after resolvePromise', function () {
@@ -703,7 +703,7 @@
         });
 
         // 2.3.3.4. If then is not a function, fulfill promise with x.
-        xit('no then', function () {
+        it('no then', function () {
           var x = {
             then: {}
           };
@@ -711,9 +711,9 @@
           var spy = jasmine.createSpy('done');
 
           d.done(spy);
-          d.resolve(x);
+          d.resolve(x, 'foo', data);
 
-          expect(spy).toHaveBeenCalledWith(x);
+          expect(spy).toHaveBeenCalledWith(x, 'foo', data);
         });
       });
 
