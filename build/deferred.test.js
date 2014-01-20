@@ -186,6 +186,7 @@ Deferred.prototype['reject'] = function () {
 Deferred.prototype['resolve'] = function (x) {
   var states = Promise.state;
   var promise = this['promise'];
+  var value;
 
   // ignore non-pending promises
   if (promise._state !== states.PENDING) {
@@ -202,11 +203,19 @@ Deferred.prototype['resolve'] = function (x) {
   var isDeferred = x instanceof Deferred;
   var isPromise = x instanceof Promise;
 
-  // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
   if (isDeferred || isPromise) {
-    if (x.isResolved) {
+    value = isDeferred ? x.promise._value : x._value;  // @TODO: refactor
+
+    // 2.3.2.3. If/when x is rejected, reject promise with the same reason.
+    if (x.isRejected()) {
+      this.reject.apply(this, value);
+      return this;
+    }
+
+    // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
+    if (x.isResolved()) {
       promise._state = states.RESOLVED;
-      promise._value = isDeferred ? x.promise._value : x._value; // @TODO: refactor
+      promise._value = value;
 
       notifyDone.call(promise);
 

@@ -417,7 +417,7 @@
             d.done(spy);
 
             x.resolve('foo', data);
-            d.resolve(x);
+            d.resolve(x.promise);
 
             expect(spy).toHaveBeenCalledWith('foo', data);
           });
@@ -429,23 +429,37 @@
             d.done(spy);
 
             x.resolve('foo', data);
-            d.resolve(x.promise);
+            d.resolve(x);
 
             expect(spy).toHaveBeenCalledWith('foo', data);
           });
         });
 
         // 2.3.2.3. If/when x is rejected, reject promise with the same reason.
-        xit('rejected', function () {
-          var x = new Deferred();
-          var spy = jasmine.createSpy('fail');
+        describe('rejected', function () {
+          it('promise', function () {
+            var x = new Deferred();
+            var spy = jasmine.createSpy('fail');
 
-          d.fail(spy);
+            d.fail(spy);
 
-          x.reject('foo', data);
-          d.resolve(x);
+            x.reject('foo', data);
+            d.resolve(x.promise);
 
-          expect(spy).toHaveBeenCalledWith('foo', data);
+            expect(spy).toHaveBeenCalledWith('foo', data);
+          });
+
+          it('deferred', function () {
+            var x = new Deferred();
+            var spy = jasmine.createSpy('fail');
+
+            d.fail(spy);
+
+            x.reject();
+            d.resolve(x);
+
+            expect(spy).toHaveBeenCalledWith();
+          });
         });
 
         // 2.3.2.1. If x is pending, promise must remain pending until x is fulfilled or rejected.
