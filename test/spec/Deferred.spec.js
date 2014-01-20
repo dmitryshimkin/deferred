@@ -547,10 +547,10 @@
 
         // 2.3.3.3. If then is a function, call it with x as this, first argument resolvePromise,
         // and second argument rejectPromise, where:
-        xdescribe('has method then', function () {
+        describe('has method then', function () {
 
           // 2.3.3.3.1. If/when resolvePromise is called with a value y, run [[Resolve]](promise, y).
-          xit('resolvePromise called', function () {
+          it('resolvePromise called', function () {
             var isPending;
             var done = false;
             var spy = jasmine.createSpy('done');
@@ -612,7 +612,7 @@
           // 2.3.3.3.3. If both resolvePromise and rejectPromise are called, or multiple calls
           //            to the same argument are made, the first call takes precedence,
           //            and any further calls are ignored.
-          it('both called', function() {
+          xit('both called', function() {
             var isPending;
             var done = false;
             var doneSpy = jasmine.createSpy('done');
@@ -647,7 +647,7 @@
           });
 
           // 2.3.3.3.4. If calling then throws an exception e,
-          describe('exception thrown', function () {
+          xdescribe('exception thrown', function () {
 
             //2.3.3.3.4.1. If resolvePromise or rejectPromise have been called, ignore it.
             it('after resolvePromise', function () {

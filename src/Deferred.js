@@ -50,6 +50,7 @@ Deferred.prototype['resolve'] = function (x) {
   var promise = this['promise'];
   var PENDING = states.PENDING;
   var RESOLVED = states.RESOLVED;
+  var self = this;
   var value;
 
   // ignore non-pending promises
@@ -66,6 +67,7 @@ Deferred.prototype['resolve'] = function (x) {
 
   var isDeferred = x instanceof Deferred;
   var isPromise = x instanceof Promise;
+  var isPromiseOrDeferred = isDeferred || isPromise;
 
   var xType = typeof x;
 
@@ -79,17 +81,56 @@ Deferred.prototype['resolve'] = function (x) {
     }
   }
 
-  if (isDeferred || isPromise) {
-    value = isDeferred ? x.promise._value : x._value;  // @TODO: refactor
+  var thenable = typeof then === 'function';
+  var xResolved = isPromiseOrDeferred && x.isResolved();
+  var xRejected = isPromiseOrDeferred && x.isRejected();
+  var xPending = isPromiseOrDeferred && x.isPending();
+
+  // detect if we need onResolve and onReject
+  if (thenable && (!isPromiseOrDeferred || xPending)) {
+    var onResolve = function () {
+      if (promise._state !== PENDING) {
+        return false;
+      }
+
+      if (isPromiseOrDeferred) {
+        value = isDeferred ? x.promise._value : x._value;
+      }
+
+      promise._state = RESOLVED;
+      promise._value = value || Array.prototype.slice.call(arguments);
+
+      notifyDone.call(promise);
+
+      return true;
+    };
+
+    var onReject = function () {
+      if (promise._state !== PENDING) {
+        return false;
+      }
+
+      if (isPromiseOrDeferred) {
+        value = isDeferred ? x.promise._value : x._value;
+      }
+
+      self.reject.apply(self, value || arguments);
+
+      return true;
+    };
+  }
+
+  if (isPromiseOrDeferred) {
+    value = isDeferred ? x.promise._value : x._value;
 
     // 2.3.2.3. If x is rejected, reject promise with the same reason.
-    if (x.isRejected()) {
+    if (xRejected) {
       this.reject.apply(this, value);
       return this;
     }
 
     // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
-    if (x.isResolved()) {
+    if (xResolved) {
       promise._state = RESOLVED;
       promise._value = value;
 
@@ -99,36 +140,16 @@ Deferred.prototype['resolve'] = function (x) {
     }
 
     // 2.3.2.2. when x is fulfilled, fulfill promise with the same value.
-    var onResolve = function () {
-      if (promise._state !== PENDING) {
-        return false;
-      }
-
-      value = isDeferred ? x.promise._value : x._value;  // @TODO: refactor
-
-      promise._state = RESOLVED;
-      promise._value = arguments;
-
-      notifyDone.call(promise);
-
-      return true;
-    };
-
     // 2.3.2.3. When x is rejected, reject promise with the same reason.
-    var onReject = function () {
-      if (promise._state !== PENDING) {
-        return false;
-      }
+    x.then(onResolve, onReject);
 
-      value = isDeferred ? x.promise._value : x._value;  // @TODO: refactor
+    return this;
+  }
 
-      this.reject.apply(this, value);
-
-      return true;
-    };
-
-    x.then(onResolve, onReject, this);
-
+  // 2.3.3.3.1. If/when resolvePromise is called with a value y, run [[Resolve]](promise, y).
+  // 2.3.3.3.2. If/when rejectPromise is called with a reason r, reject promise with r.
+  if (thenable) {
+    x.then(onResolve, onReject);
     return this;
   }
 
