@@ -286,8 +286,181 @@
 
     // always
 
-    describe('always', function () {
+    xdescribe('always', function () {
+      //
+    });
 
+    /**
+     * 2.2. The then Method
+     *
+     * A promise must provide a then method to access its current or eventual value or reason.
+     * A promise’s then method accepts two arguments:
+     * promise.then(onFulfilled, onRejected)
+     *
+     * 2.2.1. Both onFulfilled and onRejected are optional arguments:
+     *   2.2.1.1. If onFulfilled is not a function, it must be ignored.
+     *   2.2.1.2. If onRejected is not a function, it must be ignored.
+     * 2.2.2. If onFulfilled is a function:
+     *   2.2.2.1. it must be called after promise is fulfilled, with promise’s value as its first argument.
+     *   2.2.2.2. it must not be called before promise is fulfilled.
+     *   2.2.2.3. it must not be called more than once.
+     * 2.2.3. If onRejected is a function,
+     *   2.2.3.1. it must be called after promise is rejected, with promise’s reason as its first argument.
+     *   2.2.3.2. it must not be called before promise is rejected.
+     *   2.2.3.3. it must not be called more than once.
+     * 2.2.4. onFulfilled or onRejected must not be called until the execution context stack contains
+     *        only platform code. 3.1.
+     *        (3.1. Here “platform code” means engine, environment, and promise implementation code.
+     *        In practice, this requirement ensures that onFulfilled and onRejected execute asynchronously,
+     *        after the event loop turn in which then is called, and with a fresh stack.
+     *        This can be implemented with either a “macro-task” mechanism such as setTimeout or setImmediate,
+     *        or with a “micro-task” mechanism such as MutationObserver or process.nextTick.
+     *        Since the promise implementation is considered platform code, it may itself contain
+     *        a task-scheduling queue or “trampoline” in which the handlers are called.)
+     * 2.2.5. onFulfilled and onRejected must be called as functions (i.e. with no this value). 3.2
+     * 2.2.6. then may be called multiple times on the same promise.
+     *   2.2.6.1. If/when promise is fulfilled, all respective onFulfilled callbacks must execute
+     *            in the order of their originating calls to then.
+     *   2.2.6.2. If/when promise is rejected, all respective onRejected callbacks must execute
+     *            in the order of their originating calls to then.
+     * 2.2.7. then must return a promise 3.3.
+     *        promise2 = promise1.then(onFulfilled, onRejected);
+     *        (3.3. Implementations may allow promise2 === promise1, provided the implementation
+     *        meets all requirements. Each implementation should document whether
+     *        it can produce promise2 === promise1 and under what conditions.)
+     *
+     *   2.2.7.1. If either onFulfilled or onRejected returns a value x, run the
+     *            Promise Resolution Procedure [[Resolve]](promise2, x).
+     *   2.2.7.2. If either onFulfilled or onRejected throws an exception e,
+     *            promise2 must be rejected with e as the reason.
+     *   2.2.7.3. If onFulfilled is not a function and promise1 is fulfilled,
+     *            promise2 must be fulfilled with the same value.
+     *   2.2.7.4. If onRejected is not a function and promise1 is rejected,
+     *            promise2 must be rejected with the same reason.
+     */
+
+    describe('then', function () {
+
+      // 2.2.2. If onFulfilled is a function:
+      describe('onFulfilled is function', function () {
+
+        // 2.2.2.1. it must be called after promise is fulfilled, with promise’s value as its first argument.
+        it('fulfill', function () {
+          //
+        });
+
+        // 2.2.2.3. it must not be called more than once.
+        it('once', function () {
+          //
+        });
+
+        // 2.2.1.2. If onRejected is not a function, it must be ignored.
+        it('no onRejected', function () {
+          //
+        });
+
+        // 2.2.4. onFulfilled or onRejected must not be called until the execution context stack contains
+        it('async', function () {
+          //
+        });
+
+        // 2.2.5. onFulfilled and onRejected must be called as functions (i.e. with no this value).
+        describe('context', function () {
+          it('global', function () {
+            //
+          });
+
+          it('custom', function () {
+            //
+          });
+        });
+
+        // 2.2.6. then may be called multiple times on the same promise
+        // 2.2.6.1. If/when promise is fulfilled, all respective onFulfilled callbacks must execute
+        //          in the order of their originating calls to then.
+        it('multiple invocations', function () {
+          //
+        });
+      });
+
+      // 2.2.3. If onRejected is a function
+      describe('onRejected', function () {
+
+        // 2.2.3.1. it must be called after promise is rejected, with promise’s reason as its first argument.
+        it('fulfill', function () {
+          //
+        });
+
+        // 2.2.3.3. it must not be called more than once.
+        it('once', function () {
+          //
+        });
+
+        // 2.2.1.1. If onFulfilled is not a function, it must be ignored.
+        it('no onFulfilled', function () {
+          //
+        });
+
+        // 2.2.4. onFulfilled or onRejected must not be called until the execution context stack contains
+        it('async', function () {
+          //
+        });
+
+        // 2.2.5. onFulfilled and onRejected must be called as functions (i.e. with no this value).
+        describe('context', function () {
+          it('global', function () {
+            //
+          });
+
+          it('custom', function () {
+            //
+          });
+        });
+
+        // 2.2.6. then may be called multiple times on the same promise
+        // 2.2.6.1. If/when promise is fulfilled, all respective onFulfilled callbacks must execute
+        //          in the order of their originating calls to then.
+        it('multiple invocations', function () {
+          //
+        });
+      });
+
+      // 2.2.7. then must return a promise 3.3.
+      describe('return', function () {
+
+        it('promise', function () {
+          //
+        });
+
+        describe('resolve', function () {
+          // 2.2.7.1. If either onFulfilled or onRejected returns a value x, run the
+          //          Promise Resolution Procedure [[Resolve]](promise2, x).
+          it('on onFulfilled/onRejected call', function () {
+            //
+          });
+
+          // 2.2.7.3. If onFulfilled is not a function and promise1 is fulfilled,
+          //          promise2 must be fulfilled with the same value.
+          it('no onFulfilled and promise is resolved', function () {
+            //
+          });
+        });
+
+        describe('reject', function () {
+
+          // 2.2.7.2. If either onFulfilled or onRejected throws an exception e,
+          //          promise2 must be rejected with e as the reason.
+          it('on exception', function () {
+            //
+          });
+
+          // 2.2.7.4. If onRejected is not a function and promise1 is rejected,
+          //          promise2 must be rejected with the same reason.
+          it('no onRejected and promise is rejected', function () {
+            //
+          });
+        });
+      });
     });
 
     /**
@@ -783,33 +956,27 @@
       });
     });
 
-    // then
-
-    describe('then', function () {
-      //
-    });
-
     // when
 
-    describe('when', function () {
+    xdescribe('when', function () {
       //
     });
 
     // any
 
-    describe('any', function () {
+    xdescribe('any', function () {
       //
     });
 
     // helpers
 
-    describe('helpers', function () {
+    xdescribe('helpers', function () {
 
-      it('isPromise', function () {
+      xit('isPromise', function () {
         //
       });
 
-      it('isDeferred', function () {
+      xit('isDeferred', function () {
         //
       });
 
