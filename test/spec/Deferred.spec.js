@@ -345,18 +345,25 @@
       describe('onFulfilled is function', function () {
 
         // 2.2.2.1. it must be called after promise is fulfilled, with promise’s value as its first argument.
+        // 2.2.1.2. If onRejected is not a function, it must be ignored.
         it('fulfill', function () {
-          //
+          var onFulfill = jasmine.createSpy('fulfill');
+
+          d.then(onFulfill);
+          d.resolve('foo', data);
+
+          expect(onFulfill).toHaveBeenCalledWith('foo', data);
         });
 
         // 2.2.2.3. it must not be called more than once.
         it('once', function () {
-          //
-        });
+          var onFulfill = jasmine.createSpy('fulfill');
 
-        // 2.2.1.2. If onRejected is not a function, it must be ignored.
-        it('no onRejected', function () {
-          //
+          d.then(onFulfill);
+          d.resolve('foo', data).resolve(true);
+
+          expect(onFulfill).toHaveBeenCalledWith('foo', data);
+          expect(onFulfill.calls.length).toBe(1);
         });
 
         // 2.2.4. onFulfilled or onRejected must not be called until the execution context stack contains
@@ -367,11 +374,28 @@
         // 2.2.5. onFulfilled and onRejected must be called as functions (i.e. with no this value).
         describe('context', function () {
           it('global', function () {
-            //
+            var onRejected = function () {
+              _this = this;
+            };
+            var _this;
+
+            d.then('', onRejected);
+            d.reject();
+
+            expect(_this).toBe(undefined);
           });
 
           it('custom', function () {
-            //
+            var onFulfill = function () {
+              _this = this;
+            };
+            var context = {};
+            var _this;
+
+            d.then(onFulfill, undefined, context);
+            d.resolve('foo', data);
+
+            expect(_this).toBe(context);
           });
         });
 
