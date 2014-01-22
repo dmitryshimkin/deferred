@@ -517,20 +517,62 @@
       describe('return', function () {
 
         it('promise', function () {
-          //
+          var promise2 = d.then();
+
+          expect(promise2.isPromise()).toBe(true);
+          expect(promise2.isDeferred()).toBe(false);
+          expect(promise2).not.toBe(d);
         });
 
         describe('resolve', function () {
           // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
           //          Promise Resolution Procedure [[Resolve]](promise2, x).
-          it('on onFulfilled/onReject call', function () {
-            //
+          describe('on onFulfilled/onReject call', function () {
+            it('onFulfill', function () {
+              var onFulfill = function () {
+                return 'bar';
+              };
+              var promise2 = d.then(onFulfill);
+              var spy = jasmine.createSpy();
+
+              promise2.done(spy);
+
+              expect(promise2.isPending()).toBe(true);
+
+              d.resolve('foo');
+
+              expect(spy).toHaveBeenCalledWith('bar');
+            });
+
+            it('onReject', function () {
+              var onReject = function () {
+                return 'bar';
+              };
+              var promise2 = d.then('', onReject);
+              var spy = jasmine.createSpy();
+
+              promise2.done(spy);
+
+              expect(promise2.isPending()).toBe(true);
+
+              d.reject('foo');
+
+              expect(spy).toHaveBeenCalledWith('bar');
+            });
           });
 
           // 2.2.7.3. If onFulfilled is not a function and promise1 is fulfilled,
           //          promise2 must be fulfilled with the same value.
           it('no onFulfilled and promise is resolved', function () {
-            //
+            var spy = jasmine.createSpy();
+
+            d.resolve('foo', data);
+
+            promise2.done(spy);
+
+            var promise2 = d.then('', function () {});
+
+            expect(spy).toHaveBeenCalledWith('foo', data);
           });
         });
 
@@ -538,14 +580,51 @@
 
           // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
           //          promise2 must be rejected with e as the reason.
-          it('on exception', function () {
-            //
+          describe('on exception', function () {
+
+            it('onFulfill', function () {
+              var e = new TypeError('error');
+              var spy = jasmine.createSpy();
+
+              var promise2 = d.then(function () {
+                throw e;
+              });
+
+              expect(promise2.isPending).toBe(true);
+
+              d.resolve();
+
+              expect(spy).toHaveBeenCalledWith(e);
+            });
+
+            it('onReject', function () {
+              var e = new TypeError('error');
+              var spy = jasmine.createSpy();
+
+              var promise2 = d.then(undefined, function () {
+                throw e;
+              });
+
+              expect(promise2.isPending).toBe(true);
+
+              d.reject();
+
+              expect(spy).toHaveBeenCalledWith(e);
+            });
           });
 
           // 2.2.7.4. If onReject is not a function and promise1 is rejected,
           //          promise2 must be rejected with the same reason.
           it('no onReject and promise is rejected', function () {
-            //
+            var spy = jasmine.createSpy();
+
+            d.reject(data, 'foo');
+
+            promise2.fail(spy);
+
+            var promise2 = d.then(function () {}, 'bar');
+
+            expect(spy).toHaveBeenCalledWith(data, 'foo');
           });
         });
       });
