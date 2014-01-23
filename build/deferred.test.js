@@ -120,21 +120,65 @@ proto['isResolved'] = function () {
 
 proto['then'] = function (onResolve, onReject, ctx) {
   var lastArg = arguments[arguments.length - 1];
-  var promise2 = new Promise();
+  var deferred2 = new Deferred();
 
   if (lastArg && typeof lastArg !== 'function') {
     ctx = lastArg;
   }
 
   if (typeof onResolve === 'function') {
-    this.done(onResolve, ctx);
+    this.done(function () {
+      var x, error;
+
+      try {
+        x = onResolve.apply(ctx, arguments);
+      } catch (e) {
+        error = e;
+      }
+
+      // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
+      //          promise2 must be rejected with e as the reason.
+      if (error !== undefined) {
+        deferred2.reject(error);
+      } else {
+        // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
+        //          Promise Resolution Procedure [[Resolve]](promise2, x).
+        if (x !== undefined) {
+          deferred2.resolve(x);
+        }
+      }
+    });
+  } else if (this._state === Promise.state.RESOLVED) {
+    deferred2.resolve.apply(deferred2, this._value);
   }
 
   if (typeof onReject === 'function') {
-    this.fail(onReject, ctx);
+    this.fail(function () {
+      var x, error;
+
+      try {
+        x = onReject.apply(ctx, arguments);
+      } catch (e) {
+        error = e;
+      }
+
+      // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
+      //          promise2 must be rejected with e as the reason.
+      if (error !== undefined) {
+        deferred2.reject(error);
+      } else {
+        // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
+        //          Promise Resolution Procedure [[Resolve]](promise2, x).
+        if (x !== undefined) {
+          deferred2.resolve(x);
+        }
+      }
+    });
+  } else if (this._state === Promise.state.REJECTED) {
+    deferred2.reject.apply(deferred2, this._value);
   }
 
-  return promise2;
+  return deferred2.promise;
 };
 
 

@@ -527,7 +527,7 @@
         describe('resolve', function () {
           // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
           //          Promise Resolution Procedure [[Resolve]](promise2, x).
-          xdescribe('on onFulfilled/onReject call', function () {
+          describe('on onFulfilled/onReject call', function () {
             it('onFulfill', function () {
               var onFulfill = function () {
                 return 'bar';
@@ -563,20 +563,20 @@
 
           // 2.2.7.3. If onFulfilled is not a function and promise1 is fulfilled,
           //          promise2 must be fulfilled with the same value.
-          xit('no onFulfilled and promise is resolved', function () {
-            var spy = jasmine.createSpy();
+          it('no onFulfilled and promise is resolved', function () {
+            var spy = jasmine.createSpy('done');
 
             d.resolve('foo', data);
 
-            promise2.done(spy);
-
             var promise2 = d.then('', function () {});
+
+            promise2.done(spy);
 
             expect(spy).toHaveBeenCalledWith('foo', data);
           });
         });
 
-        xdescribe('reject', function () {
+        describe('reject', function () {
 
           // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
           //          promise2 must be rejected with e as the reason.
@@ -584,13 +584,15 @@
 
             it('onFulfill', function () {
               var e = new TypeError('error');
-              var spy = jasmine.createSpy();
+              var spy = jasmine.createSpy('');
 
               var promise2 = d.then(function () {
                 throw e;
               });
 
-              expect(promise2.isPending).toBe(true);
+              promise2.fail(spy);
+
+              expect(promise2.isPending()).toBe(true);
 
               d.resolve();
 
@@ -599,13 +601,15 @@
 
             it('onReject', function () {
               var e = new TypeError('error');
-              var spy = jasmine.createSpy();
+              var spy = jasmine.createSpy('fail');
 
               var promise2 = d.then(undefined, function () {
                 throw e;
               });
 
-              expect(promise2.isPending).toBe(true);
+              promise2.fail(spy);
+
+              expect(promise2.isPending()).toBe(true);
 
               d.reject();
 
@@ -616,13 +620,13 @@
           // 2.2.7.4. If onReject is not a function and promise1 is rejected,
           //          promise2 must be rejected with the same reason.
           it('no onReject and promise is rejected', function () {
-            var spy = jasmine.createSpy();
+            var spy = jasmine.createSpy('fail');
 
             d.reject(data, 'foo');
 
-            promise2.fail(spy);
-
             var promise2 = d.then(function () {}, 'bar');
+
+            promise2.fail(spy);
 
             expect(spy).toHaveBeenCalledWith(data, 'foo');
           });
