@@ -172,6 +172,7 @@ Deferred.prototype['resolve'] = function (x) {
 };
 
 // proxy some promise methods in deferred object
+// @TODO: rework
 
 var methods = ['done', 'fail', 'isPending', 'isRejected', 'isResolved', 'then'];
 var method;
@@ -180,7 +181,12 @@ var createMethod = function (method) {
   return function () {
     var promise = this.promise;
     var result = promise[method].apply(promise, arguments);
-    return typeof result === 'boolean' ? result : this;
+
+    if (method === 'then') {
+      return result;
+    } else {
+      return typeof result === 'boolean' ? result : this;
+    }
   }
 };
 

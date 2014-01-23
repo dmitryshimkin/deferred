@@ -120,6 +120,7 @@ proto['isResolved'] = function () {
 
 proto['then'] = function (onResolve, onReject, ctx) {
   var lastArg = arguments[arguments.length - 1];
+  var promise2 = new Promise();
 
   if (lastArg && typeof lastArg !== 'function') {
     ctx = lastArg;
@@ -133,7 +134,7 @@ proto['then'] = function (onResolve, onReject, ctx) {
     this.fail(onReject, ctx);
   }
 
-  return this;
+  return promise2;
 };
 
 
@@ -310,6 +311,7 @@ Deferred.prototype['resolve'] = function (x) {
 };
 
 // proxy some promise methods in deferred object
+// @TODO: rework
 
 var methods = ['done', 'fail', 'isPending', 'isRejected', 'isResolved', 'then'];
 var method;
@@ -318,7 +320,12 @@ var createMethod = function (method) {
   return function () {
     var promise = this.promise;
     var result = promise[method].apply(promise, arguments);
-    return typeof result === 'boolean' ? result : this;
+
+    if (method === 'then') {
+      return result;
+    } else {
+      return typeof result === 'boolean' ? result : this;
+    }
   }
 };
 

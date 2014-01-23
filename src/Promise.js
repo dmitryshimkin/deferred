@@ -120,6 +120,7 @@ proto['isResolved'] = function () {
 
 proto['then'] = function (onResolve, onReject, ctx) {
   var lastArg = arguments[arguments.length - 1];
+  var promise2 = new Promise();
 
   if (lastArg && typeof lastArg !== 'function') {
     ctx = lastArg;
@@ -133,5 +134,5 @@ proto['then'] = function (onResolve, onReject, ctx) {
     this.fail(onReject, ctx);
   }
 
-  return this;
+  return promise2;
 };
