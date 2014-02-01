@@ -1,4 +1,6 @@
 deferred
 ========
 
-Promises/A+ with error handling and context support 
+The fastest Promises/A+ implementation with support of context for all handlers. 
+
+See /test/performance/ 
