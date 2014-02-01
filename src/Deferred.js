@@ -78,7 +78,17 @@ fn['resolve'] = function (x) {
   }
 
   var thenable = typeof then === 'function';
-  var isPending = isPromiseOrDeferred && x.isPending();
+  var isPending;
+
+  if (isPromise) {
+    isPending = x._state === PENDING;
+  } else if (isDeferred) {
+    isPending = x.promise._state === PENDING;
+  } else {
+    isPending = false;
+  }
+
+  //var isPending = isPromiseOrDeferred && x.isPending();
 
   // detect if we need onResolve and onReject
   if (thenable && (!isPromiseOrDeferred || isPending)) {

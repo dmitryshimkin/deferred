@@ -201,16 +201,20 @@
   fn['reject'] = function () {
     var promise = this['promise'];
 
-    if (promise._state === states.PENDING) {
-      promise._state = states.REJECTED;
-      promise._value = arguments;
+    // ignore non-pending promises
+    if (promise._state !== states.PENDING) {
+      return this;
+    }
 
-      var callbacks = promise._callbacks['fail'];
-      var callback;
-      for (var i = 0, l = callbacks.length; i < l; i++) {
-        callback = callbacks[i];
-        callback.fn.apply(callback.ctx, promise._value);
-      }
+    promise._state = states.REJECTED;
+    promise._value = arguments;
+
+    var callbacks = promise._callbacks['fail'];
+    var callback;
+
+    for (var i = 0, l = callbacks.length; i < l; i++) {
+      callback = callbacks[i];
+      callback.fn.apply(callback.ctx, promise._value);
     }
 
     return this;
@@ -225,8 +229,8 @@
     var promise = this['promise'];
     var PENDING = states.PENDING;
     var RESOLVED = states.RESOLVED;
-    var self = this;
     var value, callback, callbacks, i, l;
+    var self = this;
 
     // ignore non-pending promises
     if (promise._state !== states.PENDING) {
@@ -257,7 +261,17 @@
     }
 
     var thenable = typeof then === 'function';
-    var isPending = isPromiseOrDeferred && x.isPending();
+    var isPending;
+
+    if (isPromise) {
+      isPending = x._state === PENDING;
+    } else if (isDeferred) {
+      isPending = x.promise._state === PENDING;
+    } else {
+      isPending = false;
+    }
+
+    //var isPending = isPromiseOrDeferred && x.isPending();
 
     // detect if we need onResolve and onReject
     if (thenable && (!isPromiseOrDeferred || isPending)) {
@@ -313,7 +327,7 @@
         promise._value = value;
 
         callbacks = promise._callbacks['done'];
-        for (var i = 0, l = callbacks.length; i < l; i++) {
+        for (i = 0, l = callbacks.length; i < l; i++) {
           callback = callbacks[i];
           callback.fn.apply(callback.ctx, promise._value);
         }
