@@ -1,4 +1,4 @@
-
+(function () {
 
 /**
  *
@@ -401,3 +401,6 @@ Deferred.when = function () {
 
 };
 
+  window.Deferred = Deferred;
+
+}());
