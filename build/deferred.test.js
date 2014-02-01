@@ -217,7 +217,13 @@ Deferred.prototype['reject'] = function () {
   if (promise._state === states.PENDING) {
     promise._state = states.REJECTED;
     promise._value = arguments;
-    notifyFail.call(promise);
+
+    var callbacks = promise._callbacks['fail'];
+    var callback;
+    for (var i = 0, l = callbacks.length; i < l; i++) {
+      callback = callbacks[i];
+      callback.fn.apply(callback.ctx, promise._value);
+    }
   }
 
   return this;
@@ -234,7 +240,7 @@ Deferred.prototype['resolve'] = function (x) {
   var PENDING = states.PENDING;
   var RESOLVED = states.RESOLVED;
   var self = this;
-  var value;
+  var value, callback, callbacks, i, l;
 
   // ignore non-pending promises
   if (promise._state !== states.PENDING) {
@@ -281,7 +287,12 @@ Deferred.prototype['resolve'] = function (x) {
       promise._state = RESOLVED;
       promise._value = value || Array.prototype.slice.call(arguments);
 
-      notifyDone.call(promise);
+      var callback;
+      var callbacks = promise._callbacks['done'];
+      for (i = 0, l = callbacks.length; i < l; i++) {
+        callback = callbacks[i];
+        callback.fn.apply(callback.ctx, promise._value);
+      }
 
       return true;
     };
@@ -315,7 +326,11 @@ Deferred.prototype['resolve'] = function (x) {
       promise._state = RESOLVED;
       promise._value = value;
 
-      notifyDone.call(promise);
+      callbacks = promise._callbacks['done'];
+      for (var i = 0, l = callbacks.length; i < l; i++) {
+        callback = callbacks[i];
+        callback.fn.apply(callback.ctx, promise._value);
+      }
 
       return this;
     }
@@ -349,7 +364,11 @@ Deferred.prototype['resolve'] = function (x) {
   promise._state = RESOLVED;
   promise._value = arguments;
 
-  notifyDone.call(promise);
+  callbacks = promise._callbacks['done'];
+  for (i = 0, l = callbacks.length; i < l; i++) {
+    callback = callbacks[i];
+    callback.fn.apply(callback.ctx, promise._value);
+  }
 
   return this;
 };
@@ -377,24 +396,6 @@ for (var i = 0, l = methods.length; i < l; i++) {
   method = methods[i];
   Deferred.prototype[method] = createMethod(method);
 }
-
-// Private methods
-
-var notifyFail = function () {
-  notify(this._callbacks['fail'], this._value);
-};
-
-var notifyDone = function () {
-  notify(this._callbacks['done'], this._value);
-};
-
-var notify = function (callbacks, args) {
-  var callback;
-  for (var i = 0, l = callbacks.length; i < l; i++) {
-    callback = callbacks[i];
-    callback.fn.apply(callback.ctx, args);
-  }
-};
 
 Deferred.when = function () {
 
