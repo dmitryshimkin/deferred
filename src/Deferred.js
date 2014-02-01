@@ -8,27 +8,14 @@ var Deferred = function () {
   this['promise'] = new Promise();
 };
 
-/**
- * Checks whether
- * @param arg
- * @returns {boolean}
- */
-
-Deferred.isPromise = function (arg) {
-  return arg instanceof Promise || arg instanceof Deferred;
-};
-
-Deferred.isDeferred = function (arg) {
-  return arg instanceof Deferred;
-};
+var fn = Deferred.prototype;
 
 /**
  * Translates promise into rejected state
  * @public
  */
 
-Deferred.prototype['reject'] = function () {
-  var states = Promise.state;
+fn['reject'] = function () {
   var promise = this['promise'];
 
   if (promise._state === states.PENDING) {
@@ -51,8 +38,7 @@ Deferred.prototype['reject'] = function () {
  * @public
  */
 
-Deferred.prototype['resolve'] = function (x) {
-  var states = Promise.state;
+fn['resolve'] = function (x) {
   var promise = this['promise'];
   var PENDING = states.PENDING;
   var RESOLVED = states.RESOLVED;
@@ -190,26 +176,75 @@ Deferred.prototype['resolve'] = function (x) {
   return this;
 };
 
-// proxy some promise methods in deferred object
-// @TODO: rework
+/**
+ *
+ * @public
+ */
 
-var methods = ['done', 'fail', 'isPending', 'isRejected', 'isResolved', 'then'];
-var method;
-
-var createMethod = function (method) {
-  return function () {
-    var promise = this.promise;
-    var result = promise[method].apply(promise, arguments);
-
-    if (method === 'then') {
-      return result;
-    } else {
-      return typeof result === 'boolean' ? result : this;
-    }
-  }
+fn['done'] = function () {
+  var promise = this.promise;
+  promise.done.apply(promise, arguments);
+  return this;
 };
 
-for (var i = 0, l = methods.length; i < l; i++) {
-  method = methods[i];
-  Deferred.prototype[method] = createMethod(method);
-}
+/**
+ *
+ * @public
+ */
+
+fn['fail'] = function () {
+  var promise = this.promise;
+  promise.fail.apply(promise, arguments);
+  return this;
+};
+
+/**
+ *
+ * @public
+ */
+
+fn['isPending'] = function () {
+  return this.promise._state === states.PENDING;
+};
+
+/**
+ *
+ * @public
+ */
+
+fn['isRejected'] = function () {
+  return this.promise._state === states.REJECTED;
+};
+
+/**
+ *
+ * @public
+ */
+
+fn['isResolved'] = function () {
+  return this.promise._state === states.RESOLVED;
+};
+
+/**
+ *
+ * @public
+ */
+
+fn['then'] = function () {
+  var promise = this.promise;
+  return promise.then.apply(promise, arguments);
+};
+
+/**
+ * Checks whether
+ * @param arg
+ * @returns {boolean}
+ */
+
+Deferred.isPromise = function (arg) {
+  return arg instanceof Promise || arg instanceof Deferred;
+};
+
+Deferred.isDeferred = function (arg) {
+  return arg instanceof Deferred;
+};
