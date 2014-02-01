@@ -519,8 +519,7 @@
         it('promise', function () {
           var promise2 = d.then();
 
-          expect(Deferred.isPromise(promise2)).toBe(true);
-          expect(Deferred.isDeferred(promise2)).toBe(false);
+          expect(Deferred.isDeferred(promise2)).toBe(true);
           expect(promise2).not.toBe(d);
         });
 
@@ -724,86 +723,43 @@
       describe('with promise', function () {
 
         // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
-        describe('the same', function () {
-          it('deferred', function () {
-            var x = d;
-            var reason;
+        it('the same', function () {
+          var x = d;
+          var reason;
 
-            d.fail(function () {
-              reason = arguments[0];
-            });
-
-            d.resolve(x);
-
-            expect(reason instanceof TypeError).toBe(true);
+          d.fail(function () {
+            reason = arguments[0];
           });
 
-          it('promise', function () {
-            var x = d.promise;
-            var reason;
+          d.resolve(x);
 
-            d.fail(function () {
-              reason = arguments[0];
-            });
-
-            d.resolve(x);
-
-            expect(reason instanceof TypeError).toBe(true);
-          });
+          expect(reason instanceof TypeError).toBe(true);
         });
 
         // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
-        describe('fulfilled', function () {
-          it('promise', function () {
-            var x = new Deferred();
-            var spy = jasmine.createSpy('done');
+        it('fulfilled', function () {
+          var x = new Deferred();
+          var spy = jasmine.createSpy('done');
 
-            d.done(spy);
+          d.done(spy);
 
-            x.resolve('foo', data);
-            d.resolve(x.promise);
+          x.resolve('foo', data);
+          d.resolve(x);
 
-            expect(spy).toHaveBeenCalledWith('foo', data);
-          });
-
-          it('deferred', function () {
-            var x = new Deferred();
-            var spy = jasmine.createSpy('done');
-
-            d.done(spy);
-
-            x.resolve('foo', data);
-            d.resolve(x);
-
-            expect(spy).toHaveBeenCalledWith('foo', data);
-          });
+          expect(spy).toHaveBeenCalledWith('foo', data);
         });
 
         // 2.3.2.3. If/when x is rejected, reject promise with the same reason.
-        describe('rejected', function () {
-          it('promise', function () {
-            var x = new Deferred();
-            var spy = jasmine.createSpy('fail');
+        it('rejected', function () {
+          var x = new Deferred();
+          var spy = jasmine.createSpy('fail');
 
-            d.fail(spy);
+          d.fail(spy);
 
-            x.reject('foo', data);
-            d.resolve(x.promise);
+          x.reject();
+          d.resolve(x);
 
-            expect(spy).toHaveBeenCalledWith('foo', data);
-          });
-
-          it('deferred', function () {
-            var x = new Deferred();
-            var spy = jasmine.createSpy('fail');
-
-            d.fail(spy);
-
-            x.reject();
-            d.resolve(x);
-
-            expect(spy).toHaveBeenCalledWith();
-          });
+          expect(spy).toHaveBeenCalledWith();
         });
 
         // 2.3.2.1. If x is pending, promise must remain pending until x is fulfilled or rejected.

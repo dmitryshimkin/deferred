@@ -10,7 +10,6 @@ module.exports = function(grunt) {
       dev: {
         files: {
           'build/deferred.js': [
-            'src/Promise.js',
             'src/Deferred.js',
             'src/when.js'
           ]
@@ -19,7 +18,6 @@ module.exports = function(grunt) {
       test: {
         files: {
           'build/deferred.test.js': [
-            'src/Promise.js',
             'src/Deferred.js',
             'src/when.js'
           ]
@@ -52,8 +50,7 @@ module.exports = function(grunt) {
         src: 'build/deferred.min.js',
         options: {
           specs: [
-            'test/specs/deferred.spec.js',
-            'test/specs/promise.spec.js'
+            'test/specs/deferred.spec.js'
           ],
           template: require('grunt-template-jasmine-istanbul'),
           templateOptions: {

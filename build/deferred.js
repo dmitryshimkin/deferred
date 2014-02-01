@@ -1,25 +1,21 @@
 
 
+
 /**
- *
+ * Deferred class
+ * @class
  */
 
-var Promise = function () {
-  this._state = Promise.state.PENDING;
-  this._value = [];
+var Deferred = function () {
+  this._state = Deferred.state.PENDING;
+  this.value = [];
   this._callbacks = {
     done: [],
     fail: []
   };
 };
 
-Promise.state = {
-  PENDING: 0,
-  RESOLVED: 1,
-  REJECTED: 2
-};
-
-var proto = Promise.prototype;
+var fn = Deferred.prototype;
 
 /**
  * Adds onChangeState listener
@@ -29,7 +25,7 @@ var proto = Promise.prototype;
  * @public
  */
 
-proto['always'] = function () {
+fn['always'] = function () {
   this['then'].apply(this, arguments);
   return this;
 };
@@ -42,9 +38,9 @@ proto['always'] = function () {
  * @public
  */
 
-proto['done'] = function (cb, ctx) {
+fn['done'] = function (cb, ctx) {
   var state = this._state;
-  var states = Promise.state;
+  var states = Deferred.state;
 
   if (state === states.PENDING) {
     this._callbacks['done'].push({
@@ -52,7 +48,7 @@ proto['done'] = function (cb, ctx) {
       ctx: ctx
     });
   } else if (state === states.RESOLVED) {
-    cb.apply(ctx, this._value);
+    cb.apply(ctx, this.value);
   }
 
   return this;
@@ -66,9 +62,9 @@ proto['done'] = function (cb, ctx) {
  * @public
  */
 
-proto['fail'] = function (cb, ctx) {
+fn['fail'] = function (cb, ctx) {
   var state = this._state;
-  var states = Promise.state;
+  var states = Deferred.state;
 
   if (state === states.PENDING) {
     this._callbacks['fail'].push({
@@ -76,7 +72,7 @@ proto['fail'] = function (cb, ctx) {
       ctx: ctx
     });
   } else if (state === states.REJECTED) {
-    cb.apply(ctx, this._value);
+    cb.apply(ctx, this.value);
   }
   return this;
 };
@@ -87,8 +83,8 @@ proto['fail'] = function (cb, ctx) {
  * @public
  */
 
-proto['isPending'] = function () {
-  return this._state === Promise.state.PENDING;
+fn['isPending'] = function () {
+  return this._state === Deferred.state.PENDING;
 };
 
 /**
@@ -97,8 +93,8 @@ proto['isPending'] = function () {
  * @public
  */
 
-proto['isRejected'] = function () {
-  return this._state === Promise.state.REJECTED;
+fn['isRejected'] = function () {
+  return this._state === Deferred.state.REJECTED;
 };
 
 /**
@@ -107,8 +103,8 @@ proto['isRejected'] = function () {
  * @public
  */
 
-proto['isResolved'] = function () {
-  return this._state === Promise.state.RESOLVED;
+fn['isResolved'] = function () {
+  return this._state === Deferred.state.RESOLVED;
 };
 
 /**
@@ -119,7 +115,7 @@ proto['isResolved'] = function () {
  * @public
  */
 
-proto['then'] = function (onResolve, onReject, ctx) {
+fn['then'] = function (onResolve, onReject, ctx) {
   var lastArg = arguments[arguments.length - 1];
   var deferred2 = new Deferred();
 
@@ -149,8 +145,8 @@ proto['then'] = function (onResolve, onReject, ctx) {
         }
       }
     });
-  } else if (this._state === Promise.state.RESOLVED) {
-    deferred2.resolve.apply(deferred2, this._value);
+  } else if (this._state === Deferred.state.RESOLVED) {
+    deferred2.resolve.apply(deferred2, this.value);
   }
 
   if (typeof onReject === 'function') {
@@ -175,32 +171,18 @@ proto['then'] = function (onResolve, onReject, ctx) {
         }
       }
     });
-  } else if (this._state === Promise.state.REJECTED) {
-    deferred2.reject.apply(deferred2, this._value);
+  } else if (this._state === Deferred.state.REJECTED) {
+    deferred2.reject.apply(deferred2, this.value);
   }
 
-  return deferred2.promise;
-};
-
-
-/**
- * Deferred class
- * @class
- */
-
-var Deferred = function () {
-  this['promise'] = new Promise();
+  return deferred2;
 };
 
 /**
- * Checks whether
+ * Checks whether argument is deferred instance
  * @param arg
  * @returns {boolean}
  */
-
-Deferred.isPromise = function (arg) {
-  return arg instanceof Promise || arg instanceof Deferred;
-};
 
 Deferred.isDeferred = function (arg) {
   return arg instanceof Deferred;
@@ -212,13 +194,12 @@ Deferred.isDeferred = function (arg) {
  */
 
 Deferred.prototype['reject'] = function () {
-  var states = Promise.state;
-  var promise = this['promise'];
+  var states = Deferred.state;
 
-  if (promise._state === states.PENDING) {
-    promise._state = states.REJECTED;
-    promise._value = arguments;
-    notifyFail.call(promise);
+  if (this._state === states.PENDING) {
+    this._state = states.REJECTED;
+    this.value = arguments;
+    notifyFail.call(this);
   }
 
   return this;
@@ -230,28 +211,25 @@ Deferred.prototype['reject'] = function () {
  */
 
 Deferred.prototype['resolve'] = function (x) {
-  var states = Promise.state;
-  var promise = this['promise'];
+  var states = Deferred.state;
   var PENDING = states.PENDING;
   var RESOLVED = states.RESOLVED;
   var self = this;
   var value;
 
   // ignore non-pending promises
-  if (promise._state !== states.PENDING) {
+  if (this._state !== states.PENDING) {
     return this;
   }
 
   // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
-  if (x === this || x === promise) {
+  if (x === this) {
     var e = new TypeError('Promise and argument refer to the same object');
     this.reject(e);
     return this;
   }
 
   var isDeferred = x instanceof Deferred;
-  var isPromise = x instanceof Promise;
-  var isPromiseOrDeferred = isDeferred || isPromise;
 
   var xType = typeof x;
 
@@ -266,44 +244,40 @@ Deferred.prototype['resolve'] = function (x) {
   }
 
   var thenable = typeof then === 'function';
-  var isPending = isPromiseOrDeferred && x.isPending();
+  var isPending = isDeferred && x.isPending();
 
   // detect if we need onResolve and onReject
-  if (thenable && (!isPromiseOrDeferred || isPending)) {
+  if (thenable && (!isDeferred || isPending)) {
     var onResolve = function () {
-      if (promise._state !== PENDING) {
+      if (self._state !== PENDING) {
         return false;
       }
 
-      if (isPromiseOrDeferred) {
-        value = isDeferred ? x.promise._value : x._value;
+      if (isDeferred) {
+        value = x.value;
       }
 
-      promise._state = RESOLVED;
-      promise._value = value || Array.prototype.slice.call(arguments);
+      self._state = RESOLVED;
+      self.value = value || Array.prototype.slice.call(arguments);
 
-      notifyDone.call(promise);
+      notifyDone.call(self);
 
       return true;
     };
 
     var onReject = function () {
-      if (promise._state !== PENDING) {
+      if (self._state !== PENDING) {
         return false;
       }
 
-      if (isPromiseOrDeferred) {
-        value = isDeferred ? x.promise._value : x._value;
-      }
-
-      self.reject.apply(self, value || arguments);
+      self.reject.apply(self, x.value || arguments);
 
       return true;
     };
   }
 
-  if (isPromiseOrDeferred) {
-    value = isDeferred ? x.promise._value : x._value;
+  if (isDeferred) {
+    value = x.value;
 
     // 2.3.2.3. If x is rejected, reject promise with the same reason.
     if (x.isRejected()) {
@@ -313,10 +287,10 @@ Deferred.prototype['resolve'] = function (x) {
 
     // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
     if (x.isResolved()) {
-      promise._state = RESOLVED;
-      promise._value = value;
+      this._state = RESOLVED;
+      this.value = value;
 
-      notifyDone.call(promise);
+      notifyDone.call(this);
 
       return this;
     }
@@ -347,46 +321,22 @@ Deferred.prototype['resolve'] = function (x) {
     return this;
   }
 
-  promise._state = RESOLVED;
-  promise._value = arguments;
+  this._state = RESOLVED;
+  this.value = arguments;
 
-  notifyDone.call(promise);
+  notifyDone.call(this);
 
   return this;
 };
 
-// proxy some promise methods in deferred object
-// @TODO: rework
-
-var methods = ['done', 'fail', 'isPending', 'isRejected', 'isResolved', 'then'];
-var method;
-
-var createMethod = function (method) {
-  return function () {
-    var promise = this.promise;
-    var result = promise[method].apply(promise, arguments);
-
-    if (method === 'then') {
-      return result;
-    } else {
-      return typeof result === 'boolean' ? result : this;
-    }
-  }
-};
-
-for (var i = 0, l = methods.length; i < l; i++) {
-  method = methods[i];
-  Deferred.prototype[method] = createMethod(method);
-}
-
 // Private methods
 
 var notifyFail = function () {
-  notify(this._callbacks['fail'], this._value);
+  notify(this._callbacks['fail'], this.value);
 };
 
 var notifyDone = function () {
-  notify(this._callbacks['done'], this._value);
+  notify(this._callbacks['done'], this.value);
 };
 
 var notify = function (callbacks, args) {
@@ -397,7 +347,14 @@ var notify = function (callbacks, args) {
   }
 };
 
+Deferred.state = {
+  PENDING: 0,
+  RESOLVED: 1,
+  REJECTED: 2
+};
+
 Deferred.when = function () {
 
 };
+
 
