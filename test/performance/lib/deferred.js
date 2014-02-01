@@ -1,4 +1,4 @@
-(function () {
+(function (undefined) {
   'use strict';
 
   /**
@@ -121,12 +121,13 @@
   proto['then'] = function (onResolve, onReject, ctx) {
     var lastArg = arguments[arguments.length - 1];
     var deferred2 = new Deferred();
+    var func = 'function';
 
-    if (lastArg && typeof lastArg !== 'function') {
+    if (lastArg && typeof lastArg !== func) {
       ctx = lastArg;
     }
 
-    if (typeof onResolve === 'function') {
+    if (typeof onResolve === func) {
       this.done(function () {
         var x, error;
 
@@ -152,7 +153,7 @@
       deferred2.resolve.apply(deferred2, this._value);
     }
 
-    if (typeof onReject === 'function') {
+    if (typeof onReject === func) {
       this.fail(function () {
         var x, error;
 
@@ -230,6 +231,7 @@
     var PENDING = states.PENDING;
     var RESOLVED = states.RESOLVED;
     var value, callback, callbacks, i, l;
+    var func = 'function';
     var self = this;
 
     // ignore non-pending promises
@@ -251,7 +253,7 @@
     var xType = typeof x;
 
     // 2.3.3.2. If retrieving the property x.then results in a thrown exception e, reject promise with e as the reason
-    if (x !== null && (xType === 'object' || xType === 'function')) {
+    if (x !== null && (xType === 'object' || xType === func)) {
       try {
         var then = x.then;
       } catch (e) {
@@ -260,7 +262,7 @@
       }
     }
 
-    var thenable = typeof then === 'function';
+    var thenable = typeof then === func;
     var isPending;
 
     if (isPromise) {

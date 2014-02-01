@@ -47,6 +47,7 @@ fn['resolve'] = function (x) {
   var PENDING = states.PENDING;
   var RESOLVED = states.RESOLVED;
   var value, callback, callbacks, i, l;
+  var func = 'function';
   var self = this;
 
   // ignore non-pending promises
@@ -68,7 +69,7 @@ fn['resolve'] = function (x) {
   var xType = typeof x;
 
   // 2.3.3.2. If retrieving the property x.then results in a thrown exception e, reject promise with e as the reason
-  if (x !== null && (xType === 'object' || xType === 'function')) {
+  if (x !== null && (xType === 'object' || xType === func)) {
     try {
       var then = x.then;
     } catch (e) {
@@ -77,7 +78,7 @@ fn['resolve'] = function (x) {
     }
   }
 
-  var thenable = typeof then === 'function';
+  var thenable = typeof then === func;
   var isPending;
 
   if (isPromise) {

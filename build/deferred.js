@@ -1,4 +1,5 @@
-(function () {
+
+(function (undefined) {
   'use strict';
 
   /**
@@ -452,3 +453,4 @@
 
   window.Deferred = Deferred;
 }());
+

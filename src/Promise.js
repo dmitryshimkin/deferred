@@ -119,12 +119,13 @@ proto['isResolved'] = function () {
 proto['then'] = function (onResolve, onReject, ctx) {
   var lastArg = arguments[arguments.length - 1];
   var deferred2 = new Deferred();
+  var func = 'function';
 
-  if (lastArg && typeof lastArg !== 'function') {
+  if (lastArg && typeof lastArg !== func) {
     ctx = lastArg;
   }
 
-  if (typeof onResolve === 'function') {
+  if (typeof onResolve === func) {
     this.done(function () {
       var x, error;
 
@@ -150,7 +151,7 @@ proto['then'] = function (onResolve, onReject, ctx) {
     deferred2.resolve.apply(deferred2, this._value);
   }
 
-  if (typeof onReject === 'function') {
+  if (typeof onReject === func) {
     this.fail(function () {
       var x, error;
 
