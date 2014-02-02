@@ -4,8 +4,8 @@
  */
 
 var Promise = function () {
-  this._state = states.PENDING;
   this.value = [];
+  this._state = states.PENDING;
   this._callbacks = {
     done: [],
     fail: []
@@ -29,7 +29,7 @@ var proto = Promise.prototype;
  */
 
 proto['always'] = function () {
-  this['then'].apply(this, arguments);
+  this.then.apply(this, arguments);
   return this;
 };
 
@@ -45,7 +45,7 @@ proto['done'] = function (cb, ctx) {
   var state = this._state;
 
   if (state === states.PENDING) {
-    this._callbacks['done'].push({
+    this._callbacks.done.push({
       fn: cb,
       ctx: ctx
     });
@@ -68,7 +68,7 @@ proto['fail'] = function (cb, ctx) {
   var state = this._state;
 
   if (state === states.PENDING) {
-    this._callbacks['fail'].push({
+    this._callbacks.fail.push({
       fn: cb,
       ctx: ctx
     });
