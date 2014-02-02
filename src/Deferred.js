@@ -19,11 +19,11 @@ fn['reject'] = function () {
   var promise = this.promise;
 
   // ignore non-pending promises
-  if (promise._state !== states.PENDING) {
+  if (promise._state !== PENDING) {
     return this;
   }
 
-  promise._state = states.REJECTED;
+  promise._state = REJECTED;
   promise.value = arguments;
 
   var callbacks = promise._callbacks.fail;
@@ -44,14 +44,12 @@ fn['reject'] = function () {
 
 fn['resolve'] = function (x) {
   var promise = this.promise;
-  var PENDING = states.PENDING;
-  var RESOLVED = states.RESOLVED;
   var value, callback, callbacks, i, l;
   var func = 'function';
   var self = this;
 
   // ignore non-pending promises
-  if (promise._state !== states.PENDING) {
+  if (promise._state !== PENDING) {
     return this;
   }
 
@@ -235,7 +233,7 @@ fn['fail'] = function (arg) {
  */
 
 fn['isPending'] = function () {
-  return this.promise._state === states.PENDING;
+  return this.promise._state === PENDING;
 };
 
 /**
@@ -244,7 +242,7 @@ fn['isPending'] = function () {
  */
 
 fn['isRejected'] = function () {
-  return this.promise._state === states.REJECTED;
+  return this.promise._state === REJECTED;
 };
 
 /**
@@ -253,7 +251,7 @@ fn['isRejected'] = function () {
  */
 
 fn['isResolved'] = function () {
-  return this.promise._state === states.RESOLVED;
+  return this.promise._state === RESOLVED;
 };
 
 /**

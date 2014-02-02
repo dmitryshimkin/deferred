@@ -1,21 +1,21 @@
+/** promise states */
+
+var PENDING = 0;
+var RESOLVED = 1;
+var REJECTED = 2;
 
 /**
- *
+ * Promise
+ * @class
  */
 
 var Promise = function () {
   this.value = [];
-  this._state = states.PENDING;
+  this._state = PENDING;
   this._callbacks = {
     done: [],
     fail: []
   };
-};
-
-var states = {
-  PENDING: 0,
-  RESOLVED: 1,
-  REJECTED: 2
 };
 
 var proto = Promise.prototype;
@@ -44,12 +44,12 @@ proto['always'] = function () {
 proto['done'] = function (cb, ctx) {
   var state = this._state;
 
-  if (state === states.PENDING) {
+  if (state === PENDING) {
     this._callbacks.done.push({
       fn: cb,
       ctx: ctx
     });
-  } else if (state === states.RESOLVED) {
+  } else if (state === RESOLVED) {
     cb.apply(ctx, this.value);
   }
 
@@ -67,12 +67,12 @@ proto['done'] = function (cb, ctx) {
 proto['fail'] = function (cb, ctx) {
   var state = this._state;
 
-  if (state === states.PENDING) {
+  if (state === PENDING) {
     this._callbacks.fail.push({
       fn: cb,
       ctx: ctx
     });
-  } else if (state === states.REJECTED) {
+  } else if (state === REJECTED) {
     cb.apply(ctx, this.value);
   }
   return this;
@@ -85,7 +85,7 @@ proto['fail'] = function (cb, ctx) {
  */
 
 proto['isPending'] = function () {
-  return this._state === states.PENDING;
+  return this._state === PENDING;
 };
 
 /**
@@ -95,7 +95,7 @@ proto['isPending'] = function () {
  */
 
 proto['isRejected'] = function () {
-  return this._state === states.REJECTED;
+  return this._state === REJECTED;
 };
 
 /**
@@ -105,7 +105,7 @@ proto['isRejected'] = function () {
  */
 
 proto['isResolved'] = function () {
-  return this._state === states.RESOLVED;
+  return this._state === RESOLVED;
 };
 
 /**
@@ -147,7 +147,7 @@ proto['then'] = function (onResolve, onReject, ctx) {
         }
       }
     });
-  } else if (this._state === states.RESOLVED) {
+  } else if (this._state === RESOLVED) {
     deferred2.resolve.apply(deferred2, this.value);
   }
 
@@ -173,7 +173,7 @@ proto['then'] = function (onResolve, onReject, ctx) {
         }
       }
     });
-  } else if (this._state === states.REJECTED) {
+  } else if (this._state === REJECTED) {
     deferred2.reject.apply(deferred2, this.value);
   }
 

@@ -1,467 +1,485 @@
-
-/**
- *
- */
-
-var Promise = function () {
-  this.value = [];
-  this._state = states.PENDING;
-  this._callbacks = {
-    done: [],
-    fail: []
+;(function (undefined) {
+  'use strict';
+  /** promise states */
+  
+  var PENDING = 0;
+  var RESOLVED = 1;
+  var REJECTED = 2;
+  
+  /**
+   * Promise
+   * @class
+   */
+  
+  var Promise = function () {
+    this.value = [];
+    this._state = PENDING;
+    this._callbacks = {
+      done: [],
+      fail: []
+    };
   };
-};
-
-var states = {
-  PENDING: 0,
-  RESOLVED: 1,
-  REJECTED: 2
-};
-
-var proto = Promise.prototype;
-
-/**
- * Adds onChangeState listener
- * @param cb {Function} Listener
- * @param [ctx] {Object} Listener context
- * @returns {Object} Instance
- * @public
- */
-
-proto['always'] = function () {
-  this.then.apply(this, arguments);
-  return this;
-};
-
-/**
- * Adds onResolve listener
- * @param cb {Function} Listener
- * @param [ctx] {Object} Listener context
- * @returns {Object} Instance
- * @public
- */
-
-proto['done'] = function (cb, ctx) {
-  var state = this._state;
-
-  if (state === states.PENDING) {
-    this._callbacks.done.push({
-      fn: cb,
-      ctx: ctx
-    });
-  } else if (state === states.RESOLVED) {
-    cb.apply(ctx, this.value);
-  }
-
-  return this;
-};
-
-/**
- * Adds onReject listener
- * @param cb {Function} Listener
- * @param [ctx] {Object} Listener context
- * @returns {Object} Instance
- * @public
- */
-
-proto['fail'] = function (cb, ctx) {
-  var state = this._state;
-
-  if (state === states.PENDING) {
-    this._callbacks.fail.push({
-      fn: cb,
-      ctx: ctx
-    });
-  } else if (state === states.REJECTED) {
-    cb.apply(ctx, this.value);
-  }
-  return this;
-};
-
-/**
- * Returns true, if promise has pending state
- * @returns {Boolean}
- * @public
- */
-
-proto['isPending'] = function () {
-  return this._state === states.PENDING;
-};
-
-/**
- * Returns true, if promise is rejected
- * @returns {Boolean}
- * @public
- */
-
-proto['isRejected'] = function () {
-  return this._state === states.REJECTED;
-};
-
-/**
- * Returns true, if promise is resolved
- * @returns {Boolean}
- * @public
- */
-
-proto['isResolved'] = function () {
-  return this._state === states.RESOLVED;
-};
-
-/**
- * Adds onResolve or onReject listener
- * @param onResolve {Function}
- * @param onReject {Function}
- * @param [ctx] {Object} Context for listeners
- * @public
- */
-
-proto['then'] = function (onResolve, onReject, ctx) {
-  var lastArg = arguments[arguments.length - 1];
-  var deferred2 = new Deferred();
-  var func = 'function';
-
-  if (lastArg && typeof lastArg !== func) {
-    ctx = lastArg;
-  }
-
-  if (typeof onResolve === func) {
-    this.done(function () {
-      var x, error;
-
-      try {
-        x = onResolve.apply(ctx, arguments);
-      } catch (e) {
-        error = e;
-      }
-
-      // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
-      //          promise2 must be rejected with e as the reason.
-      if (error !== undefined) {
-        deferred2.reject(error);
-      } else {
-        // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
-        //          Promise Resolution Procedure [[Resolve]](promise2, x).
-        if (x !== undefined) {
-          deferred2.resolve(x);
+  
+  var proto = Promise.prototype;
+  
+  /**
+   * Adds onChangeState listener
+   * @param cb {Function} Listener
+   * @param [ctx] {Object} Listener context
+   * @returns {Object} Instance
+   * @public
+   */
+  
+  proto['always'] = function () {
+    this.then.apply(this, arguments);
+    return this;
+  };
+  
+  /**
+   * Adds onResolve listener
+   * @param cb {Function} Listener
+   * @param [ctx] {Object} Listener context
+   * @returns {Object} Instance
+   * @public
+   */
+  
+  proto['done'] = function (cb, ctx) {
+    var state = this._state;
+  
+    if (state === PENDING) {
+      this._callbacks.done.push({
+        fn: cb,
+        ctx: ctx
+      });
+    } else if (state === RESOLVED) {
+      cb.apply(ctx, this.value);
+    }
+  
+    return this;
+  };
+  
+  /**
+   * Adds onReject listener
+   * @param cb {Function} Listener
+   * @param [ctx] {Object} Listener context
+   * @returns {Object} Instance
+   * @public
+   */
+  
+  proto['fail'] = function (cb, ctx) {
+    var state = this._state;
+  
+    if (state === PENDING) {
+      this._callbacks.fail.push({
+        fn: cb,
+        ctx: ctx
+      });
+    } else if (state === REJECTED) {
+      cb.apply(ctx, this.value);
+    }
+    return this;
+  };
+  
+  /**
+   * Returns true, if promise has pending state
+   * @returns {Boolean}
+   * @public
+   */
+  
+  proto['isPending'] = function () {
+    return this._state === PENDING;
+  };
+  
+  /**
+   * Returns true, if promise is rejected
+   * @returns {Boolean}
+   * @public
+   */
+  
+  proto['isRejected'] = function () {
+    return this._state === REJECTED;
+  };
+  
+  /**
+   * Returns true, if promise is resolved
+   * @returns {Boolean}
+   * @public
+   */
+  
+  proto['isResolved'] = function () {
+    return this._state === RESOLVED;
+  };
+  
+  /**
+   * Adds onResolve or onReject listener
+   * @param onResolve {Function}
+   * @param onReject {Function}
+   * @param [ctx] {Object} Context for listeners
+   * @public
+   */
+  
+  proto['then'] = function (onResolve, onReject, ctx) {
+    var lastArg = arguments[arguments.length - 1];
+    var deferred2 = new Deferred();
+    var func = 'function';
+  
+    if (lastArg && typeof lastArg !== func) {
+      ctx = lastArg;
+    }
+  
+    if (typeof onResolve === func) {
+      this.done(function () {
+        var x, error;
+  
+        try {
+          x = onResolve.apply(ctx, arguments);
+        } catch (e) {
+          error = e;
         }
-      }
-    });
-  } else if (this._state === states.RESOLVED) {
-    deferred2.resolve.apply(deferred2, this.value);
-  }
-
-  if (typeof onReject === func) {
-    this.fail(function () {
-      var x, error;
-
-      try {
-        x = onReject.apply(ctx, arguments);
-      } catch (e) {
-        error = e;
-      }
-
-      // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
-      //          promise2 must be rejected with e as the reason.
-      if (error !== undefined) {
-        deferred2.reject(error);
-      } else {
-        // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
-        //          Promise Resolution Procedure [[Resolve]](promise2, x).
-        if (x !== undefined) {
-          deferred2.resolve(x);
+  
+        // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
+        //          promise2 must be rejected with e as the reason.
+        if (error !== undefined) {
+          deferred2.reject(error);
+        } else {
+          // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
+          //          Promise Resolution Procedure [[Resolve]](promise2, x).
+          if (x !== undefined) {
+            deferred2.resolve(x);
+          }
         }
-      }
-    });
-  } else if (this._state === states.REJECTED) {
-    deferred2.reject.apply(deferred2, this.value);
-  }
-
-  return deferred2.promise;
-};
-
-
-/**
- * Deferred class
- * @class
- */
-
-var Deferred = function () {
-  this['promise'] = new Promise();
-};
-
-var fn = Deferred.prototype;
-
-/**
- * Translates promise into rejected state
- * @public
- */
-
-fn['reject'] = function () {
-  var promise = this.promise;
-
-  // ignore non-pending promises
-  if (promise._state !== states.PENDING) {
+      });
+    } else if (this._state === RESOLVED) {
+      deferred2.resolve.apply(deferred2, this.value);
+    }
+  
+    if (typeof onReject === func) {
+      this.fail(function () {
+        var x, error;
+  
+        try {
+          x = onReject.apply(ctx, arguments);
+        } catch (e) {
+          error = e;
+        }
+  
+        // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
+        //          promise2 must be rejected with e as the reason.
+        if (error !== undefined) {
+          deferred2.reject(error);
+        } else {
+          // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
+          //          Promise Resolution Procedure [[Resolve]](promise2, x).
+          if (x !== undefined) {
+            deferred2.resolve(x);
+          }
+        }
+      });
+    } else if (this._state === REJECTED) {
+      deferred2.reject.apply(deferred2, this.value);
+    }
+  
+    return deferred2.promise;
+  };
+  
+  
+  /**
+   * Deferred class
+   * @class
+   */
+  
+  var Deferred = function () {
+    this['promise'] = new Promise();
+  };
+  
+  var fn = Deferred.prototype;
+  
+  /**
+   * Translates promise into rejected state
+   * @public
+   */
+  
+  fn['reject'] = function () {
+    var promise = this.promise;
+  
+    // ignore non-pending promises
+    if (promise._state !== PENDING) {
+      return this;
+    }
+  
+    promise._state = REJECTED;
+    promise.value = arguments;
+  
+    var callbacks = promise._callbacks.fail;
+    var callback;
+  
+    for (var i = 0, l = callbacks.length; i < l; i++) {
+      callback = callbacks[i];
+      callback.fn.apply(callback.ctx, promise.value);
+    }
+  
     return this;
-  }
-
-  promise._state = states.REJECTED;
-  promise.value = arguments;
-
-  var callbacks = promise._callbacks.fail;
-  var callback;
-
-  for (var i = 0, l = callbacks.length; i < l; i++) {
-    callback = callbacks[i];
-    callback.fn.apply(callback.ctx, promise.value);
-  }
-
-  return this;
-};
-
-/**
- * Translates promise into resolved state
- * @public
- */
-
-fn['resolve'] = function (x) {
-  var promise = this.promise;
-  var PENDING = states.PENDING;
-  var RESOLVED = states.RESOLVED;
-  var value, callback, callbacks, i, l;
-  var func = 'function';
-  var self = this;
-
-  // ignore non-pending promises
-  if (promise._state !== states.PENDING) {
-    return this;
-  }
-
-  // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
-  if (x === this || x === promise) {
-    var e = new TypeError('Promise and argument refer to the same object');
-    this.reject(e);
-    return this;
-  }
-
-  var isDeferred = x instanceof Deferred;
-  var isPromise = x instanceof Promise;
-  var isPromiseOrDeferred = isDeferred || isPromise;
-
-  var xType = typeof x;
-
-  // 2.3.3.2. If retrieving the property x.then results in a thrown exception e, reject promise with e as the reason
-  if (x !== null && (xType === 'object' || xType === func)) {
-    try {
-      var then = x.then;
-    } catch (e) {
+  };
+  
+  /**
+   * Translates promise into resolved state
+   * @public
+   */
+  
+  fn['resolve'] = function (x) {
+    var promise = this.promise;
+    var value, callback, callbacks, i, l;
+    var func = 'function';
+    var self = this;
+  
+    // ignore non-pending promises
+    if (promise._state !== PENDING) {
+      return this;
+    }
+  
+    // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
+    if (x === this || x === promise) {
+      var e = new TypeError('Promise and argument refer to the same object');
       this.reject(e);
       return this;
     }
-  }
-
-  var thenable = typeof then === func;
-  var isPending;
-
-  if (isPromise) {
-    isPending = x._state === PENDING;
-  } else if (isDeferred) {
-    isPending = x.promise._state === PENDING;
-  } else {
-    isPending = false;
-  }
-
-  //var isPending = isPromiseOrDeferred && x.isPending();
-
-  // detect if we need onResolve and onReject
-  if (thenable && (!isPromiseOrDeferred || isPending)) {
-    var onResolve = function () {
-      if (promise._state !== PENDING) {
-        return false;
+  
+    var isDeferred = x instanceof Deferred;
+    var isPromise = x instanceof Promise;
+    var isPromiseOrDeferred = isDeferred || isPromise;
+  
+    var xType = typeof x;
+  
+    // 2.3.3.2. If retrieving the property x.then results in a thrown exception e, reject promise with e as the reason
+    if (x !== null && (xType === 'object' || xType === func)) {
+      try {
+        var then = x.then;
+      } catch (e) {
+        this.reject(e);
+        return this;
       }
-
-      if (isPromiseOrDeferred) {
-        value = isDeferred ? x.promise.value : x.value;
+    }
+  
+    var thenable = typeof then === func;
+    var isPending;
+  
+    if (isPromise) {
+      isPending = x._state === PENDING;
+    } else if (isDeferred) {
+      isPending = x.promise._state === PENDING;
+    } else {
+      isPending = false;
+    }
+  
+    //var isPending = isPromiseOrDeferred && x.isPending();
+  
+    // detect if we need onResolve and onReject
+    if (thenable && (!isPromiseOrDeferred || isPending)) {
+      var onResolve = function () {
+        if (promise._state !== PENDING) {
+          return false;
+        }
+  
+        if (isPromiseOrDeferred) {
+          value = isDeferred ? x.promise.value : x.value;
+        }
+  
+        promise._state = RESOLVED;
+        promise.value = value || Array.prototype.slice.call(arguments);
+  
+        var callback;
+        var callbacks = promise._callbacks.done;
+        for (i = 0, l = callbacks.length; i < l; i++) {
+          callback = callbacks[i];
+          callback.fn.apply(callback.ctx, promise.value);
+        }
+  
+        return true;
+      };
+  
+      var onReject = function () {
+        if (promise._state !== PENDING) {
+          return false;
+        }
+  
+        if (isPromiseOrDeferred) {
+          value = isDeferred ? x.promise.value : x.value;
+        }
+  
+        self.reject.apply(self, value || arguments);
+  
+        return true;
+      };
+    }
+  
+    if (isPromiseOrDeferred) {
+      value = isDeferred ? x.promise.value : x.value;
+  
+      // 2.3.2.3. If x is rejected, reject promise with the same reason.
+      if (x.isRejected()) {
+        this.reject.apply(this, value);
+        return this;
       }
-
-      promise._state = RESOLVED;
-      promise.value = value || Array.prototype.slice.call(arguments);
-
-      var callback;
-      var callbacks = promise._callbacks.done;
-      for (i = 0, l = callbacks.length; i < l; i++) {
-        callback = callbacks[i];
-        callback.fn.apply(callback.ctx, promise.value);
+  
+      // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
+      if (x.isResolved()) {
+        promise._state = RESOLVED;
+        promise.value = value;
+  
+        callbacks = promise._callbacks.done;
+        for (i = 0, l = callbacks.length; i < l; i++) {
+          callback = callbacks[i];
+          callback.fn.apply(callback.ctx, promise.value);
+        }
+  
+        return this;
       }
-
-      return true;
-    };
-
-    var onReject = function () {
-      if (promise._state !== PENDING) {
-        return false;
+  
+      // 2.3.2.2. when x is fulfilled, fulfill promise with the same value.
+      // 2.3.2.3. When x is rejected, reject promise with the same reason.
+      try {
+        x.then(onResolve, onReject);
+      } catch (e) {
+        if (this.isPending()) {
+          this.reject(e);
+        }
       }
-
-      if (isPromiseOrDeferred) {
-        value = isDeferred ? x.promise.value : x.value;
-      }
-
-      self.reject.apply(self, value || arguments);
-
-      return true;
-    };
-  }
-
-  if (isPromiseOrDeferred) {
-    value = isDeferred ? x.promise.value : x.value;
-
-    // 2.3.2.3. If x is rejected, reject promise with the same reason.
-    if (x.isRejected()) {
-      this.reject.apply(this, value);
+  
       return this;
     }
-
-    // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
-    if (x.isResolved()) {
-      promise._state = RESOLVED;
-      promise.value = value;
-
-      callbacks = promise._callbacks.done;
-      for (i = 0, l = callbacks.length; i < l; i++) {
-        callback = callbacks[i];
-        callback.fn.apply(callback.ctx, promise.value);
+  
+    // 2.3.3.3.1. If/when resolvePromise is called with a value y, run [[Resolve]](promise, y).
+    // 2.3.3.3.2. If/when rejectPromise is called with a reason r, reject promise with r.
+    if (thenable) {
+      try {
+        x.then(onResolve, onReject);
+      } catch (e) {
+        if (this.isPending()) {
+          this.reject(e);
+        }
       }
-
       return this;
     }
-
-    // 2.3.2.2. when x is fulfilled, fulfill promise with the same value.
-    // 2.3.2.3. When x is rejected, reject promise with the same reason.
-    try {
-      x.then(onResolve, onReject);
-    } catch (e) {
-      if (this.isPending()) {
-        this.reject(e);
-      }
+  
+    promise._state = RESOLVED;
+    promise.value = arguments;
+  
+    callbacks = promise._callbacks.done;
+    for (i = 0, l = callbacks.length; i < l; i++) {
+      callback = callbacks[i];
+      callback.fn.apply(callback.ctx, promise.value);
     }
-
+  
     return this;
-  }
-
-  // 2.3.3.3.1. If/when resolvePromise is called with a value y, run [[Resolve]](promise, y).
-  // 2.3.3.3.2. If/when rejectPromise is called with a reason r, reject promise with r.
-  if (thenable) {
-    try {
-      x.then(onResolve, onReject);
-    } catch (e) {
-      if (this.isPending()) {
-        this.reject(e);
-      }
+  };
+  
+  /**
+   *
+   * @public
+   */
+  
+  fn['done'] = function (arg) {
+    var promise = this.promise;
+  
+    if (arg instanceof Deferred) {
+      promise.done(function () {
+        arg.resolve.apply(arg, arguments);
+      });
+    } else {
+      promise.done.apply(promise, arguments);
     }
+  
     return this;
-  }
-
-  promise._state = RESOLVED;
-  promise.value = arguments;
-
-  callbacks = promise._callbacks.done;
-  for (i = 0, l = callbacks.length; i < l; i++) {
-    callback = callbacks[i];
-    callback.fn.apply(callback.ctx, promise.value);
-  }
-
-  return this;
-};
-
-/**
- *
- * @public
- */
-
-fn['done'] = function (arg) {
-  var promise = this.promise;
-
-  if (arg instanceof Deferred) {
-    promise.done(function () {
-      arg.resolve.apply(arg, arguments);
+  };
+  
+  /**
+   *
+   * @public
+   */
+  
+  fn['fail'] = function (arg) {
+    var promise = this.promise;
+  
+    if (arg instanceof Deferred) {
+      promise.fail(function () {
+        arg.reject.apply(arg, arguments);
+      });
+    } else {
+      promise.fail.apply(promise, arguments);
+    }
+  
+    return this;
+  };
+  
+  /**
+   *
+   * @public
+   */
+  
+  fn['isPending'] = function () {
+    return this.promise._state === PENDING;
+  };
+  
+  /**
+   *
+   * @public
+   */
+  
+  fn['isRejected'] = function () {
+    return this.promise._state === REJECTED;
+  };
+  
+  /**
+   *
+   * @public
+   */
+  
+  fn['isResolved'] = function () {
+    return this.promise._state === RESOLVED;
+  };
+  
+  /**
+   *
+   * @public
+   */
+  
+  fn['then'] = function () {
+    var promise = this.promise;
+    return promise.then.apply(promise, arguments);
+  };
+  
+  /**
+   * Checks whether
+   * @param arg
+   * @returns {boolean}
+   */
+  
+  Deferred.isPromise = function (arg) {
+    return arg instanceof Promise || arg instanceof Deferred;
+  };
+  
+  Deferred.isDeferred = function (arg) {
+    return arg instanceof Deferred;
+  };
+  
+  Deferred.when = function () {
+  
+  };
+  
+  /**
+   * Export
+   */
+  
+  var obj = 'object';
+  
+  if (typeof module === obj && typeof module.exports === obj) {
+    module.exports = Deferred;
+  } else if (typeof define === 'function' && define.amd) {
+    define('Deferred', [], function () {
+      return Deferred;
     });
-  } else {
-    promise.done.apply(promise, arguments);
+  } else if (typeof window === obj) {
+    window['Deferred'] = Deferred;
   }
-
-  return this;
-};
-
-/**
- *
- * @public
- */
-
-fn['fail'] = function (arg) {
-  var promise = this.promise;
-
-  if (arg instanceof Deferred) {
-    promise.fail(function () {
-      arg.reject.apply(arg, arguments);
-    });
-  } else {
-    promise.fail.apply(promise, arguments);
-  }
-
-  return this;
-};
-
-/**
- *
- * @public
- */
-
-fn['isPending'] = function () {
-  return this.promise._state === states.PENDING;
-};
-
-/**
- *
- * @public
- */
-
-fn['isRejected'] = function () {
-  return this.promise._state === states.REJECTED;
-};
-
-/**
- *
- * @public
- */
-
-fn['isResolved'] = function () {
-  return this.promise._state === states.RESOLVED;
-};
-
-/**
- *
- * @public
- */
-
-fn['then'] = function () {
-  var promise = this.promise;
-  return promise.then.apply(promise, arguments);
-};
-
-/**
- * Checks whether
- * @param arg
- * @returns {boolean}
- */
-
-Deferred.isPromise = function (arg) {
-  return arg instanceof Promise || arg instanceof Deferred;
-};
-
-Deferred.isDeferred = function (arg) {
-  return arg instanceof Deferred;
-};
-
-Deferred.when = function () {
-
-};
+  
+}());

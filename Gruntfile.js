@@ -22,7 +22,8 @@ module.exports = function(grunt) {
           'build/deferred.test.js': [
             'src/Promise.js',
             'src/Deferred.js',
-            'src/when.js'
+            'src/when.js',
+            'src/export.js'
           ]
         }
       }
@@ -100,7 +101,18 @@ module.exports = function(grunt) {
         options: {
           indent: '  ',
           wrapper: [
-            ';(function (undefined) {\n  \'use strict\';',
+            ';(function (undefined) {\n  \'use strict\';\n',
+            '}());\n'
+          ]
+        }
+      },
+      test: {
+        src: ['build/deferred.test.js'],
+        dest: '',
+        options: {
+          indent: '  ',
+          wrapper: [
+            ';(function (undefined) {\n  \'use strict\';\n',
             '}());\n'
           ]
         }
@@ -114,10 +126,21 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-wrap');
 
-  grunt.registerTask('build-dev', ['concat:dev', 'wrap:dev']);
-  grunt.registerTask('build-test', ['concat:test', 'wrap']);
+  grunt.registerTask('build-dev', [
+    'concat:dev',
+    'wrap:dev'
+  ]);
+
+  grunt.registerTask('build-test', [
+    'concat:test', 'wrap:test'
+  ]);
+
   grunt.registerTask('build-prod', ['build-dev']);
-  grunt.registerTask('test-dev', ['build-test', 'jasmine:dev']);
+
+  grunt.registerTask('test-dev', [
+    'build-test',
+    'jasmine:dev'
+  ]);
   grunt.registerTask('test-prod', ['build-prod', 'jasmine:prod']);
 
   grunt.registerTask('test', ['test-dev']);

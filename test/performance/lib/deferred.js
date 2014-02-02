@@ -1,23 +1,24 @@
 ;(function (undefined) {
   'use strict';
 
+  /** promise states */
+
+  var PENDING = 0;
+  var RESOLVED = 1;
+  var REJECTED = 2;
+
   /**
-   *
+   * Promise
+   * @class
    */
 
   var Promise = function () {
     this.value = [];
-    this._state = states.PENDING;
+    this._state = PENDING;
     this._callbacks = {
       done: [],
       fail: []
     };
-  };
-
-  var states = {
-    PENDING: 0,
-    RESOLVED: 1,
-    REJECTED: 2
   };
 
   var proto = Promise.prototype;
@@ -46,12 +47,12 @@
   proto['done'] = function (cb, ctx) {
     var state = this._state;
 
-    if (state === states.PENDING) {
+    if (state === PENDING) {
       this._callbacks.done.push({
         fn: cb,
         ctx: ctx
       });
-    } else if (state === states.RESOLVED) {
+    } else if (state === RESOLVED) {
       cb.apply(ctx, this.value);
     }
 
@@ -69,12 +70,12 @@
   proto['fail'] = function (cb, ctx) {
     var state = this._state;
 
-    if (state === states.PENDING) {
+    if (state === PENDING) {
       this._callbacks.fail.push({
         fn: cb,
         ctx: ctx
       });
-    } else if (state === states.REJECTED) {
+    } else if (state === REJECTED) {
       cb.apply(ctx, this.value);
     }
     return this;
@@ -87,7 +88,7 @@
    */
 
   proto['isPending'] = function () {
-    return this._state === states.PENDING;
+    return this._state === PENDING;
   };
 
   /**
@@ -97,7 +98,7 @@
    */
 
   proto['isRejected'] = function () {
-    return this._state === states.REJECTED;
+    return this._state === REJECTED;
   };
 
   /**
@@ -107,7 +108,7 @@
    */
 
   proto['isResolved'] = function () {
-    return this._state === states.RESOLVED;
+    return this._state === RESOLVED;
   };
 
   /**
@@ -149,7 +150,7 @@
           }
         }
       });
-    } else if (this._state === states.RESOLVED) {
+    } else if (this._state === RESOLVED) {
       deferred2.resolve.apply(deferred2, this.value);
     }
 
@@ -175,7 +176,7 @@
           }
         }
       });
-    } else if (this._state === states.REJECTED) {
+    } else if (this._state === REJECTED) {
       deferred2.reject.apply(deferred2, this.value);
     }
 
@@ -203,11 +204,11 @@
     var promise = this.promise;
 
     // ignore non-pending promises
-    if (promise._state !== states.PENDING) {
+    if (promise._state !== PENDING) {
       return this;
     }
 
-    promise._state = states.REJECTED;
+    promise._state = REJECTED;
     promise.value = arguments;
 
     var callbacks = promise._callbacks.fail;
@@ -228,14 +229,12 @@
 
   fn['resolve'] = function (x) {
     var promise = this.promise;
-    var PENDING = states.PENDING;
-    var RESOLVED = states.RESOLVED;
     var value, callback, callbacks, i, l;
     var func = 'function';
     var self = this;
 
     // ignore non-pending promises
-    if (promise._state !== states.PENDING) {
+    if (promise._state !== PENDING) {
       return this;
     }
 
@@ -419,7 +418,7 @@
    */
 
   fn['isPending'] = function () {
-    return this.promise._state === states.PENDING;
+    return this.promise._state === PENDING;
   };
 
   /**
@@ -428,7 +427,7 @@
    */
 
   fn['isRejected'] = function () {
-    return this.promise._state === states.REJECTED;
+    return this.promise._state === REJECTED;
   };
 
   /**
@@ -437,7 +436,7 @@
    */
 
   fn['isResolved'] = function () {
-    return this.promise._state === states.RESOLVED;
+    return this.promise._state === RESOLVED;
   };
 
   /**
