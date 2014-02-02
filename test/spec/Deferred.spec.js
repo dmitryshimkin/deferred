@@ -163,7 +163,7 @@
         d.resolve('foo', data);
 
         expect(d2.isResolved()).toBe(true);
-        expect(d2.promise._value).toEqual(['foo', data]);
+        expect(d2.promise.value).toEqual(['foo', data]);
       });
     });
 
@@ -296,7 +296,7 @@
         d.reject('foo', data);
 
         expect(d2.isRejected()).toBe(true);
-        expect(d2.promise._value).toEqual(['foo', data]);
+        expect(d2.promise.value).toEqual(['foo', data]);
       });
 
       xit('nested', function () {

@@ -24,14 +24,14 @@ fn['reject'] = function () {
   }
 
   promise._state = states.REJECTED;
-  promise._value = arguments;
+  promise.value = arguments;
 
   var callbacks = promise._callbacks['fail'];
   var callback;
 
   for (var i = 0, l = callbacks.length; i < l; i++) {
     callback = callbacks[i];
-    callback.fn.apply(callback.ctx, promise._value);
+    callback.fn.apply(callback.ctx, promise.value);
   }
 
   return this;
@@ -99,17 +99,17 @@ fn['resolve'] = function (x) {
       }
 
       if (isPromiseOrDeferred) {
-        value = isDeferred ? x.promise._value : x._value;
+        value = isDeferred ? x.promise.value : x.value;
       }
 
       promise._state = RESOLVED;
-      promise._value = value || Array.prototype.slice.call(arguments);
+      promise.value = value || Array.prototype.slice.call(arguments);
 
       var callback;
       var callbacks = promise._callbacks['done'];
       for (i = 0, l = callbacks.length; i < l; i++) {
         callback = callbacks[i];
-        callback.fn.apply(callback.ctx, promise._value);
+        callback.fn.apply(callback.ctx, promise.value);
       }
 
       return true;
@@ -121,7 +121,7 @@ fn['resolve'] = function (x) {
       }
 
       if (isPromiseOrDeferred) {
-        value = isDeferred ? x.promise._value : x._value;
+        value = isDeferred ? x.promise.value : x.value;
       }
 
       self.reject.apply(self, value || arguments);
@@ -131,7 +131,7 @@ fn['resolve'] = function (x) {
   }
 
   if (isPromiseOrDeferred) {
-    value = isDeferred ? x.promise._value : x._value;
+    value = isDeferred ? x.promise.value : x.value;
 
     // 2.3.2.3. If x is rejected, reject promise with the same reason.
     if (x.isRejected()) {
@@ -142,12 +142,12 @@ fn['resolve'] = function (x) {
     // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
     if (x.isResolved()) {
       promise._state = RESOLVED;
-      promise._value = value;
+      promise.value = value;
 
       callbacks = promise._callbacks['done'];
       for (i = 0, l = callbacks.length; i < l; i++) {
         callback = callbacks[i];
-        callback.fn.apply(callback.ctx, promise._value);
+        callback.fn.apply(callback.ctx, promise.value);
       }
 
       return this;
@@ -180,12 +180,12 @@ fn['resolve'] = function (x) {
   }
 
   promise._state = RESOLVED;
-  promise._value = arguments;
+  promise.value = arguments;
 
   callbacks = promise._callbacks['done'];
   for (i = 0, l = callbacks.length; i < l; i++) {
     callback = callbacks[i];
-    callback.fn.apply(callback.ctx, promise._value);
+    callback.fn.apply(callback.ctx, promise.value);
   }
 
   return this;

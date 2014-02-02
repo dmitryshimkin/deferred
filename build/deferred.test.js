@@ -5,7 +5,7 @@
 
 var Promise = function () {
   this._state = states.PENDING;
-  this._value = [];
+  this.value = [];
   this._callbacks = {
     done: [],
     fail: []
@@ -50,7 +50,7 @@ proto['done'] = function (cb, ctx) {
       ctx: ctx
     });
   } else if (state === states.RESOLVED) {
-    cb.apply(ctx, this._value);
+    cb.apply(ctx, this.value);
   }
 
   return this;
@@ -73,7 +73,7 @@ proto['fail'] = function (cb, ctx) {
       ctx: ctx
     });
   } else if (state === states.REJECTED) {
-    cb.apply(ctx, this._value);
+    cb.apply(ctx, this.value);
   }
   return this;
 };
@@ -148,7 +148,7 @@ proto['then'] = function (onResolve, onReject, ctx) {
       }
     });
   } else if (this._state === states.RESOLVED) {
-    deferred2.resolve.apply(deferred2, this._value);
+    deferred2.resolve.apply(deferred2, this.value);
   }
 
   if (typeof onReject === func) {
@@ -174,7 +174,7 @@ proto['then'] = function (onResolve, onReject, ctx) {
       }
     });
   } else if (this._state === states.REJECTED) {
-    deferred2.reject.apply(deferred2, this._value);
+    deferred2.reject.apply(deferred2, this.value);
   }
 
   return deferred2.promise;
@@ -206,14 +206,14 @@ fn['reject'] = function () {
   }
 
   promise._state = states.REJECTED;
-  promise._value = arguments;
+  promise.value = arguments;
 
   var callbacks = promise._callbacks['fail'];
   var callback;
 
   for (var i = 0, l = callbacks.length; i < l; i++) {
     callback = callbacks[i];
-    callback.fn.apply(callback.ctx, promise._value);
+    callback.fn.apply(callback.ctx, promise.value);
   }
 
   return this;
@@ -281,17 +281,17 @@ fn['resolve'] = function (x) {
       }
 
       if (isPromiseOrDeferred) {
-        value = isDeferred ? x.promise._value : x._value;
+        value = isDeferred ? x.promise.value : x.value;
       }
 
       promise._state = RESOLVED;
-      promise._value = value || Array.prototype.slice.call(arguments);
+      promise.value = value || Array.prototype.slice.call(arguments);
 
       var callback;
       var callbacks = promise._callbacks['done'];
       for (i = 0, l = callbacks.length; i < l; i++) {
         callback = callbacks[i];
-        callback.fn.apply(callback.ctx, promise._value);
+        callback.fn.apply(callback.ctx, promise.value);
       }
 
       return true;
@@ -303,7 +303,7 @@ fn['resolve'] = function (x) {
       }
 
       if (isPromiseOrDeferred) {
-        value = isDeferred ? x.promise._value : x._value;
+        value = isDeferred ? x.promise.value : x.value;
       }
 
       self.reject.apply(self, value || arguments);
@@ -313,7 +313,7 @@ fn['resolve'] = function (x) {
   }
 
   if (isPromiseOrDeferred) {
-    value = isDeferred ? x.promise._value : x._value;
+    value = isDeferred ? x.promise.value : x.value;
 
     // 2.3.2.3. If x is rejected, reject promise with the same reason.
     if (x.isRejected()) {
@@ -324,12 +324,12 @@ fn['resolve'] = function (x) {
     // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
     if (x.isResolved()) {
       promise._state = RESOLVED;
-      promise._value = value;
+      promise.value = value;
 
       callbacks = promise._callbacks['done'];
       for (i = 0, l = callbacks.length; i < l; i++) {
         callback = callbacks[i];
-        callback.fn.apply(callback.ctx, promise._value);
+        callback.fn.apply(callback.ctx, promise.value);
       }
 
       return this;
@@ -362,12 +362,12 @@ fn['resolve'] = function (x) {
   }
 
   promise._state = RESOLVED;
-  promise._value = arguments;
+  promise.value = arguments;
 
   callbacks = promise._callbacks['done'];
   for (i = 0, l = callbacks.length; i < l; i++) {
     callback = callbacks[i];
-    callback.fn.apply(callback.ctx, promise._value);
+    callback.fn.apply(callback.ctx, promise.value);
   }
 
   return this;

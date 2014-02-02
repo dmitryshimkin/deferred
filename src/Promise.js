@@ -5,7 +5,7 @@
 
 var Promise = function () {
   this._state = states.PENDING;
-  this._value = [];
+  this.value = [];
   this._callbacks = {
     done: [],
     fail: []
@@ -50,7 +50,7 @@ proto['done'] = function (cb, ctx) {
       ctx: ctx
     });
   } else if (state === states.RESOLVED) {
-    cb.apply(ctx, this._value);
+    cb.apply(ctx, this.value);
   }
 
   return this;
@@ -73,7 +73,7 @@ proto['fail'] = function (cb, ctx) {
       ctx: ctx
     });
   } else if (state === states.REJECTED) {
-    cb.apply(ctx, this._value);
+    cb.apply(ctx, this.value);
   }
   return this;
 };
@@ -148,7 +148,7 @@ proto['then'] = function (onResolve, onReject, ctx) {
       }
     });
   } else if (this._state === states.RESOLVED) {
-    deferred2.resolve.apply(deferred2, this._value);
+    deferred2.resolve.apply(deferred2, this.value);
   }
 
   if (typeof onReject === func) {
@@ -174,7 +174,7 @@ proto['then'] = function (onResolve, onReject, ctx) {
       }
     });
   } else if (this._state === states.REJECTED) {
-    deferred2.reject.apply(deferred2, this._value);
+    deferred2.reject.apply(deferred2, this.value);
   }
 
   return deferred2.promise;
