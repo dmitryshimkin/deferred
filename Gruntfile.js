@@ -93,14 +93,16 @@ module.exports = function(grunt) {
     },
 
     wrap: {
-      all: {
+      dev: {
         src: ['build/deferred.js'],
         dest: '',
-        indent: '  ',
-        wrapper: [
-          ';(function (undefined) {\n\'use strict\';\n',
-          '\n}());'
-        ]
+        options: {
+          indent: '  ',
+          wrapper: [
+            ';(function (undefined) {\n  \'use strict\';',
+            '}());\n'
+          ]
+        }
       }
     }
   });
@@ -111,7 +113,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-wrap');
 
-  grunt.registerTask('build-dev', ['concat:dev', 'wrap']);
+  grunt.registerTask('build-dev', ['concat:dev', 'wrap:dev']);
   grunt.registerTask('build-test', ['concat:test', 'wrap']);
   grunt.registerTask('build-prod', ['build-dev']);
   grunt.registerTask('test-dev', ['build-test', 'jasmine:dev']);
