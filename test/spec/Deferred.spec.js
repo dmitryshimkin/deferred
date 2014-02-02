@@ -152,8 +152,18 @@
         expect(spy3.calls.length).toBe(1);
       });
 
-      it('nested', function () {
+      xit('nested', function () {
+        //
+      });
 
+      it('another deferred', function () {
+        var d2 = new Deferred();
+
+        d.done(d2);
+        d.resolve('foo', data);
+
+        expect(d2.isResolved()).toBe(true);
+        expect(d2.promise._value).toEqual(['foo', data]);
       });
     });
 
@@ -279,7 +289,17 @@
         expect(spy3.calls.length).toBe(1);
       });
 
-      it('nested', function () {
+      it('another deferred', function () {
+        var d2 = new Deferred();
+
+        d.fail(d2);
+        d.reject('foo', data);
+
+        expect(d2.isRejected()).toBe(true);
+        expect(d2.promise._value).toEqual(['foo', data]);
+      });
+
+      xit('nested', function () {
 
       });
     });

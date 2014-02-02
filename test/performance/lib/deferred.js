@@ -1,4 +1,4 @@
-(function (undefined) {
+;(function (undefined) {
   'use strict';
 
   /**
@@ -380,9 +380,17 @@
    * @public
    */
 
-  fn['done'] = function () {
+  fn['done'] = function (arg) {
     var promise = this.promise;
-    promise.done.apply(promise, arguments);
+
+    if (arg instanceof Deferred) {
+      promise.done(function () {
+        arg.resolve.apply(arg, arguments);
+      });
+    } else {
+      promise.done.apply(promise, arguments);
+    }
+
     return this;
   };
 
@@ -391,9 +399,17 @@
    * @public
    */
 
-  fn['fail'] = function () {
+  fn['fail'] = function (arg) {
     var promise = this.promise;
-    promise.fail.apply(promise, arguments);
+
+    if (arg instanceof Deferred) {
+      promise.fail(function () {
+        arg.reject.apply(arg, arguments);
+      });
+    } else {
+      promise.fail.apply(promise, arguments);
+    }
+
     return this;
   };
 
@@ -452,5 +468,20 @@
 
   };
 
-  window.Deferred = Deferred;
+  /**
+   * Export
+   */
+
+  var obj = 'object';
+
+  if (typeof module === obj && typeof module.exports === obj) {
+    module.exports = Deferred;
+  } else if (typeof define === 'function' && define.amd) {
+    define('Deferred', [], function () {
+      return Deferred;
+    });
+  } else if (typeof window === obj) {
+    window['Deferred'] = Deferred;
+  }
+
 }());

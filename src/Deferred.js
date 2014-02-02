@@ -196,9 +196,17 @@ fn['resolve'] = function (x) {
  * @public
  */
 
-fn['done'] = function () {
+fn['done'] = function (arg) {
   var promise = this.promise;
-  promise.done.apply(promise, arguments);
+
+  if (arg instanceof Deferred) {
+    promise.done(function () {
+      arg.resolve.apply(arg, arguments);
+    });
+  } else {
+    promise.done.apply(promise, arguments);
+  }
+
   return this;
 };
 
@@ -207,9 +215,17 @@ fn['done'] = function () {
  * @public
  */
 
-fn['fail'] = function () {
+fn['fail'] = function (arg) {
   var promise = this.promise;
-  promise.fail.apply(promise, arguments);
+
+  if (arg instanceof Deferred) {
+    promise.fail(function () {
+      arg.reject.apply(arg, arguments);
+    });
+  } else {
+    promise.fail.apply(promise, arguments);
+  }
+
   return this;
 };
 

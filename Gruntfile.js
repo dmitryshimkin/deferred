@@ -12,7 +12,8 @@ module.exports = function(grunt) {
           'build/deferred.js': [
             'src/Promise.js',
             'src/Deferred.js',
-            'src/when.js'
+            'src/when.js',
+            'src/export.js'
           ]
         }
       },
