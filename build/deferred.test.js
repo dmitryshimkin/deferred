@@ -1,5 +1,6 @@
 ;(function (undefined) {
   'use strict';
+
   /** promise states */
   
   var PENDING = 0;
@@ -23,7 +24,7 @@
   var proto = Promise.prototype;
   
   /**
-   * Adds onChangeState listener
+   * @TBD
    * @param cb {Function} Listener
    * @param [ctx] {Object} Listener context
    * @returns {Object} Instance
@@ -31,7 +32,7 @@
    */
   
   proto['always'] = function () {
-    this.then.apply(this, arguments);
+    //
     return this;
   };
   
@@ -77,6 +78,7 @@
     } else if (state === REJECTED) {
       cb.apply(ctx, this.value);
     }
+  
     return this;
   };
   
@@ -111,7 +113,7 @@
   };
   
   /**
-   * Adds onResolve or onReject listener
+   * @TBD
    * @param onResolve {Function}
    * @param onReject {Function}
    * @param [ctx] {Object} Context for listeners

@@ -21,7 +21,7 @@ var Promise = function () {
 var proto = Promise.prototype;
 
 /**
- * Adds onChangeState listener
+ * @TBD
  * @param cb {Function} Listener
  * @param [ctx] {Object} Listener context
  * @returns {Object} Instance
@@ -29,7 +29,7 @@ var proto = Promise.prototype;
  */
 
 proto['always'] = function () {
-  this.then.apply(this, arguments);
+  //
   return this;
 };
 
@@ -75,6 +75,7 @@ proto['fail'] = function (cb, ctx) {
   } else if (state === REJECTED) {
     cb.apply(ctx, this.value);
   }
+
   return this;
 };
 
@@ -109,7 +110,7 @@ proto['isResolved'] = function () {
 };
 
 /**
- * Adds onResolve or onReject listener
+ * @TBD
  * @param onResolve {Function}
  * @param onReject {Function}
  * @param [ctx] {Object} Context for listeners
