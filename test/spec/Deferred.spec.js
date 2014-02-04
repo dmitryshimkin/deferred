@@ -38,8 +38,12 @@
       it('handler', function () {
         var spy = jasmine.createSpy('done');
         var resolved = false;
+        var _this;
 
-        d.done(spy);
+        d.done(function () {
+          _this = this;
+          spy();
+        });
 
         runs(function () {
           setTimeout(function () {
@@ -54,6 +58,7 @@
 
         runs(function () {
           expect(spy).toHaveBeenCalled();
+          expect(_this).toBe(d);
         });
       });
 
@@ -391,9 +396,10 @@
           //
         });
 
-        // 2.2.5. onFulfilled and onReject must be called as functions (i.e. with no this value).
+        // 2.2.5. Spec: onFulfilled and onReject must be called as functions (i.e. with no this value).
+        // This is shit. Context must be a promise or custom one
         describe('context', function () {
-          it('global', function () {
+          it('promise', function () {
             var onResolved = function () {
               _this = this;
             };
@@ -402,7 +408,7 @@
             d.then(onResolved);
             d.resolve();
 
-            expect(_this).toBe(undefined);
+            expect(_this).toBe(d);
           });
 
           it('custom', function () {
@@ -477,9 +483,10 @@
           //
         });
 
-        // 2.2.5. onFulfilled and onReject must be called as functions (i.e. with no this value).
+        // 2.2.5. Spec: onFulfilled and onReject must be called as functions (i.e. with no this value).
+        // This is a piece of shit. Context must be a promise itself of custom one
         describe('context', function () {
-          it('global', function () {
+          it('promise', function () {
             var onReject = function () {
               _this = this;
             };
@@ -488,7 +495,7 @@
             d.then('', onReject);
             d.reject();
 
-            expect(_this).toBe(undefined);
+            expect(_this).toBe(d);
           });
 
           it('custom', function () {
