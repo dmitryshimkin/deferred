@@ -58,20 +58,25 @@
 
         runs(function () {
           expect(spy).toHaveBeenCalled();
-          expect(_this).toBe(d);
+          expect(_this).toBe(d.promise);
         });
       });
 
       it ('handler with context', function () {
         var resolved = false;
-        var ctx;
+        var _this1;
+        var _this2;
         var obj = {
           fn: function () {
-            ctx = this;
+            _this1 = this;
           }
         };
 
-        d.done(obj.fn, obj);
+        d
+          .done(obj.fn, obj)
+          .done(function () {
+            _this2 = this;
+          }, null);
 
         runs(function () {
           setTimeout(function () {
@@ -85,7 +90,8 @@
         }, 'timeout', 100);
 
         runs(function () {
-          expect(ctx).toBe(obj);
+          expect(_this1).toBe(obj);
+          expect(_this2).toBe(null);
         });
       });
 
@@ -408,7 +414,7 @@
             d.then(onResolved);
             d.resolve();
 
-            expect(_this).toBe(d);
+            expect(_this).toBe(d.promise);
           });
 
           it('custom', function () {
@@ -495,7 +501,7 @@
             d.then('', onReject);
             d.reject();
 
-            expect(_this).toBe(d);
+            expect(_this).toBe(d.promise);
           });
 
           it('custom', function () {
@@ -548,7 +554,7 @@
 
           expect(Deferred.isPromise(promise2)).toBe(true);
           expect(Deferred.isDeferred(promise2)).toBe(false);
-          expect(promise2).not.toBe(d);
+          expect(promise2).not.toBe(d.promise);
         });
 
         describe('resolve', function () {

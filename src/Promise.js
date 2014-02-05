@@ -44,6 +44,8 @@ proto['always'] = function () {
 proto['done'] = function (cb, ctx) {
   var state = this._state;
 
+  ctx = ctx !== undefined ? ctx : this;
+
   if (state === PENDING) {
     this._callbacks.done.push({
       fn: cb,
@@ -66,6 +68,8 @@ proto['done'] = function (cb, ctx) {
 
 proto['fail'] = function (cb, ctx) {
   var state = this._state;
+
+  ctx = ctx !== undefined ? ctx : this;
 
   if (state === PENDING) {
     this._callbacks.fail.push({
@@ -125,6 +129,8 @@ proto['then'] = function (onResolve, onReject, ctx) {
   if (lastArg && typeof lastArg !== func) {
     ctx = lastArg;
   }
+
+  ctx = ctx !== undefined ? ctx : this;
 
   if (typeof onResolve === func) {
     this.done(function () {
