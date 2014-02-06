@@ -24,7 +24,7 @@
   var proto = Promise.prototype;
   
   /**
-   * Adds onChangeState listener
+   * @TBD
    * @param cb {Function} Listener
    * @param [ctx] {Object} Listener context
    * @returns {Object} Instance
@@ -32,7 +32,7 @@
    */
   
   proto['always'] = function () {
-    this.then.apply(this, arguments);
+    //
     return this;
   };
   
@@ -46,6 +46,8 @@
   
   proto['done'] = function (cb, ctx) {
     var state = this._state;
+  
+    ctx = ctx !== undefined ? ctx : this;
   
     if (state === PENDING) {
       this._callbacks.done.push({
@@ -70,6 +72,8 @@
   proto['fail'] = function (cb, ctx) {
     var state = this._state;
   
+    ctx = ctx !== undefined ? ctx : this;
+  
     if (state === PENDING) {
       this._callbacks.fail.push({
         fn: cb,
@@ -78,6 +82,7 @@
     } else if (state === REJECTED) {
       cb.apply(ctx, this.value);
     }
+  
     return this;
   };
   
@@ -112,7 +117,7 @@
   };
   
   /**
-   * Adds onResolve or onReject listener
+   * @TBD
    * @param onResolve {Function}
    * @param onReject {Function}
    * @param [ctx] {Object} Context for listeners
@@ -127,6 +132,8 @@
     if (lastArg && typeof lastArg !== func) {
       ctx = lastArg;
     }
+  
+    ctx = ctx !== undefined ? ctx : this;
   
     if (typeof onResolve === func) {
       this.done(function () {
@@ -183,6 +190,7 @@
     return deferred2.promise;
   };
   
+  var counter = 0;
   
   /**
    * Deferred class
@@ -190,7 +198,9 @@
    */
   
   var Deferred = function () {
+    this.uid = counter++;
     this['promise'] = new Promise();
+    this['promise'].uid = this.uid;
   };
   
   var fn = Deferred.prototype;
@@ -463,8 +473,49 @@
     return arg instanceof Deferred;
   };
   
-  Deferred.when = function () {
+  /**
+   * Returns promise that will be resolved when all passed promises or deferreds are resolved
+   * Promise will be rejected if at least on of passed promises or deferreds is rejected
+   * @param promises {Array}
+   * @returns {Promise}
+   */
   
+  Deferred.when = function (promises) {
+    var d = new Deferred();
+    var promise, value;
+    var remain = promises.length;
+    var values = [];
+    var uids = [];
+  
+    var done = function () {
+      var index = uids.indexOf(this.uid);
+      values[index] = arguments;
+      remain = remain - 1;
+      if (remain === 0) {
+        d.resolve.apply(d, values);
+      }
+    };
+  
+    var fail = function (reason) {
+      d.reject(reason);
+    };
+  
+    for (var i = 0, l = promises.length; i < l; i++) {
+      promise = promises[i];
+      promise = promise.promise || promise;
+  
+      uids.push(promise.uid);
+  
+      if (promise._state === REJECTED) {
+        return d.reject(promise.value).promise;
+      }
+  
+      promise
+        .done(done)
+        .fail(fail);
+    }
+  
+    return d.promise;
   };
   
   /**

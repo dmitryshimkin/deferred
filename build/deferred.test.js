@@ -190,6 +190,7 @@
     return deferred2.promise;
   };
   
+  var counter = 0;
   
   /**
    * Deferred class
@@ -197,7 +198,9 @@
    */
   
   var Deferred = function () {
+    this.uid = counter++;
     this['promise'] = new Promise();
+    this['promise'].uid = this.uid;
   };
   
   var fn = Deferred.prototype;
@@ -481,11 +484,14 @@
     var promise, value;
     var remain = promises.length;
     var values = [];
+    var uids = [];
   
     var done = function () {
+      var index = uids.indexOf(this.uid);
+      values[index] = arguments;
       remain = remain - 1;
       if (remain === 0) {
-        d.resolve();
+        d.resolve.apply(d, values);
       }
     };
   
@@ -496,6 +502,8 @@
     for (var i = 0, l = promises.length; i < l; i++) {
       promise = promises[i];
       promise = promise.promise || promise;
+  
+      uids.push(promise.uid);
   
       if (promise._state === REJECTED) {
         return d.reject(promise.value).promise;

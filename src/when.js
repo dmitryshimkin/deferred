@@ -1,5 +1,6 @@
 /**
- *
+ * Returns promise that will be resolved when all passed promises or deferreds are resolved
+ * Promise will be rejected if at least on of passed promises or deferreds is rejected
  * @param promises {Array}
  * @returns {Promise}
  */
@@ -9,11 +10,14 @@ Deferred.when = function (promises) {
   var promise, value;
   var remain = promises.length;
   var values = [];
+  var uids = [];
 
   var done = function () {
+    var index = uids.indexOf(this.uid);
+    values[index] = arguments;
     remain = remain - 1;
     if (remain === 0) {
-      d.resolve();
+      d.resolve.apply(d, values);
     }
   };
 
@@ -24,6 +28,8 @@ Deferred.when = function (promises) {
   for (var i = 0, l = promises.length; i < l; i++) {
     promise = promises[i];
     promise = promise.promise || promise;
+
+    uids.push(promise.uid);
 
     if (promise._state === REJECTED) {
       return d.reject(promise.value).promise;
