@@ -423,6 +423,32 @@
   };
   
   /**
+   * @TBD
+   * @public
+   */
+  
+  fn['always'] = function (arg) {
+    var promise = this.promise;
+  
+    if (arg instanceof Deferred) {
+      promise
+        .done(function () {
+          arg.resolve.apply(arg, arguments);
+        })
+        .fail(function () {
+          arg.reject.apply(arg, arguments);
+        });
+    } else {
+      promise
+        .done.apply(promise, arguments)
+        .fail.apply(promise, arguments);
+    }
+  
+    return this;
+  };
+  
+  
+  /**
    *
    * @public
    */
@@ -517,6 +543,7 @@
   
     return d.promise;
   };
+  
   
   /**
    * Export

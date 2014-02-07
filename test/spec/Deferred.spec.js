@@ -163,10 +163,6 @@
         expect(spy3.calls.length).toBe(1);
       });
 
-      xit('nested', function () {
-        //
-      });
-
       it('another deferred', function () {
         var d2 = new Deferred();
 
@@ -309,16 +305,169 @@
         expect(d2.isRejected()).toBe(true);
         expect(d2.promise.value).toEqual(['foo', data]);
       });
-
-      xit('nested', function () {
-
-      });
     });
 
     // always
 
-    xdescribe('always', function () {
-      //
+    describe('always', function () {
+
+      it('done', function () {
+        var spy = jasmine.createSpy('done');
+        var resolved = false;
+        var _this;
+
+        d.always(function () {
+          _this = this;
+          spy.apply(this, arguments);
+        });
+
+        runs(function () {
+          setTimeout(function () {
+            d.resolve();
+            resolved = true;
+          }, 30);
+        });
+
+        waitsFor(function () {
+          return resolved;
+        }, 'timeout', 100);
+
+        runs(function () {
+          expect(spy).toHaveBeenCalled();
+          expect(_this).toBe(d.promise);
+        });
+      });
+
+      it('fail', function () {
+        var spy = jasmine.createSpy('fail');
+        var rejected = false;
+        var ctx = {
+          foo: 'bar'
+        };
+        var _this;
+
+        d.always(function () {
+          _this = this;
+          spy.apply(this, arguments);
+        }, ctx);
+
+        runs(function () {
+          setTimeout(function () {
+            d.reject();
+            rejected = true;
+          }, 30);
+        });
+
+        waitsFor(function () {
+          return rejected;
+        }, 'timeout', 100);
+
+        runs(function () {
+          expect(spy).toHaveBeenCalled();
+          expect(_this).toBe(ctx);
+        });
+      });
+
+      it('many handlers', function () {
+        var resolved = false;
+
+        var handler1 = function () {
+          __log.push(1);
+        };
+        var handler2 = function () {
+          __log.push(2);
+        };
+        var handler3 = function () {
+          __log.push(3);
+        };
+
+        d
+          .always(handler1)
+          .always(handler2)
+          .always(handler3);
+
+        runs(function () {
+          setTimeout(function () {
+            d.resolve();
+            resolved = true;
+          }, 30);
+        });
+
+        waitsFor(function () {
+          return resolved;
+        }, 'timeout', 100);
+
+        runs(function () {
+          expect(__log.length).toBe(3);
+          expect(__log[0]).toBe(1);
+          expect(__log[1]).toBe(2);
+          expect(__log[2]).toBe(3);
+        });
+      });
+
+      it('resolved promise', function () {
+        var d = new Deferred();
+        var spy1 = jasmine.createSpy('fail1');
+        var spy2 = jasmine.createSpy('fail2');
+        var spy3 = jasmine.createSpy('fail3');
+
+        d
+          .always(spy1)
+          .resolve()
+          .always(spy2)
+          .always(spy3);
+
+        expect(spy1).toHaveBeenCalled();
+        expect(spy1.calls.length).toBe(1);
+
+        expect(spy2).toHaveBeenCalled();
+        expect(spy2.calls.length).toBe(1);
+
+        expect(spy3).toHaveBeenCalled();
+        expect(spy3.calls.length).toBe(1);
+      });
+
+      it('rejected promise', function () {
+        var d = new Deferred();
+        var spy1 = jasmine.createSpy('fail1');
+        var spy2 = jasmine.createSpy('fail2');
+        var spy3 = jasmine.createSpy('fail3');
+
+        d
+          .always(spy1)
+          .reject()
+          .always(spy2)
+          .always(spy3);
+
+        expect(spy1).toHaveBeenCalled();
+        expect(spy1.calls.length).toBe(1);
+
+        expect(spy2).toHaveBeenCalled();
+        expect(spy2.calls.length).toBe(1);
+
+        expect(spy3).toHaveBeenCalled();
+        expect(spy3.calls.length).toBe(1);
+      });
+
+      it('another deferred (done)', function () {
+        var d2 = new Deferred();
+
+        d.always(d2);
+        d.resolve('foo', data);
+
+        expect(d2.isResolved()).toBe(true);
+        expect(d2.promise.value).toEqual(['foo', data]);
+      });
+
+      it('another deferred (fail)', function () {
+        var d2 = new Deferred();
+
+        d.always(d2);
+        d.reject('foo', data);
+
+        expect(d2.isRejected()).toBe(true);
+        expect(d2.promise.value).toEqual(['foo', data]);
+      });
     });
 
     /**

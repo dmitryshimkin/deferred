@@ -1,6 +1,14 @@
 module.exports = function(grunt) {
   'use strict';
 
+  var source = [
+    'src/Promise.js',
+    'src/Deferred.js',
+    'src/when.js',
+    'src/any.js',
+    'src/export.js'
+  ];
+
   grunt.initConfig({
     clean: {
       test: ['build/deferred.test.js']
@@ -9,22 +17,12 @@ module.exports = function(grunt) {
     concat: {
       dev: {
         files: {
-          'build/deferred.js': [
-            'src/Promise.js',
-            'src/Deferred.js',
-            'src/when.js',
-            'src/export.js'
-          ]
+          'build/deferred.js': source
         }
       },
       test: {
         files: {
-          'build/deferred.test.js': [
-            'src/Promise.js',
-            'src/Deferred.js',
-            'src/when.js',
-            'src/export.js'
-          ]
+          'build/deferred.test.js': source
         }
       }
     },
@@ -35,7 +33,8 @@ module.exports = function(grunt) {
         options: {
           specs: [
             'test/spec/Deferred.spec.js',
-            'test/spec/when.spec.js'
+            'test/spec/when.spec.js',
+            'test/spec/any.spec.js'
           ],
           template: require('grunt-template-jasmine-istanbul'),
           outfile: 'test.html',
