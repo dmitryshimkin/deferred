@@ -22,8 +22,7 @@ var proto = Promise.prototype;
 
 /**
  * @TBD
- * @param cb {Function} Listener
- * @param [ctx] {Object} Listener context
+ * @param arg {Function|Deferred} Listener or another deferred (@TODO: test this ==== arg)
  * @returns {Object} Instance
  * @public
  */
@@ -48,23 +47,23 @@ proto['always'] = function (arg) {
 
 /**
  * Adds onResolve listener
- * @param cb {Function} Listener
+ * @param arg {Function|Deferred} Listener of another deferred (@TODO: test this === arg)
  * @param [ctx] {Object} Listener context
  * @returns {Object} Instance
  * @public
  */
 
-proto['done'] = function (cb, ctx) {
+proto['done'] = function (arg, ctx) {
   var state = this._state;
-  var isDeferred = cb instanceof Deferred;
+  var isDeferred = arg instanceof Deferred;
 
   ctx = ctx !== undefined ? ctx : this;
 
   if (state === RESOLVED) {
     if (isDeferred) {
-      cb.resolve.apply(cb, this.value);
+      arg.resolve.apply(arg, this.value);
     } else {
-      cb.apply(ctx, this.value);
+      arg.apply(ctx, this.value);
     }
     return this;
   }
@@ -72,11 +71,11 @@ proto['done'] = function (cb, ctx) {
   if (state === PENDING) {
     if (isDeferred) {
       this.done(function () {
-        cb.resolve.apply(cb, arguments);
+        arg.resolve.apply(arg, arguments);
       });
     } else {
       this._callbacks.done.push({
-        fn: cb,
+        fn: arg,
         ctx: ctx
       });
     }
@@ -87,23 +86,23 @@ proto['done'] = function (cb, ctx) {
 
 /**
  * Adds onReject listener
- * @param cb {Function} Listener
+ * @param arg {Function|Deferred} Listener or another deferred (@TODO: test this === arg)
  * @param [ctx] {Object} Listener context
  * @returns {Object} Instance
  * @public
  */
 
-proto['fail'] = function (cb, ctx) {
+proto['fail'] = function (arg, ctx) {
   var state = this._state;
-  var isDeferred = cb instanceof Deferred;
+  var isDeferred = arg instanceof Deferred;
 
   ctx = ctx !== undefined ? ctx : this;
 
   if (state === REJECTED) {
     if (isDeferred) {
-      cb.reject.apply(cb, this.value);
+      arg.reject.apply(arg, this.value);
     } else {
-      cb.apply(ctx, this.value);
+      arg.apply(ctx, this.value);
     }
     return this;
   }
@@ -111,11 +110,11 @@ proto['fail'] = function (cb, ctx) {
   if (state === PENDING) {
     if (isDeferred) {
       this.fail(function () {
-        cb.reject.apply(cb, arguments);
+        arg.reject.apply(arg, arguments);
       });
     } else {
       this._callbacks.fail.push({
-        fn: cb,
+        fn: arg,
         ctx: ctx
       });
     }
