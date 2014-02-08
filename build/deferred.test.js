@@ -31,8 +31,21 @@
    * @public
    */
   
-  proto['always'] = function () {
-    //
+  proto['always'] = function (arg) {
+    if (arg instanceof Deferred) {
+      this
+        .done(function () {
+          arg.resolve.apply(arg, arguments);
+        })
+        .fail(function () {
+          arg.reject.apply(arg, arguments);
+        });
+    } else {
+      this
+        .done.apply(this, arguments)
+        .fail.apply(this, arguments);
+    }
+  
     return this;
   };
   
@@ -46,16 +59,30 @@
   
   proto['done'] = function (cb, ctx) {
     var state = this._state;
+    var isDeferred = cb instanceof Deferred;
   
     ctx = ctx !== undefined ? ctx : this;
   
+    if (state === RESOLVED) {
+      if (isDeferred) {
+        cb.resolve.apply(cb, this.value);
+      } else {
+        cb.apply(ctx, this.value);
+      }
+      return this;
+    }
+  
     if (state === PENDING) {
-      this._callbacks.done.push({
-        fn: cb,
-        ctx: ctx
-      });
-    } else if (state === RESOLVED) {
-      cb.apply(ctx, this.value);
+      if (isDeferred) {
+        this.done(function () {
+          cb.resolve.apply(cb, arguments);
+        });
+      } else {
+        this._callbacks.done.push({
+          fn: cb,
+          ctx: ctx
+        });
+      }
     }
   
     return this;
@@ -71,16 +98,30 @@
   
   proto['fail'] = function (cb, ctx) {
     var state = this._state;
+    var isDeferred = cb instanceof Deferred;
   
     ctx = ctx !== undefined ? ctx : this;
   
+    if (state === REJECTED) {
+      if (isDeferred) {
+        cb.reject.apply(cb, this.value);
+      } else {
+        cb.apply(ctx, this.value);
+      }
+      return this;
+    }
+  
     if (state === PENDING) {
-      this._callbacks.fail.push({
-        fn: cb,
-        ctx: ctx
-      });
-    } else if (state === REJECTED) {
-      cb.apply(ctx, this.value);
+      if (isDeferred) {
+        this.fail(function () {
+          cb.reject.apply(cb, arguments);
+        });
+      } else {
+        this._callbacks.fail.push({
+          fn: cb,
+          ctx: ctx
+        });
+      }
     }
   
     return this;
@@ -264,7 +305,12 @@
     // 2.3.3.2. If retrieving the property x.then results in a thrown exception e, reject promise with e as the reason
     if (x !== null && (xType === 'object' || xType === func)) {
       try {
-        var then = x.then;
+        var then;
+        if (isDeferred) {
+          then = x.promise.then;
+        } else {
+          then = x.then;
+        }
       } catch (e) {
         this.reject(e);
         return this;
@@ -281,8 +327,6 @@
     } else {
       isPending = false;
     }
-  
-    //var isPending = isPromiseOrDeferred && x.isPending();
   
     // detect if we need onResolve and onReject
     if (thenable && (!isPromiseOrDeferred || isPending)) {
@@ -325,15 +369,16 @@
   
     if (isPromiseOrDeferred) {
       value = isDeferred ? x.promise.value : x.value;
+      var xState = isDeferred ? x.promise._state : x._state;
   
       // 2.3.2.3. If x is rejected, reject promise with the same reason.
-      if (x.isRejected()) {
+      if (xState === REJECTED) {
         this.reject.apply(this, value);
         return this;
       }
   
       // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
-      if (x.isResolved()) {
+      if (xState === RESOLVED) {
         promise._state = RESOLVED;
         promise.value = value;
   
@@ -349,9 +394,11 @@
       // 2.3.2.2. when x is fulfilled, fulfill promise with the same value.
       // 2.3.2.3. When x is rejected, reject promise with the same reason.
       try {
-        x.then(onResolve, onReject);
+        isDeferred
+          ? x.promise.then(onResolve, onReject)
+          : x.then(onResolve, onReject);
       } catch (e) {
-        if (this.isPending()) {
+        if (this.promise._state === PENDING) {
           this.reject(e);
         }
       }
@@ -363,9 +410,11 @@
     // 2.3.3.3.2. If/when rejectPromise is called with a reason r, reject promise with r.
     if (thenable) {
       try {
-        x.then(onResolve, onReject);
+        isDeferred
+          ? x.promise.then(onResolve, onReject)
+          : x.then(onResolve, onReject);
       } catch (e) {
-        if (this.isPending()) {
+        if (this.promise._state === PENDING) {
           this.reject(e);
         }
       }
@@ -382,107 +431,6 @@
     }
   
     return this;
-  };
-  
-  /**
-   *
-   * @public
-   */
-  
-  fn['done'] = function (arg) {
-    var promise = this.promise;
-  
-    if (arg instanceof Deferred) {
-      promise.done(function () {
-        arg.resolve.apply(arg, arguments);
-      });
-    } else {
-      promise.done.apply(promise, arguments);
-    }
-  
-    return this;
-  };
-  
-  /**
-   *
-   * @public
-   */
-  
-  fn['fail'] = function (arg) {
-    var promise = this.promise;
-  
-    if (arg instanceof Deferred) {
-      promise.fail(function () {
-        arg.reject.apply(arg, arguments);
-      });
-    } else {
-      promise.fail.apply(promise, arguments);
-    }
-  
-    return this;
-  };
-  
-  /**
-   * @TBD
-   * @public
-   */
-  
-  fn['always'] = function (arg) {
-    var promise = this.promise;
-  
-    if (arg instanceof Deferred) {
-      promise
-        .done(function () {
-          arg.resolve.apply(arg, arguments);
-        })
-        .fail(function () {
-          arg.reject.apply(arg, arguments);
-        });
-    } else {
-      promise
-        .done.apply(promise, arguments)
-        .fail.apply(promise, arguments);
-    }
-  
-    return this;
-  };
-  
-  
-  /**
-   *
-   * @public
-   */
-  
-  fn['isPending'] = function () {
-    return this.promise._state === PENDING;
-  };
-  
-  /**
-   *
-   * @public
-   */
-  
-  fn['isRejected'] = function () {
-    return this.promise._state === REJECTED;
-  };
-  
-  /**
-   *
-   * @public
-   */
-  
-  fn['isResolved'] = function () {
-    return this.promise._state === RESOLVED;
-  };
-  
-  /**
-   *
-   * @public
-   */
-  
-  fn['then'] = function () {
-    var promise = this.promise;
-    return promise.then.apply(promise, arguments);
   };
   
   /**

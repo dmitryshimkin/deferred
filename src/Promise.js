@@ -28,8 +28,21 @@ var proto = Promise.prototype;
  * @public
  */
 
-proto['always'] = function () {
-  //
+proto['always'] = function (arg) {
+  if (arg instanceof Deferred) {
+    this
+      .done(function () {
+        arg.resolve.apply(arg, arguments);
+      })
+      .fail(function () {
+        arg.reject.apply(arg, arguments);
+      });
+  } else {
+    this
+      .done.apply(this, arguments)
+      .fail.apply(this, arguments);
+  }
+
   return this;
 };
 
@@ -43,16 +56,30 @@ proto['always'] = function () {
 
 proto['done'] = function (cb, ctx) {
   var state = this._state;
+  var isDeferred = cb instanceof Deferred;
 
   ctx = ctx !== undefined ? ctx : this;
 
+  if (state === RESOLVED) {
+    if (isDeferred) {
+      cb.resolve.apply(cb, this.value);
+    } else {
+      cb.apply(ctx, this.value);
+    }
+    return this;
+  }
+
   if (state === PENDING) {
-    this._callbacks.done.push({
-      fn: cb,
-      ctx: ctx
-    });
-  } else if (state === RESOLVED) {
-    cb.apply(ctx, this.value);
+    if (isDeferred) {
+      this.done(function () {
+        cb.resolve.apply(cb, arguments);
+      });
+    } else {
+      this._callbacks.done.push({
+        fn: cb,
+        ctx: ctx
+      });
+    }
   }
 
   return this;
@@ -68,16 +95,30 @@ proto['done'] = function (cb, ctx) {
 
 proto['fail'] = function (cb, ctx) {
   var state = this._state;
+  var isDeferred = cb instanceof Deferred;
 
   ctx = ctx !== undefined ? ctx : this;
 
+  if (state === REJECTED) {
+    if (isDeferred) {
+      cb.reject.apply(cb, this.value);
+    } else {
+      cb.apply(ctx, this.value);
+    }
+    return this;
+  }
+
   if (state === PENDING) {
-    this._callbacks.fail.push({
-      fn: cb,
-      ctx: ctx
-    });
-  } else if (state === REJECTED) {
-    cb.apply(ctx, this.value);
+    if (isDeferred) {
+      this.fail(function () {
+        cb.reject.apply(cb, arguments);
+      });
+    } else {
+      this._callbacks.fail.push({
+        fn: cb,
+        ctx: ctx
+      });
+    }
   }
 
   return this;

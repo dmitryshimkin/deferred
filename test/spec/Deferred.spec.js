@@ -36,11 +36,11 @@
     describe('done', function () {
 
       it('handler', function () {
-        var spy = jasmine.createSpy('done');
+        var spy = jasmine.createSpy('done-spy');
         var resolved = false;
         var _this;
 
-        d.done(function () {
+        d.promise.done(function () {
           _this = this;
           spy();
         });
@@ -72,7 +72,7 @@
           }
         };
 
-        d
+        d.promise
           .done(obj.fn, obj)
           .done(function () {
             _this2 = this;
@@ -108,7 +108,7 @@
           __log.push(3);
         };
 
-        d
+        d.promise
           .done(handler1)
           .done(handler2)
           .done(handler3);
@@ -133,11 +133,10 @@
       });
 
       it('sync call', function () {
-        var spy = jasmine.createSpy('done');
+        var spy = jasmine.createSpy('done-spy');
 
-        d
-          .done(spy)
-          .resolve();
+        d.promise.done(spy);
+        d.resolve();
 
         expect(spy).toHaveBeenCalled();
       });
@@ -147,9 +146,11 @@
         var spy2 = jasmine.createSpy('done2');
         var spy3 = jasmine.createSpy('done3');
 
-        d
-          .done(spy1)
-          .resolve()
+        d.promise.done(spy1);
+
+        d.resolve();
+
+        d.promise
           .done(spy2)
           .done(spy3);
 
@@ -166,10 +167,10 @@
       it('another deferred', function () {
         var d2 = new Deferred();
 
-        d.done(d2);
+        d.promise.done(d2);
         d.resolve('foo', data);
 
-        expect(d2.isResolved()).toBe(true);
+        expect(d2.promise.isResolved()).toBe(true);
         expect(d2.promise.value).toEqual(['foo', data]);
       });
     });
@@ -179,10 +180,10 @@
     describe('fail', function () {
 
       it('handler', function () {
-        var spy = jasmine.createSpy('fail');
+        var spy = jasmine.createSpy('fail-spy');
         var rejected = false;
 
-        d.fail(spy);
+        d.promise.fail(spy);
 
         runs(function () {
           setTimeout(function () {
@@ -209,7 +210,7 @@
           }
         };
 
-        d.fail(obj.fn, obj);
+        d.promise.fail(obj.fn, obj);
 
         runs(function () {
           setTimeout(function () {
@@ -240,7 +241,7 @@
           __log.push(3);
         };
 
-        d
+        d.promise
           .fail(handler1)
           .fail(handler2)
           .fail(handler3);
@@ -265,11 +266,10 @@
       });
 
       it('sync call', function () {
-        var spy = jasmine.createSpy('fail');
+        var spy = jasmine.createSpy('fail-spy');
 
-        d
-          .fail(spy)
-          .reject();
+        d.promise.fail(spy);
+        d.reject();
 
         expect(spy).toHaveBeenCalled();
       });
@@ -280,9 +280,11 @@
         var spy2 = jasmine.createSpy('fail2');
         var spy3 = jasmine.createSpy('fail3');
 
-        d
-          .fail(spy1)
-          .reject()
+        d.promise.fail(spy1);
+
+        d.reject();
+
+        d.promise
           .fail(spy2)
           .fail(spy3);
 
@@ -299,10 +301,10 @@
       it('another deferred', function () {
         var d2 = new Deferred();
 
-        d.fail(d2);
+        d.promise.fail(d2);
         d.reject('foo', data);
 
-        expect(d2.isRejected()).toBe(true);
+        expect(d2.promise.isRejected()).toBe(true);
         expect(d2.promise.value).toEqual(['foo', data]);
       });
     });
@@ -312,11 +314,11 @@
     describe('always', function () {
 
       it('done', function () {
-        var spy = jasmine.createSpy('done');
+        var spy = jasmine.createSpy('done-spy');
         var resolved = false;
         var _this;
 
-        d.always(function () {
+        d.promise.always(function () {
           _this = this;
           spy.apply(this, arguments);
         });
@@ -339,14 +341,14 @@
       });
 
       it('fail', function () {
-        var spy = jasmine.createSpy('fail');
+        var spy = jasmine.createSpy('fail-spy');
         var rejected = false;
         var ctx = {
           foo: 'bar'
         };
         var _this;
 
-        d.always(function () {
+        d.promise.always(function () {
           _this = this;
           spy.apply(this, arguments);
         }, ctx);
@@ -381,7 +383,7 @@
           __log.push(3);
         };
 
-        d
+        d.promise
           .always(handler1)
           .always(handler2)
           .always(handler3);
@@ -411,9 +413,11 @@
         var spy2 = jasmine.createSpy('fail2');
         var spy3 = jasmine.createSpy('fail3');
 
-        d
-          .always(spy1)
-          .resolve()
+        d.promise.always(spy1);
+
+        d.resolve();
+
+        d.promise
           .always(spy2)
           .always(spy3);
 
@@ -433,9 +437,11 @@
         var spy2 = jasmine.createSpy('fail2');
         var spy3 = jasmine.createSpy('fail3');
 
-        d
-          .always(spy1)
-          .reject()
+        d.promise.always(spy1);
+
+        d.reject();
+
+        d.promise
           .always(spy2)
           .always(spy3);
 
@@ -452,20 +458,20 @@
       it('another deferred (done)', function () {
         var d2 = new Deferred();
 
-        d.always(d2);
+        d.promise.always(d2);
         d.resolve('foo', data);
 
-        expect(d2.isResolved()).toBe(true);
+        expect(d2.promise.isResolved()).toBe(true);
         expect(d2.promise.value).toEqual(['foo', data]);
       });
 
       it('another deferred (fail)', function () {
         var d2 = new Deferred();
 
-        d.always(d2);
+        d.promise.always(d2);
         d.reject('foo', data);
 
-        expect(d2.isRejected()).toBe(true);
+        expect(d2.promise.isRejected()).toBe(true);
         expect(d2.promise.value).toEqual(['foo', data]);
       });
     });
@@ -529,7 +535,7 @@
         it('fulfill', function () {
           var onFulfill = jasmine.createSpy('fulfill');
 
-          d.then(onFulfill);
+          d.promise.then(onFulfill);
           d.resolve('foo', data);
 
           expect(onFulfill).toHaveBeenCalledWith('foo', data);
@@ -539,7 +545,7 @@
         it('once', function () {
           var onFulfill = jasmine.createSpy('fulfill');
 
-          d.then(onFulfill);
+          d.promise.then(onFulfill);
           d.resolve('foo', data).resolve(true);
 
           expect(onFulfill).toHaveBeenCalledWith('foo', data);
@@ -560,7 +566,7 @@
             };
             var _this;
 
-            d.then(onResolved);
+            d.promise.then(onResolved);
             d.resolve();
 
             expect(_this).toBe(d.promise);
@@ -573,7 +579,7 @@
             var context = {};
             var _this;
 
-            d.then(onFulfill, undefined, context);
+            d.promise.then(onFulfill, undefined, context);
             d.resolve('foo', data);
 
             expect(_this).toBe(context);
@@ -596,12 +602,12 @@
             log.push(3);
           };
 
-          d.then(onFulfill1);
-          d.then(onFulfill2);
+          d.promise.then(onFulfill1);
+          d.promise.then(onFulfill2);
 
           d.resolve('foo', data);
 
-          d.then(onFulfill3);
+          d.promise.then(onFulfill3);
 
           expect(log.length).toBe(3);
           expect(log.join('')).toBe('123');
@@ -615,7 +621,7 @@
         it('fulfill', function () {
           var onReject = jasmine.createSpy('reject');
 
-          d.then(function () {}, onReject);
+          d.promise.then(function () {}, onReject);
           d.reject('foo', data);
 
           expect(onReject).toHaveBeenCalledWith('foo', data);
@@ -626,7 +632,7 @@
         it('once', function () {
           var onReject = jasmine.createSpy('reject');
 
-          d.then(undefined, onReject);
+          d.promise.then(undefined, onReject);
           d.reject('foo', data).reject(true);
 
           expect(onReject).toHaveBeenCalledWith('foo', data);
@@ -647,7 +653,7 @@
             };
             var _this;
 
-            d.then('', onReject);
+            d.promise.then('', onReject);
             d.reject();
 
             expect(_this).toBe(d.promise);
@@ -660,7 +666,7 @@
             var context = {};
             var _this;
 
-            d.then(function () {}, onReject, context);
+            d.promise.then(function () {}, onReject, context);
             d.reject();
 
             expect(_this).toBe(context);
@@ -683,12 +689,12 @@
             log.push(3);
           };
 
-          d.then('', onReject1);
-          d.then('', onReject2);
+          d.promise.then('', onReject1);
+          d.promise.then('', onReject2);
 
           d.reject();
 
-          d.then('', onReject3);
+          d.promise.then('', onReject3);
 
           expect(log.length).toBe(3);
           expect(log.join('')).toBe('123');
@@ -699,7 +705,7 @@
       describe('return', function () {
 
         it('promise', function () {
-          var promise2 = d.then();
+          var promise2 = d.promise.then();
 
           expect(Deferred.isPromise(promise2)).toBe(true);
           expect(Deferred.isDeferred(promise2)).toBe(false);
@@ -714,7 +720,7 @@
               var onFulfill = function () {
                 return 'bar';
               };
-              var promise2 = d.then(onFulfill);
+              var promise2 = d.promise.then(onFulfill);
               var spy = jasmine.createSpy();
 
               promise2.done(spy);
@@ -730,7 +736,7 @@
               var onReject = function () {
                 return 'bar';
               };
-              var promise2 = d.then('', onReject);
+              var promise2 = d.promise.then('', onReject);
               var spy = jasmine.createSpy();
 
               promise2.done(spy);
@@ -746,11 +752,11 @@
           // 2.2.7.3. If onFulfilled is not a function and promise1 is fulfilled,
           //          promise2 must be fulfilled with the same value.
           it('no onFulfilled and promise is resolved', function () {
-            var spy = jasmine.createSpy('done');
+            var spy = jasmine.createSpy('done-spy');
 
             d.resolve('foo', data);
 
-            var promise2 = d.then('', function () {});
+            var promise2 = d.promise.then('', function () {});
 
             promise2.done(spy);
 
@@ -768,7 +774,7 @@
               var e = new TypeError('error');
               var spy = jasmine.createSpy('');
 
-              var promise2 = d.then(function () {
+              var promise2 = d.promise.then(function () {
                 throw e;
               });
 
@@ -783,9 +789,9 @@
 
             it('onReject', function () {
               var e = new TypeError('error');
-              var spy = jasmine.createSpy('fail');
+              var spy = jasmine.createSpy('fail-spy');
 
-              var promise2 = d.then(undefined, function () {
+              var promise2 = d.promise.then(undefined, function () {
                 throw e;
               });
 
@@ -802,11 +808,11 @@
           // 2.2.7.4. If onReject is not a function and promise1 is rejected,
           //          promise2 must be rejected with the same reason.
           it('no onReject and promise is rejected', function () {
-            var spy = jasmine.createSpy('fail');
+            var spy = jasmine.createSpy('fail-spy');
 
             d.reject(data, 'foo');
 
-            var promise2 = d.then(function () {}, 'bar');
+            var promise2 = d.promise.then(function () {}, 'bar');
 
             promise2.fail(spy);
 
@@ -868,18 +874,18 @@
 
       // @TODO: move from this describe
       it('isResolved', function () {
-        expect(d.isPending()).toBe(true);
+        expect(d.promise.isPending()).toBe(true);
         d.resolve();
-        expect(d.isResolved()).toBe(true);
+        expect(d.promise.isResolved()).toBe(true);
       });
 
       it('already resolved', function () {
         var spy1 = jasmine.createSpy('done1');
         var spy2 = jasmine.createSpy('done2');
 
-        d.done(spy1);
+        d.promise.done(spy1);
         d.resolve();
-        d.done(spy2);
+        d.promise.done(spy2);
         d.resolve();
 
         expect(spy1).toHaveBeenCalled();
@@ -893,9 +899,9 @@
         var spy1 = jasmine.createSpy('done1');
         var spy2 = jasmine.createSpy('done2');
 
-        d.done(spy1);
+        d.promise.done(spy1);
         d.reject();
-        d.done(spy2);
+        d.promise.done(spy2);
         d.resolve();
 
         expect(spy1).not.toHaveBeenCalled();
@@ -906,86 +912,43 @@
       describe('with promise', function () {
 
         // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
-        describe('the same', function () {
-          it('deferred', function () {
-            var x = d;
-            var reason;
+        it('the same', function () {
+          var x = d.promise;
+          var reason;
 
-            d.fail(function () {
-              reason = arguments[0];
-            });
-
-            d.resolve(x);
-
-            expect(reason instanceof TypeError).toBe(true);
+          d.promise.fail(function () {
+            reason = arguments[0];
           });
 
-          it('promise', function () {
-            var x = d.promise;
-            var reason;
+          d.resolve(x);
 
-            d.fail(function () {
-              reason = arguments[0];
-            });
-
-            d.resolve(x);
-
-            expect(reason instanceof TypeError).toBe(true);
-          });
+          expect(reason instanceof TypeError).toBe(true);
         });
 
         // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
-        describe('fulfilled', function () {
-          it('promise', function () {
-            var x = new Deferred();
-            var spy = jasmine.createSpy('done');
+        it('fulfilled', function () {
+          var x = new Deferred();
+          var spy = jasmine.createSpy('done-spy');
 
-            d.done(spy);
+          d.promise.done(spy);
 
-            x.resolve('foo', data);
-            d.resolve(x.promise);
+          x.resolve('foo', data);
+          d.resolve(x.promise);
 
-            expect(spy).toHaveBeenCalledWith('foo', data);
-          });
-
-          it('deferred', function () {
-            var x = new Deferred();
-            var spy = jasmine.createSpy('done');
-
-            d.done(spy);
-
-            x.resolve('foo', data);
-            d.resolve(x);
-
-            expect(spy).toHaveBeenCalledWith('foo', data);
-          });
+          expect(spy).toHaveBeenCalledWith('foo', data);
         });
 
         // 2.3.2.3. If/when x is rejected, reject promise with the same reason.
-        describe('rejected', function () {
-          it('promise', function () {
-            var x = new Deferred();
-            var spy = jasmine.createSpy('fail');
+        it('rejected', function () {
+          var x = new Deferred();
+          var spy = jasmine.createSpy('fail-spy');
 
-            d.fail(spy);
+          d.promise.fail(spy);
 
-            x.reject('foo', data);
-            d.resolve(x.promise);
+          x.reject('foo', data);
+          d.resolve(x.promise);
 
-            expect(spy).toHaveBeenCalledWith('foo', data);
-          });
-
-          it('deferred', function () {
-            var x = new Deferred();
-            var spy = jasmine.createSpy('fail');
-
-            d.fail(spy);
-
-            x.reject();
-            d.resolve(x);
-
-            expect(spy).toHaveBeenCalledWith();
-          });
+          expect(spy).toHaveBeenCalledWith('foo', data);
         });
 
         // 2.3.2.1. If x is pending, promise must remain pending until x is fulfilled or rejected.
@@ -994,15 +957,15 @@
           // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
           it('fulfill', function () {
             var x = new Deferred();
-            var spy = jasmine.createSpy('done');
+            var spy = jasmine.createSpy('done-spy');
             var done = false;
             var isPending;
 
             runs(function () {
-              d.done(spy);
+              d.promise.done(spy);
               d.resolve(x);
 
-              isPending = d.isPending();
+              isPending = d.promise.isPending();
 
               setTimeout(function () {
                 x.resolve('foo', data);
@@ -1023,15 +986,15 @@
           // 2.3.2.3. If/when x is rejected, reject promise with the same reason.
           it('reject', function () {
             var x = new Deferred();
-            var spy = jasmine.createSpy('fail');
+            var spy = jasmine.createSpy('fail-spy');
             var done = false;
             var isPending;
 
             runs(function () {
-              d.fail(spy);
+              d.promise.fail(spy);
               d.resolve(x);
 
-              isPending = d.isPending();
+              isPending = d.promise.isPending();
 
               setTimeout(function () {
                 x.reject('foo', data);
@@ -1058,14 +1021,14 @@
         //          reject promise with e as the reason.
         it('exception', function () {
           var x = {};
-          var spy = jasmine.createSpy('fail');
+          var spy = jasmine.createSpy('fail-spy');
           var e = new TypeError;
 
           x.__defineGetter__('then', function () {
             throw e;
           });
 
-          d.fail(spy);
+          d.promise.fail(spy);
           d.resolve(x);
 
           expect(spy).toHaveBeenCalledWith(e);
@@ -1079,7 +1042,7 @@
           it('resolvePromise called', function () {
             var isPending;
             var done = false;
-            var spy = jasmine.createSpy('done');
+            var spy = jasmine.createSpy('done-spy');
             var x = {
               then: function (resolvePromise, rejectPromise) {
                 setTimeout(function () {
@@ -1090,9 +1053,9 @@
             };
 
             runs(function () {
-              d.done(spy);
+              d.promise.done(spy);
               d.resolve(x);
-              isPending = d.isPending();
+              isPending = d.promise.isPending();
             });
 
             waitsFor(function () {
@@ -1109,7 +1072,7 @@
           it('rejectPromise called', function () {
             var isPending;
             var done = false;
-            var spy = jasmine.createSpy('fail');
+            var spy = jasmine.createSpy('fail-spy');
             var x = {
               then: function (resolvePromise, rejectPromise) {
                 setTimeout(function () {
@@ -1120,9 +1083,9 @@
             };
 
             runs(function () {
-              d.fail(spy);
+              d.promise.fail(spy);
               d.resolve(x);
-              isPending = d.isPending();
+              isPending = d.promise.isPending();
             });
 
             waitsFor(function () {
@@ -1141,8 +1104,8 @@
           it('both called', function() {
             var isPending;
             var done = false;
-            var doneSpy = jasmine.createSpy('done');
-            var failSpy = jasmine.createSpy('fail');
+            var doneSpy = jasmine.createSpy('done-spy');
+            var failSpy = jasmine.createSpy('fail-spy');
             var x = {
               then: function (resolvePromise, rejectPromise) {
                 setTimeout(function () {
@@ -1154,11 +1117,11 @@
             };
 
             runs(function () {
-              d
+              d.promise
                 .done(doneSpy)
-                .fail(failSpy)
-                .resolve(x);
-              isPending = d.isPending();
+                .fail(failSpy);
+              d.resolve(x);
+              isPending = d.promise.isPending();
             });
 
             waitsFor(function () {
@@ -1178,7 +1141,7 @@
             //2.3.3.3.4.1. If resolvePromise or rejectPromise have been called, ignore it.
             it('after resolvePromise', function () {
               var done = false;
-              var spy = jasmine.createSpy('done');
+              var spy = jasmine.createSpy('done-spy');
               var x = {
                 then: function (resolvePromise, rejectPromise) {
                   resolvePromise('foo', data);
@@ -1186,7 +1149,7 @@
                 }
               };
 
-              d.done(spy);
+              d.promise.done(spy);
               d.resolve(x);
 
               expect(spy).toHaveBeenCalledWith('foo', data);
@@ -1195,7 +1158,7 @@
             //2.3.3.3.4.1   If resolvePromise or rejectPromise have been called, ignore it.
             it('after rejectPromise', function () {
               var done = false;
-              var spy = jasmine.createSpy('fail');
+              var spy = jasmine.createSpy('fail-spy');
               var x = {
                 then: function (resolvePromise, rejectPromise) {
                   rejectPromise('foo', data);
@@ -1203,7 +1166,7 @@
                 }
               };
 
-              d.fail(spy);
+              d.promise.fail(spy);
               d.resolve(x);
 
               expect(spy).toHaveBeenCalledWith('foo', data);
@@ -1212,7 +1175,7 @@
             // 2.3.3.3.4.2. Otherwise, reject promise with e as the reason.
             it('before resolvePromise/rejectPromise', function () {
               var done = false;
-              var spy = jasmine.createSpy('fail');
+              var spy = jasmine.createSpy('fail-spy');
               var e = new Error;
               var x = {
                 then: function () {
@@ -1220,7 +1183,7 @@
                 }
               };
 
-              d.fail(spy);
+              d.promise.fail(spy);
               d.resolve(x);
 
               expect(spy).toHaveBeenCalledWith(e);
@@ -1234,9 +1197,9 @@
             then: {}
           };
 
-          var spy = jasmine.createSpy('done');
+          var spy = jasmine.createSpy('done-spy');
 
-          d.done(spy);
+          d.promise.done(spy);
           d.resolve(x, 'foo', data);
 
           expect(spy).toHaveBeenCalledWith(x, 'foo', data);
@@ -1247,9 +1210,9 @@
       describe('with value', function () {
         var d = new Deferred();
         var x = 'foo';
-        var spy = jasmine.createSpy('done');
+        var spy = jasmine.createSpy('done-spy');
 
-        d.done(spy);
+        d.promise.done(spy);
         d.resolve(x, data);
 
         expect(spy).toHaveBeenCalledWith('foo', data);
@@ -1261,18 +1224,18 @@
     describe('reject', function () {
 
       it('isRejected', function () {
-        expect(d.isPending()).toBe(true);
+        expect(d.promise.isPending()).toBe(true);
         d.reject();
-        expect(d.isRejected()).toBe(true);
+        expect(d.promise.isRejected()).toBe(true);
       });
 
       it('already rejected', function () {
         var spy1 = jasmine.createSpy('fail1');
         var spy2 = jasmine.createSpy('fail2');
 
-        d.fail(spy1);
+        d.promise.fail(spy1);
         d.reject();
-        d.fail(spy2);
+        d.promise.fail(spy2);
         d.reject();
 
         expect(spy1).toHaveBeenCalled();
@@ -1286,9 +1249,9 @@
         var spy1 = jasmine.createSpy('fail1');
         var spy2 = jasmine.createSpy('fail2');
 
-        d.fail(spy1);
+        d.promise.fail(spy1);
         d.resolve();
-        d.fail(spy2);
+        d.promise.fail(spy2);
         d.reject();
 
         expect(spy1).not.toHaveBeenCalled();
@@ -1299,10 +1262,10 @@
         var spy1 = jasmine.createSpy('fail1');
         var spy2 = jasmine.createSpy('fail2');
 
-        d.fail(spy1);
+        d.promise.fail(spy1);
         d.reject('foo', 'bar', data);
         d.reject('another value');
-        d.fail(spy2);
+        d.promise.fail(spy2);
 
         expect(spy1).toHaveBeenCalledWith('foo', 'bar', data);
         expect(spy2).toHaveBeenCalledWith('foo', 'bar', data);

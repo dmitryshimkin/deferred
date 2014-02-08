@@ -72,7 +72,12 @@ fn['resolve'] = function (x) {
   // 2.3.3.2. If retrieving the property x.then results in a thrown exception e, reject promise with e as the reason
   if (x !== null && (xType === 'object' || xType === func)) {
     try {
-      var then = x.then;
+      var then;
+      if (isDeferred) {
+        then = x.promise.then;
+      } else {
+        then = x.then;
+      }
     } catch (e) {
       this.reject(e);
       return this;
@@ -89,8 +94,6 @@ fn['resolve'] = function (x) {
   } else {
     isPending = false;
   }
-
-  //var isPending = isPromiseOrDeferred && x.isPending();
 
   // detect if we need onResolve and onReject
   if (thenable && (!isPromiseOrDeferred || isPending)) {
@@ -133,15 +136,16 @@ fn['resolve'] = function (x) {
 
   if (isPromiseOrDeferred) {
     value = isDeferred ? x.promise.value : x.value;
+    var xState = isDeferred ? x.promise._state : x._state;
 
     // 2.3.2.3. If x is rejected, reject promise with the same reason.
-    if (x.isRejected()) {
+    if (xState === REJECTED) {
       this.reject.apply(this, value);
       return this;
     }
 
     // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
-    if (x.isResolved()) {
+    if (xState === RESOLVED) {
       promise._state = RESOLVED;
       promise.value = value;
 
@@ -157,9 +161,11 @@ fn['resolve'] = function (x) {
     // 2.3.2.2. when x is fulfilled, fulfill promise with the same value.
     // 2.3.2.3. When x is rejected, reject promise with the same reason.
     try {
-      x.then(onResolve, onReject);
+      isDeferred
+        ? x.promise.then(onResolve, onReject)
+        : x.then(onResolve, onReject);
     } catch (e) {
-      if (this.isPending()) {
+      if (this.promise._state === PENDING) {
         this.reject(e);
       }
     }
@@ -171,9 +177,11 @@ fn['resolve'] = function (x) {
   // 2.3.3.3.2. If/when rejectPromise is called with a reason r, reject promise with r.
   if (thenable) {
     try {
-      x.then(onResolve, onReject);
+      isDeferred
+        ? x.promise.then(onResolve, onReject)
+        : x.then(onResolve, onReject);
     } catch (e) {
-      if (this.isPending()) {
+      if (this.promise._state === PENDING) {
         this.reject(e);
       }
     }
@@ -190,107 +198,6 @@ fn['resolve'] = function (x) {
   }
 
   return this;
-};
-
-/**
- *
- * @public
- */
-
-fn['done'] = function (arg) {
-  var promise = this.promise;
-
-  if (arg instanceof Deferred) {
-    promise.done(function () {
-      arg.resolve.apply(arg, arguments);
-    });
-  } else {
-    promise.done.apply(promise, arguments);
-  }
-
-  return this;
-};
-
-/**
- *
- * @public
- */
-
-fn['fail'] = function (arg) {
-  var promise = this.promise;
-
-  if (arg instanceof Deferred) {
-    promise.fail(function () {
-      arg.reject.apply(arg, arguments);
-    });
-  } else {
-    promise.fail.apply(promise, arguments);
-  }
-
-  return this;
-};
-
-/**
- * @TBD
- * @public
- */
-
-fn['always'] = function (arg) {
-  var promise = this.promise;
-
-  if (arg instanceof Deferred) {
-    promise
-      .done(function () {
-        arg.resolve.apply(arg, arguments);
-      })
-      .fail(function () {
-        arg.reject.apply(arg, arguments);
-      });
-  } else {
-    promise
-      .done.apply(promise, arguments)
-      .fail.apply(promise, arguments);
-  }
-
-  return this;
-};
-
-
-/**
- *
- * @public
- */
-
-fn['isPending'] = function () {
-  return this.promise._state === PENDING;
-};
-
-/**
- *
- * @public
- */
-
-fn['isRejected'] = function () {
-  return this.promise._state === REJECTED;
-};
-
-/**
- *
- * @public
- */
-
-fn['isResolved'] = function () {
-  return this.promise._state === RESOLVED;
-};
-
-/**
- *
- * @public
- */
-
-fn['then'] = function () {
-  var promise = this.promise;
-  return promise.then.apply(promise, arguments);
 };
 
 /**
