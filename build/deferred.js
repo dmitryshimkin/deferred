@@ -25,8 +25,7 @@
   
   /**
    * @TBD
-   * @param cb {Function} Listener
-   * @param [ctx] {Object} Listener context
+   * @param arg {Function|Deferred} Listener or another deferred (@TODO: test this ==== arg)
    * @returns {Object} Instance
    * @public
    */
@@ -51,23 +50,23 @@
   
   /**
    * Adds onResolve listener
-   * @param cb {Function} Listener
+   * @param arg {Function|Deferred} Listener of another deferred (@TODO: test this === arg)
    * @param [ctx] {Object} Listener context
    * @returns {Object} Instance
    * @public
    */
   
-  proto['done'] = function (cb, ctx) {
+  proto['done'] = function (arg, ctx) {
     var state = this._state;
-    var isDeferred = cb instanceof Deferred;
+    var isDeferred = arg instanceof Deferred;
   
     ctx = ctx !== undefined ? ctx : this;
   
     if (state === RESOLVED) {
       if (isDeferred) {
-        cb.resolve.apply(cb, this.value);
+        arg.resolve.apply(arg, this.value);
       } else {
-        cb.apply(ctx, this.value);
+        arg.apply(ctx, this.value);
       }
       return this;
     }
@@ -75,11 +74,11 @@
     if (state === PENDING) {
       if (isDeferred) {
         this.done(function () {
-          cb.resolve.apply(cb, arguments);
+          arg.resolve.apply(arg, arguments);
         });
       } else {
         this._callbacks.done.push({
-          fn: cb,
+          fn: arg,
           ctx: ctx
         });
       }
@@ -90,23 +89,23 @@
   
   /**
    * Adds onReject listener
-   * @param cb {Function} Listener
+   * @param arg {Function|Deferred} Listener or another deferred (@TODO: test this === arg)
    * @param [ctx] {Object} Listener context
    * @returns {Object} Instance
    * @public
    */
   
-  proto['fail'] = function (cb, ctx) {
+  proto['fail'] = function (arg, ctx) {
     var state = this._state;
-    var isDeferred = cb instanceof Deferred;
+    var isDeferred = arg instanceof Deferred;
   
     ctx = ctx !== undefined ? ctx : this;
   
     if (state === REJECTED) {
       if (isDeferred) {
-        cb.reject.apply(cb, this.value);
+        arg.reject.apply(arg, this.value);
       } else {
-        cb.apply(ctx, this.value);
+        arg.apply(ctx, this.value);
       }
       return this;
     }
@@ -114,11 +113,11 @@
     if (state === PENDING) {
       if (isDeferred) {
         this.fail(function () {
-          cb.reject.apply(cb, arguments);
+          arg.reject.apply(arg, arguments);
         });
       } else {
         this._callbacks.fail.push({
-          fn: cb,
+          fn: arg,
           ctx: ctx
         });
       }
@@ -232,6 +231,7 @@
   };
   
   var counter = 0;
+  var slice = Array.prototype.slice;
   
   /**
    * Deferred class
@@ -260,7 +260,7 @@
     }
   
     promise._state = REJECTED;
-    promise.value = arguments;
+    promise.value = slice.call(arguments);
   
     var callbacks = promise._callbacks.fail;
     var callback;
@@ -422,7 +422,7 @@
     }
   
     promise._state = RESOLVED;
-    promise.value = arguments;
+    promise.value = slice.call(arguments);
   
     callbacks = promise._callbacks.done;
     for (i = 0, l = callbacks.length; i < l; i++) {
@@ -454,34 +454,46 @@
    * @returns {Promise}
    */
   
-  Deferred.when = function (promises) {
+  Deferred['when'] = function (promises) {
     var d = new Deferred();
-    var promise, value;
+    var promise, index, value;
     var remain = promises.length;
     var values = [];
     var uids = [];
   
     var done = function () {
       var index = uids.indexOf(this.uid);
-      values[index] = arguments;
+      values[index] = slice.call(arguments);
       remain = remain - 1;
       if (remain === 0) {
         d.resolve.apply(d, values);
       }
     };
   
-    var fail = function (reason) {
-      d.reject(reason);
+    var fail = function () {
+      var args = slice.call(arguments);
+      var index = uids.indexOf(this.uid);
+  
+      args.push(index);
+  
+      d.reject.apply(d, args);
     };
   
     for (var i = 0, l = promises.length; i < l; i++) {
       promise = promises[i];
-      promise = promise.promise || promise;
+  
+      if (promise instanceof Deferred) {
+        promise = promise.promise;
+      }
   
       uids.push(promise.uid);
   
       if (promise._state === REJECTED) {
-        return d.reject(promise.value).promise;
+        index = uids.indexOf(promise.uid);
+        value = promise.value;
+        value.push(index);
+  
+        return d.reject.apply(d, value).promise;
       }
   
       promise
@@ -492,6 +504,62 @@
     return d.promise;
   };
   
+  /**
+   * Returns promise that will be resolved once any of passed promises or deferreds is resolved
+   * Promise will be rejected if all of passed promises or deferreds are rejected
+   * @param promises {Array}
+   * @returns {Promise}
+   */
+  
+  Deferred['any'] = function (promises) {
+    var d = new Deferred();
+    var promise;
+    var remain = promises.length;
+    var values = [], value, index;
+    var uids = [];
+  
+    var done = function () {
+      var args = slice.call(arguments);
+      var index = uids.indexOf(this.uid);
+  
+      args.push(index);
+  
+      d.resolve.apply(d, args);
+    };
+  
+    var fail = function () {
+      var index = uids.indexOf(this.uid);
+      values[index] = slice.call(arguments);
+      remain = remain - 1;
+      if (remain === 0) {
+        d.reject.apply(d, values);
+      }
+    };
+  
+    for (var i = 0, l = promises.length; i < l; i++) {
+      promise = promises[i];
+  
+      if (promise instanceof Deferred) {
+        promise = promise.promise;
+      }
+  
+      uids.push(promise.uid);
+  
+      if (promise._state === RESOLVED) {
+        index = uids.indexOf(promise.uid);
+        value = promise.value;
+        value.push(index);
+  
+        return d.resolve.apply(d, value).promise;
+      }
+  
+      promise
+        .done(done)
+        .fail(fail);
+    }
+  
+    return d.promise;
+  };
   
   /**
    * Export
