@@ -190,7 +190,7 @@ fn['resolve'] = function (x) {
   }
 
   promise._state = RESOLVED;
-  promise.value = arguments;
+  promise.value = slice.call(arguments);
 
   callbacks = promise._callbacks.done;
   for (i = 0, l = callbacks.length; i < l; i++) {

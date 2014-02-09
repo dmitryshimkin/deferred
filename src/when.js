@@ -14,7 +14,7 @@ Deferred['when'] = function (promises) {
 
   var done = function () {
     var index = uids.indexOf(this.uid);
-    values[index] = arguments;
+    values[index] = slice.call(arguments);
     remain = remain - 1;
     if (remain === 0) {
       d.resolve.apply(d, values);
