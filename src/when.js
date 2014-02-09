@@ -5,9 +5,9 @@
  * @returns {Promise}
  */
 
-Deferred.when = function (promises) {
+Deferred['when'] = function (promises) {
   var d = new Deferred();
-  var promise, value;
+  var promise;
   var remain = promises.length;
   var values = [];
   var uids = [];
@@ -21,8 +21,8 @@ Deferred.when = function (promises) {
     }
   };
 
-  var fail = function (reason) {
-    d.reject(reason);
+  var fail = function () {
+    d.reject.apply(d, arguments);
   };
 
   for (var i = 0, l = promises.length; i < l; i++) {

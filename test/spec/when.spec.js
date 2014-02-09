@@ -43,10 +43,10 @@ describe('Promise.when', function () {
     d3.resolve('foo2', 'bar', obj);
     expect(promise.isPending()).toBe(true);
 
-    d1.reject(e);
+    d1.reject(e, 'bar', obj);
 
     expect(promise.isRejected()).toBe(true);
-    expect(spy).toHaveBeenCalledWith(e);
+    expect(spy).toHaveBeenCalledWith(e, 'bar', obj);
   });
 
   it('rejected argument', function () {
