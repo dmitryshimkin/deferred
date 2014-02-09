@@ -28,7 +28,7 @@ fn['reject'] = function () {
   }
 
   promise._state = REJECTED;
-  promise.value = arguments;
+  promise.value = slice.call(arguments);
 
   var callbacks = promise._callbacks.fail;
   var callback;

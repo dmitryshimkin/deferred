@@ -7,7 +7,7 @@
 
 Deferred['when'] = function (promises) {
   var d = new Deferred();
-  var promise;
+  var promise, index, value;
   var remain = promises.length;
   var values = [];
   var uids = [];
@@ -40,7 +40,11 @@ Deferred['when'] = function (promises) {
     uids.push(promise.uid);
 
     if (promise._state === REJECTED) {
-      return d.reject.apply(d, promise.value).promise;
+      index = uids.indexOf(promise.uid);
+      value = promise.value;
+      value.push(index);
+
+      return d.reject.apply(d, value).promise;
     }
 
     promise

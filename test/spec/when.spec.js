@@ -56,14 +56,14 @@ describe('Promise.when', function () {
     var spy = jasmine.createSpy('done');
     var obj = { foo: 'bar' };
 
-    d2.reject(null);
+    d2.reject(null, obj);
 
     var promise = Deferred.when([d1, d2.promise, d3]);
 
     promise.fail(spy);
 
     expect(promise.isRejected()).toBe(true);
-    expect(spy).toHaveBeenCalledWith(null);
+    expect(spy).toHaveBeenCalledWith(null, obj, 1);
   });
 
   it('resolved arguments', function () {
@@ -73,15 +73,15 @@ describe('Promise.when', function () {
     var spy = jasmine.createSpy('done');
     var obj = { foo: 'bar' };
 
-    d2.resolve('2');
+    d2.resolve('2', 'foo');
     d1.resolve('1');
-    d3.resolve('3');
+    d3.resolve('3', null);
 
     var promise = Deferred.when([d1, d2.promise, d3]);
 
     promise.done(spy);
 
     expect(promise.isResolved()).toBe(true);
-    expect(spy).toHaveBeenCalledWith(['1'], ['2'], ['3']);
+    expect(spy).toHaveBeenCalledWith(['1'], ['2', 'foo'], ['3', null]);
   });
 });
