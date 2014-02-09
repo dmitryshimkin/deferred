@@ -27,12 +27,15 @@ Deferred.when = function (promises) {
 
   for (var i = 0, l = promises.length; i < l; i++) {
     promise = promises[i];
-    promise = promise.promise || promise;
+
+    if (promise instanceof Deferred) {
+      promise = promise.promise;
+    }
 
     uids.push(promise.uid);
 
     if (promise._state === REJECTED) {
-      return d.reject(promise.value).promise;
+      return d.reject.apply(d, promise.value).promise;
     }
 
     promise
