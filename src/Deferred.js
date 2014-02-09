@@ -1,4 +1,5 @@
 var counter = 0;
+var slice = Array.prototype.slice;
 
 /**
  * Deferred class

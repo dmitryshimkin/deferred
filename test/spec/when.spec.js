@@ -46,7 +46,7 @@ describe('Promise.when', function () {
     d1.reject(e, 'bar', obj);
 
     expect(promise.isRejected()).toBe(true);
-    expect(spy).toHaveBeenCalledWith(e, 'bar', obj);
+    expect(spy).toHaveBeenCalledWith(e, 'bar', obj, 0);
   });
 
   it('rejected argument', function () {

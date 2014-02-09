@@ -22,7 +22,12 @@ Deferred['when'] = function (promises) {
   };
 
   var fail = function () {
-    d.reject.apply(d, arguments);
+    var args = slice.call(arguments);
+    var index = uids.indexOf(this.uid);
+
+    args.push(index);
+
+    d.reject.apply(d, args);
   };
 
   for (var i = 0, l = promises.length; i < l; i++) {
