@@ -164,13 +164,16 @@
    * @public
    */
   
-  proto['then'] = function (onResolve, onReject, ctx) {
+  proto['then'] = function (onResolve, onReject, argCtx) {
     var lastArg = arguments[arguments.length - 1];
     var deferred2 = new Deferred();
     var func = 'function';
+    var ctx;
   
-    if (lastArg && typeof lastArg !== func) {
+    if (typeof lastArg !== func) {
       ctx = lastArg;
+    } else {
+      ctx = argCtx;
     }
   
     ctx = ctx !== undefined ? ctx : this;
@@ -281,13 +284,14 @@
   fn['resolve'] = function (x) {
     var promise = this.promise;
     var value, callback, callbacks, i, l;
-    var func = 'function';
-    var self = this;
   
     // ignore non-pending promises
     if (promise._state !== 0) {
       return this;
     }
+  
+    var func = 'function';
+    var self = this;
   
     // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
     if (x === this || x === promise) {

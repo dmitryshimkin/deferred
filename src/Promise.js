@@ -161,13 +161,16 @@ proto['isResolved'] = function () {
  * @public
  */
 
-proto['then'] = function (onResolve, onReject, ctx) {
+proto['then'] = function (onResolve, onReject, argCtx) {
   var lastArg = arguments[arguments.length - 1];
   var deferred2 = new Deferred();
   var func = 'function';
+  var ctx;
 
-  if (lastArg && typeof lastArg !== func) {
+  if (typeof lastArg !== func) {
     ctx = lastArg;
+  } else {
+    ctx = argCtx;
   }
 
   ctx = ctx !== undefined ? ctx : this;

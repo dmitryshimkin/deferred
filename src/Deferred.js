@@ -49,13 +49,14 @@ fn['reject'] = function (reason) {
 fn['resolve'] = function (x) {
   var promise = this.promise;
   var value, callback, callbacks, i, l;
-  var func = 'function';
-  var self = this;
 
   // ignore non-pending promises
   if (promise._state !== 0) {
     return this;
   }
+
+  var func = 'function';
+  var self = this;
 
   // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
   if (x === this || x === promise) {
