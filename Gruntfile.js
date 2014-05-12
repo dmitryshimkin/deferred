@@ -4,8 +4,9 @@ module.exports = function(grunt) {
   var source = [
     'src/Promise.js',
     'src/Deferred.js',
-    'src/when.js',
+    'src/all.js',
     'src/any.js',
+    'src/when.js',
     'src/export.js'
   ];
 
@@ -33,8 +34,8 @@ module.exports = function(grunt) {
         options: {
           specs: [
             'test/spec/Deferred.spec.js',
-            //'test/spec/when.spec.js',
-            //'test/spec/any.spec.js'
+            'test/spec/all.spec.js',
+            'test/spec/any.spec.js'
           ],
           template: require('grunt-template-jasmine-istanbul'),
           outfile: 'test.html',

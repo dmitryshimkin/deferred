@@ -27,19 +27,19 @@ var proto = Promise.prototype;
  * @public
  */
 
-proto['always'] = function (arg) {
+proto['always'] = function (arg, ctx) {
   if (arg instanceof Deferred) {
     this
-      .done(function () {
-        arg.resolve(arg);
+      .done(function (value) {
+        arg.resolve(value);
       })
       .fail(function (reason) {
-        arg.reject.call(arg, reason);
+        arg.reject(reason);
       });
   } else {
     this
-      .done(arg, this)
-      .fail(arg, this);
+      .done(arg, ctx)
+      .fail(arg, ctx);
   }
 
   return this;

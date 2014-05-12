@@ -30,19 +30,19 @@
    * @public
    */
   
-  proto['always'] = function (arg) {
+  proto['always'] = function (arg, ctx) {
     if (arg instanceof Deferred) {
       this
-        .done(function () {
-          arg.resolve(arg);
+        .done(function (value) {
+          arg.resolve(value);
         })
         .fail(function (reason) {
-          arg.reject.call(arg, reason);
+          arg.reject(reason);
         });
     } else {
       this
-        .done(arg, this)
-        .fail(arg, this);
+        .done(arg, ctx)
+        .fail(arg, ctx);
     }
   
     return this;
@@ -455,12 +455,14 @@
    * @returns {Promise}
    */
   
-  Deferred['when'] = function (promises) {
+  Deferred['all'] = function (promises) {
     var d = new Deferred();
     var promise, index, value;
     var remain = promises.length;
     var values = [];
     var uids = [];
+  
+    values.length = promises.length;
   
     var done = function (value) {
       var index = uids.indexOf(this.uid);
@@ -473,7 +475,8 @@
   
     var fail = function (reason) {
       var index = uids.indexOf(this.uid);
-      d.reject(reason, index);
+      values[index] = reason;
+      d.reject(values);
     };
   
     for (var i = 0, l = promises.length; i < l; i++) {
@@ -487,8 +490,8 @@
   
       if (promise._state === 2) {
         index = uids.indexOf(promise.uid);
-        value = promise.value;
-        return d.reject(promise.value, index).promise;
+        values[index] = promise.value;
+        return d.reject(values).promise;
       }
   
       promise
@@ -510,13 +513,17 @@
     var d = new Deferred();
     var promise;
     var remain = promises.length;
-    var values = [], value, index;
+    var values = [];
+    var value;
+    var index;
     var uids = [];
   
+    values.length = promises.length;
+  
     var done = function (value) {
-      var args = slice.call(arguments);
       var index = uids.indexOf(this.uid);
-      d.resolve.call(d, value, index);
+      values[index] = value;
+      d.resolve(values);
     };
   
     var fail = function (reason) {
@@ -524,7 +531,7 @@
       values[index] = reason;
       remain = remain - 1;
       if (remain === 0) {
-        d.reject.apply(d, values);
+        d.reject(values);
       }
     };
   
@@ -539,8 +546,8 @@
   
       if (promise._state === 1) {
         index = uids.indexOf(promise.uid);
-        value = promise.value;
-        return d.resolve.call(d, promise.value, index).promise;
+        values[index] = promise.value;
+        return d.resolve(values).promise;
       }
   
       promise
@@ -550,6 +557,8 @@
   
     return d.promise;
   };
+  
+  //
   
   /**
    * Export

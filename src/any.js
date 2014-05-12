@@ -9,13 +9,17 @@ Deferred['any'] = function (promises) {
   var d = new Deferred();
   var promise;
   var remain = promises.length;
-  var values = [], value, index;
+  var values = [];
+  var value;
+  var index;
   var uids = [];
 
+  values.length = promises.length;
+
   var done = function (value) {
-    var args = slice.call(arguments);
     var index = uids.indexOf(this.uid);
-    d.resolve.call(d, value, index);
+    values[index] = value;
+    d.resolve(values);
   };
 
   var fail = function (reason) {
@@ -23,7 +27,7 @@ Deferred['any'] = function (promises) {
     values[index] = reason;
     remain = remain - 1;
     if (remain === 0) {
-      d.reject.apply(d, values);
+      d.reject(values);
     }
   };
 
@@ -38,8 +42,8 @@ Deferred['any'] = function (promises) {
 
     if (promise._state === 1) {
       index = uids.indexOf(promise.uid);
-      value = promise.value;
-      return d.resolve.call(d, promise.value, index).promise;
+      values[index] = promise.value;
+      return d.resolve(values).promise;
     }
 
     promise

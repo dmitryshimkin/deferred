@@ -17,19 +17,19 @@ describe('any', function () {
     d2.resolve(obj);
 
     expect(promise.isResolved()).toBe(true);
-    expect(spy).toHaveBeenCalledWith(obj, 1);
+    expect(spy).toHaveBeenCalledWith([undefined, obj, undefined]);
   });
 
   it('fail and done', function () {
     var d1 = new Deferred();
     var d2 = new Deferred();
     var d3 = new Deferred();
-    var spy = jasmine.createSpy('done-spy');
+    var doneSpy = jasmine.createSpy('done-spy');
     var obj = { foo: 'bar' };
 
     var promise = Deferred.any([d1, d2.promise, d3]);
 
-    promise.done(spy);
+    promise.done(doneSpy);
 
     expect(Deferred.isPromise(promise)).toBe(true);
     expect(promise.isPending()).toBe(true);
@@ -43,7 +43,7 @@ describe('any', function () {
     d1.resolve(obj);
     expect(promise.isResolved()).toBe(true);
 
-    expect(spy).toHaveBeenCalledWith(obj, 0);
+    expect(doneSpy).toHaveBeenCalledWith([obj, null, 'foo1']);
   });
 
   it('all fail', function () {
@@ -69,7 +69,7 @@ describe('any', function () {
     d1.reject('bar');
 
     expect(promise.isRejected()).toBe(true);
-    expect(spy).toHaveBeenCalledWith('bar', null, obj);
+    expect(spy).toHaveBeenCalledWith(['bar', null, obj]);
   });
 
   it('with resolved argument', function () {
@@ -86,7 +86,7 @@ describe('any', function () {
 
     expect(Deferred.isPromise(promise)).toBe(true);
     expect(promise.isResolved()).toBe(true);
-    expect(spy).toHaveBeenCalledWith('foo', 2);
+    expect(spy).toHaveBeenCalledWith([undefined, undefined, 'foo']);
   });
 
   it('with rejected arguments', function () {
@@ -105,6 +105,6 @@ describe('any', function () {
 
     expect(Deferred.isPromise(promise)).toBe(true);
     expect(promise.isRejected()).toBe(true);
-    expect(spy).toHaveBeenCalledWith('1', '2', '3');
+    expect(spy).toHaveBeenCalledWith(['1', '2', '3']);
   });
 });

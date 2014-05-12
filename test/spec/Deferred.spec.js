@@ -341,17 +341,13 @@
       });
 
       it('fail', function () {
-        var spy = jasmine.createSpy('fail-spy');
+        var failSpy = jasmine.createSpy('fail-spy');
         var rejected = false;
         var ctx = {
           foo: 'bar'
         };
-        var _this;
 
-        d.promise.always(function () {
-          _this = this;
-          spy.apply(this, arguments);
-        }, ctx);
+        d.promise.always(failSpy, ctx);
 
         runs(function () {
           setTimeout(function () {
@@ -365,8 +361,8 @@
         }, 'timeout', 100);
 
         runs(function () {
-          expect(spy).toHaveBeenCalled();
-          expect(_this).toBe(ctx);
+          expect(failSpy).toHaveBeenCalled();
+          expect(failSpy.calls[0].object).toBe(ctx);
         });
       });
 
@@ -466,6 +462,7 @@
       });
 
       it('another deferred (fail)', function () {
+        var d = new Deferred();
         var d2 = new Deferred();
 
         d.promise.always(d2);
