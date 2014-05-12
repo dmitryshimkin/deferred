@@ -1,0 +1,3 @@
+xdescribe('Deferred.all', function () {
+  //
+});
