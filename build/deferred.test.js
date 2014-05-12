@@ -15,10 +15,8 @@
   var Promise = function () {
     this.value = void 0;
     this._state = 0;
-    this._callbacks = {
-      done: [],
-      fail: []
-    };
+    this._doneCallbacks = [];
+    this._failCallbacks = [];
   };
   
   var proto = Promise.prototype;
@@ -77,7 +75,7 @@
           arg.resolve.call(arg, value);
         });
       } else {
-        this._callbacks.done.push({
+        this._doneCallbacks.push({
           fn: arg,
           ctx: ctx
         });
@@ -116,7 +114,7 @@
           arg.reject(reason);
         });
       } else {
-        this._callbacks.fail.push({
+        this._failCallbacks.push({
           fn: arg,
           ctx: ctx
         });
@@ -234,7 +232,6 @@
   };
   
   var counter = 0;
-  var slice = Array.prototype.slice;
   
   /**
    * Deferred class
@@ -265,7 +262,7 @@
     promise._state = 2;
     promise.value = reason;
   
-    var callbacks = promise._callbacks.fail;
+    var callbacks = promise._failCallbacks;
     var callback;
   
     for (var i = 0, l = callbacks.length; i < l; i++) {
@@ -348,7 +345,7 @@
         promise.value = value || argValue;
   
         var callback;
-        var callbacks = promise._callbacks.done;
+        var callbacks = promise._doneCallbacks;
         for (i = 0, l = callbacks.length; i < l; i++) {
           callback = callbacks[i];
           callback.fn.call(callback.ctx, promise.value);
@@ -387,7 +384,7 @@
         promise._state = 1;
         promise.value = value;
   
-        callbacks = promise._callbacks.done;
+        callbacks = promise._doneCallbacks;
         for (i = 0, l = callbacks.length; i < l; i++) {
           callback = callbacks[i];
           callback.fn.call(callback.ctx, promise.value);
@@ -408,6 +405,9 @@
         }
       }
   
+      onResolve = null;
+      onReject = null;
+  
       return this;
     }
   
@@ -423,13 +423,17 @@
           this.reject(e);
         }
       }
+  
+      onResolve = null;
+      onReject = null;
+  
       return this;
     }
   
     promise._state = 1;
     promise.value = x;
   
-    callbacks = promise._callbacks.done;
+    callbacks = promise._doneCallbacks;
     for (i = 0, l = callbacks.length; i < l; i++) {
       callback = callbacks[i];
       callback.fn.call(callback.ctx, promise.value);

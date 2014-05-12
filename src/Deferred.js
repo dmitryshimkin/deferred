@@ -1,5 +1,4 @@
 var counter = 0;
-var slice = Array.prototype.slice;
 
 /**
  * Deferred class
@@ -30,7 +29,7 @@ fn['reject'] = function (reason) {
   promise._state = 2;
   promise.value = reason;
 
-  var callbacks = promise._callbacks.fail;
+  var callbacks = promise._failCallbacks;
   var callback;
 
   for (var i = 0, l = callbacks.length; i < l; i++) {
@@ -113,7 +112,7 @@ fn['resolve'] = function (x) {
       promise.value = value || argValue;
 
       var callback;
-      var callbacks = promise._callbacks.done;
+      var callbacks = promise._doneCallbacks;
       for (i = 0, l = callbacks.length; i < l; i++) {
         callback = callbacks[i];
         callback.fn.call(callback.ctx, promise.value);
@@ -152,7 +151,7 @@ fn['resolve'] = function (x) {
       promise._state = 1;
       promise.value = value;
 
-      callbacks = promise._callbacks.done;
+      callbacks = promise._doneCallbacks;
       for (i = 0, l = callbacks.length; i < l; i++) {
         callback = callbacks[i];
         callback.fn.call(callback.ctx, promise.value);
@@ -173,6 +172,9 @@ fn['resolve'] = function (x) {
       }
     }
 
+    onResolve = null;
+    onReject = null;
+
     return this;
   }
 
@@ -188,13 +190,17 @@ fn['resolve'] = function (x) {
         this.reject(e);
       }
     }
+
+    onResolve = null;
+    onReject = null;
+
     return this;
   }
 
   promise._state = 1;
   promise.value = x;
 
-  callbacks = promise._callbacks.done;
+  callbacks = promise._doneCallbacks;
   for (i = 0, l = callbacks.length; i < l; i++) {
     callback = callbacks[i];
     callback.fn.call(callback.ctx, promise.value);

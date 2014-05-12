@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Performance test</title>
+    <script src="lib/deferred.js"></script>
+  </head>
+  <body>
+    <div id="result"></div>
+    <script>
+
+      var test = function () {
+        var t = window.performance.now();
+        var done = function () {};
+
+        var i = 10000;
+        while (i--) {
+          var d = new Deferred();
+          d.promise.then(done);
+          d.resolve();
+          d = null;
+        }
+
+        done = null;
+
+        t = window.performance.now() - t;
+
+        console.log(t.toFixed(3));
+      };
+
+      start = test;
+    </script>
+  </body>
+</html>

@@ -146,8 +146,10 @@
 
       var testName = window.location.search.replace('?', '');
 
-      if (tests[testName]) {
-        tests[testName]();
+      start = function () {
+        if (tests[testName]) {
+          tests[testName]();
+        }
       }
     </script>
   </body>

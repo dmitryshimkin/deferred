@@ -12,10 +12,8 @@
 var Promise = function () {
   this.value = void 0;
   this._state = 0;
-  this._callbacks = {
-    done: [],
-    fail: []
-  };
+  this._doneCallbacks = [];
+  this._failCallbacks = [];
 };
 
 var proto = Promise.prototype;
@@ -74,7 +72,7 @@ proto['done'] = function (arg, ctx) {
         arg.resolve.call(arg, value);
       });
     } else {
-      this._callbacks.done.push({
+      this._doneCallbacks.push({
         fn: arg,
         ctx: ctx
       });
@@ -113,7 +111,7 @@ proto['fail'] = function (arg, ctx) {
         arg.reject(reason);
       });
     } else {
-      this._callbacks.fail.push({
+      this._failCallbacks.push({
         fn: arg,
         ctx: ctx
       });
