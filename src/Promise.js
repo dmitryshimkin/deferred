@@ -1,8 +1,8 @@
 /** promise states */
 
-var PENDING = 0;
-var RESOLVED = 1;
-var REJECTED = 2;
+//PENDING:  0;
+//RESOLVED: 1;
+//REJECTED: 2;
 
 /**
  * Promise
@@ -10,8 +10,8 @@ var REJECTED = 2;
  */
 
 var Promise = function () {
-  this.value = [];
-  this._state = PENDING;
+  this.value = void 0;
+  this._state = 0;
   this._callbacks = {
     done: [],
     fail: []
@@ -31,15 +31,15 @@ proto['always'] = function (arg) {
   if (arg instanceof Deferred) {
     this
       .done(function () {
-        arg.resolve.apply(arg, arguments);
+        arg.resolve(arg);
       })
-      .fail(function () {
-        arg.reject.apply(arg, arguments);
+      .fail(function (reason) {
+        arg.reject.call(arg, reason);
       });
   } else {
     this
-      .done.apply(this, arguments)
-      .fail.apply(this, arguments);
+      .done(arg, this)
+      .fail(arg, this);
   }
 
   return this;
@@ -47,7 +47,7 @@ proto['always'] = function (arg) {
 
 /**
  * Adds onResolve listener
- * @param arg {Function|Deferred} Listener of another deferred (@TODO: test this === arg)
+ * @param arg {Function|Deferred} Listener or another deferred (@TODO: test this === arg)
  * @param [ctx] {Object} Listener context
  * @returns {Object} Instance
  * @public
@@ -59,19 +59,19 @@ proto['done'] = function (arg, ctx) {
 
   ctx = ctx !== undefined ? ctx : this;
 
-  if (state === RESOLVED) {
+  if (state === 1) {
     if (isDeferred) {
-      arg.resolve.apply(arg, this.value);
+      arg.resolve.call(arg, this.value);
     } else {
-      arg.apply(ctx, this.value);
+      arg.call(ctx, this.value);
     }
     return this;
   }
 
-  if (state === PENDING) {
+  if (state === 0) {
     if (isDeferred) {
-      this.done(function () {
-        arg.resolve.apply(arg, arguments);
+      this.done(function (value) {
+        arg.resolve.call(arg, value);
       });
     } else {
       this._callbacks.done.push({
@@ -98,19 +98,19 @@ proto['fail'] = function (arg, ctx) {
 
   ctx = ctx !== undefined ? ctx : this;
 
-  if (state === REJECTED) {
+  if (state === 2) {
     if (isDeferred) {
-      arg.reject.apply(arg, this.value);
+      arg.reject.call(arg, this.value);
     } else {
-      arg.apply(ctx, this.value);
+      arg.call(ctx, this.value);
     }
     return this;
   }
 
-  if (state === PENDING) {
+  if (state === 0) {
     if (isDeferred) {
-      this.fail(function () {
-        arg.reject.apply(arg, arguments);
+      this.fail(function (reason) {
+        arg.reject(reason);
       });
     } else {
       this._callbacks.fail.push({
@@ -130,7 +130,7 @@ proto['fail'] = function (arg, ctx) {
  */
 
 proto['isPending'] = function () {
-  return this._state === PENDING;
+  return this._state === 0;
 };
 
 /**
@@ -140,7 +140,7 @@ proto['isPending'] = function () {
  */
 
 proto['isRejected'] = function () {
-  return this._state === REJECTED;
+  return this._state === 2;
 };
 
 /**
@@ -150,7 +150,7 @@ proto['isRejected'] = function () {
  */
 
 proto['isResolved'] = function () {
-  return this._state === RESOLVED;
+  return this._state === 1;
 };
 
 /**
@@ -173,11 +173,11 @@ proto['then'] = function (onResolve, onReject, ctx) {
   ctx = ctx !== undefined ? ctx : this;
 
   if (typeof onResolve === func) {
-    this.done(function () {
+    this.done(function (value) {
       var x, error;
 
       try {
-        x = onResolve.apply(ctx, arguments);
+        x = onResolve.call(ctx, value);
       } catch (e) {
         error = e;
       }
@@ -194,16 +194,16 @@ proto['then'] = function (onResolve, onReject, ctx) {
         }
       }
     });
-  } else if (this._state === RESOLVED) {
-    deferred2.resolve.apply(deferred2, this.value);
+  } else if (this._state === 1) {
+    deferred2.resolve(this.value);
   }
 
   if (typeof onReject === func) {
-    this.fail(function () {
+    this.fail(function (reason) {
       var x, error;
 
       try {
-        x = onReject.apply(ctx, arguments);
+        x = onReject.call(ctx, reason);
       } catch (e) {
         error = e;
       }
@@ -220,8 +220,8 @@ proto['then'] = function (onResolve, onReject, ctx) {
         }
       }
     });
-  } else if (this._state === REJECTED) {
-    deferred2.reject.apply(deferred2, this.value);
+  } else if (this._state === 2) {
+    deferred2.reject(this.value);
   }
 
   return deferred2.promise;

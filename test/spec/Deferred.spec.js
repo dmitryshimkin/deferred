@@ -168,10 +168,10 @@
         var d2 = new Deferred();
 
         d.promise.done(d2);
-        d.resolve('foo', data);
+        d.resolve(data);
 
         expect(d2.promise.isResolved()).toBe(true);
-        expect(d2.promise.value).toEqual(['foo', data]);
+        expect(d2.promise.value).toEqual(data);
       });
     });
 
@@ -302,10 +302,10 @@
         var d2 = new Deferred();
 
         d.promise.fail(d2);
-        d.reject('foo', data);
+        d.reject(data);
 
         expect(d2.promise.isRejected()).toBe(true);
-        expect(d2.promise.value).toEqual(['foo', data]);
+        expect(d2.promise.value).toEqual(data);
       });
     });
 
@@ -459,20 +459,20 @@
         var d2 = new Deferred();
 
         d.promise.always(d2);
-        d.resolve('foo', data);
+        d.resolve(data);
 
         expect(d2.promise.isResolved()).toBe(true);
-        expect(d2.promise.value).toEqual(['foo', data]);
+        expect(d2.promise.value).toEqual(data);
       });
 
       it('another deferred (fail)', function () {
         var d2 = new Deferred();
 
         d.promise.always(d2);
-        d.reject('foo', data);
+        d.reject('bar');
 
         expect(d2.promise.isRejected()).toBe(true);
-        expect(d2.promise.value).toEqual(['foo', data]);
+        expect(d2.promise.value).toEqual('bar');
       });
     });
 
@@ -536,9 +536,9 @@
           var onFulfill = jasmine.createSpy('fulfill');
 
           d.promise.then(onFulfill);
-          d.resolve('foo', data);
+          d.resolve(data);
 
-          expect(onFulfill).toHaveBeenCalledWith('foo', data);
+          expect(onFulfill).toHaveBeenCalledWith(data);
         });
 
         // 2.2.2.3. it must not be called more than once.
@@ -546,9 +546,9 @@
           var onFulfill = jasmine.createSpy('fulfill');
 
           d.promise.then(onFulfill);
-          d.resolve('foo', data).resolve(true);
+          d.resolve('foo').resolve(true);
 
-          expect(onFulfill).toHaveBeenCalledWith('foo', data);
+          expect(onFulfill).toHaveBeenCalledWith('foo');
           expect(onFulfill.calls.length).toBe(1);
         });
 
@@ -580,7 +580,7 @@
             var _this;
 
             d.promise.then(onFulfill, undefined, context);
-            d.resolve('foo', data);
+            d.resolve('foo');
 
             expect(_this).toBe(context);
           });
@@ -605,7 +605,7 @@
           d.promise.then(onFulfill1);
           d.promise.then(onFulfill2);
 
-          d.resolve('foo', data);
+          d.resolve('foo');
 
           d.promise.then(onFulfill3);
 
@@ -622,9 +622,9 @@
           var onReject = jasmine.createSpy('reject');
 
           d.promise.then(function () {}, onReject);
-          d.reject('foo', data);
+          d.reject(null);
 
-          expect(onReject).toHaveBeenCalledWith('foo', data);
+          expect(onReject).toHaveBeenCalledWith(null);
         });
 
         // 2.2.3.3. it must not be called more than once.
@@ -633,9 +633,9 @@
           var onReject = jasmine.createSpy('reject');
 
           d.promise.then(undefined, onReject);
-          d.reject('foo', data).reject(true);
+          d.reject(data).reject(true);
 
-          expect(onReject).toHaveBeenCalledWith('foo', data);
+          expect(onReject).toHaveBeenCalledWith(data);
           expect(onReject.calls.length).toBe(1);
         });
 
@@ -754,13 +754,13 @@
           it('no onFulfilled and promise is resolved', function () {
             var spy = jasmine.createSpy('done-spy');
 
-            d.resolve('foo', data);
+            d.resolve(data);
 
             var promise2 = d.promise.then('', function () {});
 
             promise2.done(spy);
 
-            expect(spy).toHaveBeenCalledWith('foo', data);
+            expect(spy).toHaveBeenCalledWith(data);
           });
         });
 
@@ -810,13 +810,13 @@
           it('no onReject and promise is rejected', function () {
             var spy = jasmine.createSpy('fail-spy');
 
-            d.reject(data, 'foo');
+            d.reject('foo');
 
             var promise2 = d.promise.then(function () {}, 'bar');
 
             promise2.fail(spy);
 
-            expect(spy).toHaveBeenCalledWith(data, 'foo');
+            expect(spy).toHaveBeenCalledWith('foo');
           });
         });
       });
@@ -932,10 +932,10 @@
 
           d.promise.done(spy);
 
-          x.resolve('foo', data);
+          x.resolve('foo');
           d.resolve(x.promise);
 
-          expect(spy).toHaveBeenCalledWith('foo', data);
+          expect(spy).toHaveBeenCalledWith('foo');
         });
 
         // 2.3.2.3. If/when x is rejected, reject promise with the same reason.
@@ -945,10 +945,10 @@
 
           d.promise.fail(spy);
 
-          x.reject('foo', data);
+          x.reject(data);
           d.resolve(x.promise);
 
-          expect(spy).toHaveBeenCalledWith('foo', data);
+          expect(spy).toHaveBeenCalledWith(data);
         });
 
         // 2.3.2.1. If x is pending, promise must remain pending until x is fulfilled or rejected.
@@ -968,7 +968,7 @@
               isPending = d.promise.isPending();
 
               setTimeout(function () {
-                x.resolve('foo', data);
+                x.resolve('foo');
                 done = true;
               }, 20);
             });
@@ -979,7 +979,7 @@
 
             runs(function () {
               expect(isPending).toBe(true);
-              expect(spy).toHaveBeenCalledWith('foo', data);
+              expect(spy).toHaveBeenCalledWith('foo');
             });
           });
 
@@ -997,7 +997,7 @@
               isPending = d.promise.isPending();
 
               setTimeout(function () {
-                x.reject('foo', data);
+                x.reject('bar');
                 done = true;
               }, 20);
             });
@@ -1008,7 +1008,7 @@
 
             runs(function () {
               expect(isPending).toBe(true);
-              expect(spy).toHaveBeenCalledWith('foo', data);
+              expect(spy).toHaveBeenCalledWith('bar');
             });
           });
         });
@@ -1046,7 +1046,7 @@
             var x = {
               then: function (resolvePromise, rejectPromise) {
                 setTimeout(function () {
-                  resolvePromise('foo', data);
+                  resolvePromise('foo');
                   done = true;
                 }, 20);
               }
@@ -1064,7 +1064,7 @@
 
             runs(function () {
               expect(isPending).toBe(true);
-              expect(spy).toHaveBeenCalledWith('foo', data);
+              expect(spy).toHaveBeenCalledWith('foo');
             });
           });
 
@@ -1076,7 +1076,7 @@
             var x = {
               then: function (resolvePromise, rejectPromise) {
                 setTimeout(function () {
-                  rejectPromise('foo', data);
+                  rejectPromise('bar');
                   done = true;
                 }, 20);
               }
@@ -1094,7 +1094,7 @@
 
             runs(function () {
               expect(isPending).toBe(true);
-              expect(spy).toHaveBeenCalledWith('foo', data);
+              expect(spy).toHaveBeenCalledWith('bar');
             });
           });
 
@@ -1109,8 +1109,8 @@
             var x = {
               then: function (resolvePromise, rejectPromise) {
                 setTimeout(function () {
-                  resolvePromise('foo', data);
-                  rejectPromise('foo', data);
+                  resolvePromise('foo');
+                  rejectPromise('bar');
                   done = true;
                 }, 20);
               }
@@ -1130,8 +1130,8 @@
 
             runs(function () {
               expect(isPending).toBe(true);
-              expect(doneSpy).toHaveBeenCalledWith('foo', data);
-              expect(failSpy).not.toHaveBeenCalledWith('foo', data);
+              expect(doneSpy).toHaveBeenCalledWith('foo');
+              expect(failSpy).not.toHaveBeenCalled();
             });
           });
 
@@ -1144,7 +1144,7 @@
               var spy = jasmine.createSpy('done-spy');
               var x = {
                 then: function (resolvePromise, rejectPromise) {
-                  resolvePromise('foo', data);
+                  resolvePromise(null);
                   throw new Error;
                 }
               };
@@ -1152,7 +1152,7 @@
               d.promise.done(spy);
               d.resolve(x);
 
-              expect(spy).toHaveBeenCalledWith('foo', data);
+              expect(spy).toHaveBeenCalledWith(null);
             });
 
             //2.3.3.3.4.1   If resolvePromise or rejectPromise have been called, ignore it.
@@ -1161,7 +1161,7 @@
               var spy = jasmine.createSpy('fail-spy');
               var x = {
                 then: function (resolvePromise, rejectPromise) {
-                  rejectPromise('foo', data);
+                  rejectPromise(null);
                   throw new Error;
                 }
               };
@@ -1169,7 +1169,7 @@
               d.promise.fail(spy);
               d.resolve(x);
 
-              expect(spy).toHaveBeenCalledWith('foo', data);
+              expect(spy).toHaveBeenCalledWith(null);
             });
 
             // 2.3.3.3.4.2. Otherwise, reject promise with e as the reason.
@@ -1200,9 +1200,9 @@
           var spy = jasmine.createSpy('done-spy');
 
           d.promise.done(spy);
-          d.resolve(x, 'foo', data);
+          d.resolve(x);
 
-          expect(spy).toHaveBeenCalledWith(x, 'foo', data);
+          expect(spy).toHaveBeenCalledWith(x);
         });
       });
 
@@ -1213,9 +1213,9 @@
         var spy = jasmine.createSpy('done-spy');
 
         d.promise.done(spy);
-        d.resolve(x, data);
+        d.resolve(x);
 
-        expect(spy).toHaveBeenCalledWith('foo', data);
+        expect(spy).toHaveBeenCalledWith('foo');
       });
     });
 
@@ -1263,12 +1263,12 @@
         var spy2 = jasmine.createSpy('fail2');
 
         d.promise.fail(spy1);
-        d.reject('foo', 'bar', data);
-        d.reject('another value');
+        d.reject('bar');
+        d.reject('another reason');
         d.promise.fail(spy2);
 
-        expect(spy1).toHaveBeenCalledWith('foo', 'bar', data);
-        expect(spy2).toHaveBeenCalledWith('foo', 'bar', data);
+        expect(spy1).toHaveBeenCalledWith('bar');
+        expect(spy2).toHaveBeenCalledWith('bar');
       });
     });
 

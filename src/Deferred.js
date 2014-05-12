@@ -19,23 +19,23 @@ var fn = Deferred.prototype;
  * @public
  */
 
-fn['reject'] = function () {
+fn['reject'] = function (reason) {
   var promise = this.promise;
 
   // ignore non-pending promises
-  if (promise._state !== PENDING) {
+  if (promise._state !== 0) {
     return this;
   }
 
-  promise._state = REJECTED;
-  promise.value = slice.call(arguments);
+  promise._state = 2;
+  promise.value = reason;
 
   var callbacks = promise._callbacks.fail;
   var callback;
 
   for (var i = 0, l = callbacks.length; i < l; i++) {
     callback = callbacks[i];
-    callback.fn.apply(callback.ctx, promise.value);
+    callback.fn.call(callback.ctx, promise.value);
   }
 
   return this;
@@ -53,7 +53,7 @@ fn['resolve'] = function (x) {
   var self = this;
 
   // ignore non-pending promises
-  if (promise._state !== PENDING) {
+  if (promise._state !== 0) {
     return this;
   }
 
@@ -89,17 +89,18 @@ fn['resolve'] = function (x) {
   var isPending;
 
   if (isPromise) {
-    isPending = x._state === PENDING;
+    isPending = x._state === 0;
   } else if (isDeferred) {
-    isPending = x.promise._state === PENDING;
+    isPending = x.promise._state === 0;
   } else {
     isPending = false;
   }
 
   // detect if we need onResolve and onReject
+  // !!! comment this
   if (thenable && (!isPromiseOrDeferred || isPending)) {
-    var onResolve = function () {
-      if (promise._state !== PENDING) {
+    var onResolve = function (argValue) {
+      if (promise._state !== 0) {
         return false;
       }
 
@@ -107,21 +108,21 @@ fn['resolve'] = function (x) {
         value = isDeferred ? x.promise.value : x.value;
       }
 
-      promise._state = RESOLVED;
-      promise.value = value || Array.prototype.slice.call(arguments);
+      promise._state = 1;
+      promise.value = value || argValue;
 
       var callback;
       var callbacks = promise._callbacks.done;
       for (i = 0, l = callbacks.length; i < l; i++) {
         callback = callbacks[i];
-        callback.fn.apply(callback.ctx, promise.value);
+        callback.fn.call(callback.ctx, promise.value);
       }
 
       return true;
     };
 
-    var onReject = function () {
-      if (promise._state !== PENDING) {
+    var onReject = function (reason) {
+      if (promise._state !== 0) {
         return false;
       }
 
@@ -129,7 +130,7 @@ fn['resolve'] = function (x) {
         value = isDeferred ? x.promise.value : x.value;
       }
 
-      self.reject.apply(self, value || arguments);
+      self.reject(value || reason);
 
       return true;
     };
@@ -140,20 +141,20 @@ fn['resolve'] = function (x) {
     var xState = isDeferred ? x.promise._state : x._state;
 
     // 2.3.2.3. If x is rejected, reject promise with the same reason.
-    if (xState === REJECTED) {
-      this.reject.apply(this, value);
+    if (xState === 2) {
+      this.reject(value);
       return this;
     }
 
     // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
-    if (xState === RESOLVED) {
-      promise._state = RESOLVED;
+    if (xState === 1) {
+      promise._state = 1;
       promise.value = value;
 
       callbacks = promise._callbacks.done;
       for (i = 0, l = callbacks.length; i < l; i++) {
         callback = callbacks[i];
-        callback.fn.apply(callback.ctx, promise.value);
+        callback.fn.call(callback.ctx, promise.value);
       }
 
       return this;
@@ -166,7 +167,7 @@ fn['resolve'] = function (x) {
         ? x.promise.then(onResolve, onReject)
         : x.then(onResolve, onReject);
     } catch (e) {
-      if (this.promise._state === PENDING) {
+      if (this.promise._state === 0) {
         this.reject(e);
       }
     }
@@ -182,20 +183,20 @@ fn['resolve'] = function (x) {
         ? x.promise.then(onResolve, onReject)
         : x.then(onResolve, onReject);
     } catch (e) {
-      if (this.promise._state === PENDING) {
+      if (this.promise._state === 0) {
         this.reject(e);
       }
     }
     return this;
   }
 
-  promise._state = RESOLVED;
-  promise.value = slice.call(arguments);
+  promise._state = 1;
+  promise.value = x;
 
   callbacks = promise._callbacks.done;
   for (i = 0, l = callbacks.length; i < l; i++) {
     callback = callbacks[i];
-    callback.fn.apply(callback.ctx, promise.value);
+    callback.fn.call(callback.ctx, promise.value);
   }
 
   return this;

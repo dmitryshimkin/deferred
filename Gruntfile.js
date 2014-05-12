@@ -33,8 +33,8 @@ module.exports = function(grunt) {
         options: {
           specs: [
             'test/spec/Deferred.spec.js',
-            'test/spec/when.spec.js',
-            'test/spec/any.spec.js'
+            //'test/spec/when.spec.js',
+            //'test/spec/any.spec.js'
           ],
           template: require('grunt-template-jasmine-istanbul'),
           outfile: 'test.html',

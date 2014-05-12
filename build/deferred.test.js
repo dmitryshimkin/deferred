@@ -3,9 +3,9 @@
 
   /** promise states */
   
-  var PENDING = 0;
-  var RESOLVED = 1;
-  var REJECTED = 2;
+  //PENDING:  0;
+  //RESOLVED: 1;
+  //REJECTED: 2;
   
   /**
    * Promise
@@ -13,8 +13,8 @@
    */
   
   var Promise = function () {
-    this.value = [];
-    this._state = PENDING;
+    this.value = void 0;
+    this._state = 0;
     this._callbacks = {
       done: [],
       fail: []
@@ -34,15 +34,15 @@
     if (arg instanceof Deferred) {
       this
         .done(function () {
-          arg.resolve.apply(arg, arguments);
+          arg.resolve(arg);
         })
-        .fail(function () {
-          arg.reject.apply(arg, arguments);
+        .fail(function (reason) {
+          arg.reject.call(arg, reason);
         });
     } else {
       this
-        .done.apply(this, arguments)
-        .fail.apply(this, arguments);
+        .done(arg, this)
+        .fail(arg, this);
     }
   
     return this;
@@ -50,7 +50,7 @@
   
   /**
    * Adds onResolve listener
-   * @param arg {Function|Deferred} Listener of another deferred (@TODO: test this === arg)
+   * @param arg {Function|Deferred} Listener or another deferred (@TODO: test this === arg)
    * @param [ctx] {Object} Listener context
    * @returns {Object} Instance
    * @public
@@ -62,19 +62,19 @@
   
     ctx = ctx !== undefined ? ctx : this;
   
-    if (state === RESOLVED) {
+    if (state === 1) {
       if (isDeferred) {
-        arg.resolve.apply(arg, this.value);
+        arg.resolve.call(arg, this.value);
       } else {
-        arg.apply(ctx, this.value);
+        arg.call(ctx, this.value);
       }
       return this;
     }
   
-    if (state === PENDING) {
+    if (state === 0) {
       if (isDeferred) {
-        this.done(function () {
-          arg.resolve.apply(arg, arguments);
+        this.done(function (value) {
+          arg.resolve.call(arg, value);
         });
       } else {
         this._callbacks.done.push({
@@ -101,19 +101,19 @@
   
     ctx = ctx !== undefined ? ctx : this;
   
-    if (state === REJECTED) {
+    if (state === 2) {
       if (isDeferred) {
-        arg.reject.apply(arg, this.value);
+        arg.reject.call(arg, this.value);
       } else {
-        arg.apply(ctx, this.value);
+        arg.call(ctx, this.value);
       }
       return this;
     }
   
-    if (state === PENDING) {
+    if (state === 0) {
       if (isDeferred) {
-        this.fail(function () {
-          arg.reject.apply(arg, arguments);
+        this.fail(function (reason) {
+          arg.reject(reason);
         });
       } else {
         this._callbacks.fail.push({
@@ -133,7 +133,7 @@
    */
   
   proto['isPending'] = function () {
-    return this._state === PENDING;
+    return this._state === 0;
   };
   
   /**
@@ -143,7 +143,7 @@
    */
   
   proto['isRejected'] = function () {
-    return this._state === REJECTED;
+    return this._state === 2;
   };
   
   /**
@@ -153,7 +153,7 @@
    */
   
   proto['isResolved'] = function () {
-    return this._state === RESOLVED;
+    return this._state === 1;
   };
   
   /**
@@ -176,11 +176,11 @@
     ctx = ctx !== undefined ? ctx : this;
   
     if (typeof onResolve === func) {
-      this.done(function () {
+      this.done(function (value) {
         var x, error;
   
         try {
-          x = onResolve.apply(ctx, arguments);
+          x = onResolve.call(ctx, value);
         } catch (e) {
           error = e;
         }
@@ -197,16 +197,16 @@
           }
         }
       });
-    } else if (this._state === RESOLVED) {
-      deferred2.resolve.apply(deferred2, this.value);
+    } else if (this._state === 1) {
+      deferred2.resolve(this.value);
     }
   
     if (typeof onReject === func) {
-      this.fail(function () {
+      this.fail(function (reason) {
         var x, error;
   
         try {
-          x = onReject.apply(ctx, arguments);
+          x = onReject.call(ctx, reason);
         } catch (e) {
           error = e;
         }
@@ -223,8 +223,8 @@
           }
         }
       });
-    } else if (this._state === REJECTED) {
-      deferred2.reject.apply(deferred2, this.value);
+    } else if (this._state === 2) {
+      deferred2.reject(this.value);
     }
   
     return deferred2.promise;
@@ -251,23 +251,23 @@
    * @public
    */
   
-  fn['reject'] = function () {
+  fn['reject'] = function (reason) {
     var promise = this.promise;
   
     // ignore non-pending promises
-    if (promise._state !== PENDING) {
+    if (promise._state !== 0) {
       return this;
     }
   
-    promise._state = REJECTED;
-    promise.value = slice.call(arguments);
+    promise._state = 2;
+    promise.value = reason;
   
     var callbacks = promise._callbacks.fail;
     var callback;
   
     for (var i = 0, l = callbacks.length; i < l; i++) {
       callback = callbacks[i];
-      callback.fn.apply(callback.ctx, promise.value);
+      callback.fn.call(callback.ctx, promise.value);
     }
   
     return this;
@@ -285,7 +285,7 @@
     var self = this;
   
     // ignore non-pending promises
-    if (promise._state !== PENDING) {
+    if (promise._state !== 0) {
       return this;
     }
   
@@ -321,17 +321,18 @@
     var isPending;
   
     if (isPromise) {
-      isPending = x._state === PENDING;
+      isPending = x._state === 0;
     } else if (isDeferred) {
-      isPending = x.promise._state === PENDING;
+      isPending = x.promise._state === 0;
     } else {
       isPending = false;
     }
   
     // detect if we need onResolve and onReject
+    // !!! comment this
     if (thenable && (!isPromiseOrDeferred || isPending)) {
-      var onResolve = function () {
-        if (promise._state !== PENDING) {
+      var onResolve = function (argValue) {
+        if (promise._state !== 0) {
           return false;
         }
   
@@ -339,21 +340,21 @@
           value = isDeferred ? x.promise.value : x.value;
         }
   
-        promise._state = RESOLVED;
-        promise.value = value || Array.prototype.slice.call(arguments);
+        promise._state = 1;
+        promise.value = value || argValue;
   
         var callback;
         var callbacks = promise._callbacks.done;
         for (i = 0, l = callbacks.length; i < l; i++) {
           callback = callbacks[i];
-          callback.fn.apply(callback.ctx, promise.value);
+          callback.fn.call(callback.ctx, promise.value);
         }
   
         return true;
       };
   
-      var onReject = function () {
-        if (promise._state !== PENDING) {
+      var onReject = function (reason) {
+        if (promise._state !== 0) {
           return false;
         }
   
@@ -361,7 +362,7 @@
           value = isDeferred ? x.promise.value : x.value;
         }
   
-        self.reject.apply(self, value || arguments);
+        self.reject(value || reason);
   
         return true;
       };
@@ -372,20 +373,20 @@
       var xState = isDeferred ? x.promise._state : x._state;
   
       // 2.3.2.3. If x is rejected, reject promise with the same reason.
-      if (xState === REJECTED) {
-        this.reject.apply(this, value);
+      if (xState === 2) {
+        this.reject(value);
         return this;
       }
   
       // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
-      if (xState === RESOLVED) {
-        promise._state = RESOLVED;
+      if (xState === 1) {
+        promise._state = 1;
         promise.value = value;
   
         callbacks = promise._callbacks.done;
         for (i = 0, l = callbacks.length; i < l; i++) {
           callback = callbacks[i];
-          callback.fn.apply(callback.ctx, promise.value);
+          callback.fn.call(callback.ctx, promise.value);
         }
   
         return this;
@@ -398,7 +399,7 @@
           ? x.promise.then(onResolve, onReject)
           : x.then(onResolve, onReject);
       } catch (e) {
-        if (this.promise._state === PENDING) {
+        if (this.promise._state === 0) {
           this.reject(e);
         }
       }
@@ -414,20 +415,20 @@
           ? x.promise.then(onResolve, onReject)
           : x.then(onResolve, onReject);
       } catch (e) {
-        if (this.promise._state === PENDING) {
+        if (this.promise._state === 0) {
           this.reject(e);
         }
       }
       return this;
     }
   
-    promise._state = RESOLVED;
-    promise.value = slice.call(arguments);
+    promise._state = 1;
+    promise.value = x;
   
     callbacks = promise._callbacks.done;
     for (i = 0, l = callbacks.length; i < l; i++) {
       callback = callbacks[i];
-      callback.fn.apply(callback.ctx, promise.value);
+      callback.fn.call(callback.ctx, promise.value);
     }
   
     return this;
@@ -461,22 +462,18 @@
     var values = [];
     var uids = [];
   
-    var done = function () {
+    var done = function (value) {
       var index = uids.indexOf(this.uid);
-      values[index] = slice.call(arguments);
+      values[index] = value;
       remain = remain - 1;
       if (remain === 0) {
-        d.resolve.apply(d, values);
+        d.resolve(values);
       }
     };
   
-    var fail = function () {
-      var args = slice.call(arguments);
+    var fail = function (reason) {
       var index = uids.indexOf(this.uid);
-  
-      args.push(index);
-  
-      d.reject.apply(d, args);
+      d.reject(reason, index);
     };
   
     for (var i = 0, l = promises.length; i < l; i++) {
@@ -488,12 +485,10 @@
   
       uids.push(promise.uid);
   
-      if (promise._state === REJECTED) {
+      if (promise._state === 2) {
         index = uids.indexOf(promise.uid);
         value = promise.value;
-        value.push(index);
-  
-        return d.reject.apply(d, value).promise;
+        return d.reject(promise.value, index).promise;
       }
   
       promise
@@ -518,18 +513,15 @@
     var values = [], value, index;
     var uids = [];
   
-    var done = function () {
+    var done = function (value) {
       var args = slice.call(arguments);
       var index = uids.indexOf(this.uid);
-  
-      args.push(index);
-  
-      d.resolve.apply(d, args);
+      d.resolve.call(d, value, index);
     };
   
-    var fail = function () {
+    var fail = function (reason) {
       var index = uids.indexOf(this.uid);
-      values[index] = slice.call(arguments);
+      values[index] = reason;
       remain = remain - 1;
       if (remain === 0) {
         d.reject.apply(d, values);
@@ -545,12 +537,10 @@
   
       uids.push(promise.uid);
   
-      if (promise._state === RESOLVED) {
+      if (promise._state === 1) {
         index = uids.indexOf(promise.uid);
         value = promise.value;
-        value.push(index);
-  
-        return d.resolve.apply(d, value).promise;
+        return d.resolve.call(d, promise.value, index).promise;
       }
   
       promise

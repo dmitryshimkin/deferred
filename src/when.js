@@ -12,22 +12,18 @@ Deferred['when'] = function (promises) {
   var values = [];
   var uids = [];
 
-  var done = function () {
+  var done = function (value) {
     var index = uids.indexOf(this.uid);
-    values[index] = slice.call(arguments);
+    values[index] = value;
     remain = remain - 1;
     if (remain === 0) {
-      d.resolve.apply(d, values);
+      d.resolve(values);
     }
   };
 
-  var fail = function () {
-    var args = slice.call(arguments);
+  var fail = function (reason) {
     var index = uids.indexOf(this.uid);
-
-    args.push(index);
-
-    d.reject.apply(d, args);
+    d.reject(reason, index);
   };
 
   for (var i = 0, l = promises.length; i < l; i++) {
@@ -39,12 +35,10 @@ Deferred['when'] = function (promises) {
 
     uids.push(promise.uid);
 
-    if (promise._state === REJECTED) {
+    if (promise._state === 2) {
       index = uids.indexOf(promise.uid);
       value = promise.value;
-      value.push(index);
-
-      return d.reject.apply(d, value).promise;
+      return d.reject(promise.value, index).promise;
     }
 
     promise
