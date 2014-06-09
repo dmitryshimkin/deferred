@@ -11,6 +11,30 @@ module.exports = function(grunt) {
   ];
 
   grunt.initConfig({
+    availabletasks: {
+      tasks: {
+        options: {
+          filter: 'include',
+          tasks: [
+            'benchmark',
+            'build-dev',
+            'build-prod',
+            'lint',
+            'test'
+          ]
+        }
+      }
+    },
+
+    benchmark: {
+      all: {
+        src: [
+          'test/benchmark/suite/*.js'
+        ],
+        dest: 'test/benchmark/results.csv'
+      }
+    },
+
     clean: {
       test: ['build/deferred.test.js']
     },
@@ -123,6 +147,8 @@ module.exports = function(grunt) {
     }
   });
 
+  grunt.loadNpmTasks('grunt-benchmark');
+  //grunt.loadNpmTasks('grunt-available-tasks');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-jshint');
@@ -136,6 +162,11 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-test', [
     'concat:test', 'wrap:test'
+  ]);
+
+  grunt.registerTask('perf', 'Run benchmark', [
+    'build-prod',
+    'benchmark'
   ]);
 
   grunt.registerTask('build-prod', ['build-dev']);
