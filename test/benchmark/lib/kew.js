@@ -1,4 +1,4 @@
-(function () {
+(function (window) {
   /** @typedef {function(?, ?)} */
   var OnSuccessCallbackType;
   /** @typedef {function(!Error, ?)} */
@@ -578,7 +578,7 @@
     }
   }
 
-window.kew = {
+module.exports = {
   all: all
   , bindPromise: bindPromise
   , defer: defer
@@ -592,4 +592,4 @@ window.kew = {
   , allSettled: allSettled
 }
 
-}());
+}(this));

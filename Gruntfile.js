@@ -29,7 +29,9 @@ module.exports = function(grunt) {
     benchmark: {
       all: {
         src: [
-          'test/benchmark/suite/*.js'
+          'test/benchmark/suite/instantiate.js',
+          'test/benchmark/suite/then.js',
+          'test/benchmark/suite/then-resolve.js'
         ],
         dest: 'test/benchmark/results.csv'
       }

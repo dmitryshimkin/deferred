@@ -2180,4 +2180,4 @@
       __exports__.filter = filter;
     });
   global.RSVP = requireModule('rsvp');
-}(window));
+}(this));
