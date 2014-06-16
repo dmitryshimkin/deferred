@@ -1,10 +1,11 @@
-var Deferred       = require('../../../build/deferred.min.js');
-var Q              = require('../lib/q.js');
-var kew            = require('../lib/kew.js');
-var vow            = require('../lib/vow.js');
-var RubaxaDeferred = require('../lib/rubaxa-deferred.js');
-var RSVP           = require('../lib/rsvp.js').RSVP;
-//var $              = require('../lib/jquery.js');
+var Deferred       = require('../../../build/deferred.min');
+var Q              = require('../lib/q');
+var kew            = require('../lib/kew');
+var vow            = require('../lib/vow');
+var Bluebird       = require('../lib/bluebird');
+var RubaxaDeferred = require('../lib/rubaxa-deferred');
+var RSVP           = require('../lib/rsvp').RSVP;
+var $              = require('../lib/jquery');
 
 module.exports = {
   name: ' *** instantiate *** ',
@@ -17,6 +18,14 @@ module.exports = {
     //      var d = new Promise(function (resolve, reject) {});
     //      return new Promise();
     //    },
+
+    '$': function () {
+      return new $.Deferred();
+    },
+
+    'Bluebird': function () {
+      return new Bluebird(function (resolve, reject) {});
+    },
 
     'Q': function () {
       return new Q.defer();

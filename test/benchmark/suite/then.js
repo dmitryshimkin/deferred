@@ -1,8 +1,11 @@
-var Deferred = require('../../../build/deferred.js');
-var Q        = require('../lib/q.js');
-var vow      = require('../lib/vow.js');
-var Rubaxa   = require('../lib/rubaxa-deferred.js');
-var RSVP     = require('../lib/rsvp.js').RSVP;
+var Deferred = require('../../../build/deferred');
+var Q        = require('../lib/q');
+var kew      = require('../lib/kew');
+var Bluebird = require('../lib/bluebird');
+var vow      = require('../lib/vow');
+var Rubaxa   = require('../lib/rubaxa-deferred');
+var RSVP     = require('../lib/rsvp').RSVP;
+var $        = require('../lib/jquery');
 
 var onResolve = function () {};
 
@@ -19,8 +22,23 @@ module.exports = {
     //      d.then(onResolve);
     //    },
 
+    'Bluebird': function () {
+      var d = new Bluebird(function (resolve, reject) {});
+      d.then(onResolve);
+    },
+
+    '$': function () {
+      var d = new $.Deferred();
+      d.then(onResolve);
+    },
+
     'Q': function () {
       var d = new Q.defer();
+      d.promise.then(onResolve);
+    },
+
+    'kew': function () {
+      var d = new kew.defer();
       d.promise.then(onResolve);
     },
 

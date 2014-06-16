@@ -3,6 +3,7 @@ var Q        = require('../lib/q.js');
 var vow      = require('../lib/vow.js');
 var Rubaxa   = require('../lib/rubaxa-deferred.js');
 var RSVP     = require('../lib/rsvp.js').RSVP;
+var $        = require('../lib/jquery');
 
 var onResolve = function () {};
 
@@ -19,6 +20,12 @@ module.exports = {
     //      var d = new Promise(function (resolve, reject) {});
     //      d.then(onResolve);
     //    },
+
+    '$': function () {
+      var d = new $.Deferred();
+      d.then(onResolve);
+      d.resolve();
+    },
 
     'Q': function () {
       var d = new Q.defer();
