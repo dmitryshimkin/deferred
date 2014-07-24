@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Returns promise that will be resolved when all passed promises or deferreds are resolved
  * Promise will be rejected if at least on of passed promises or deferreds is rejected

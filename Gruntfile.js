@@ -37,31 +37,22 @@ module.exports = function(grunt) {
       }
     },
 
-    clean: {
-      test: ['build/deferred.test.js']
-    },
-
     concat: {
       dev: {
         files: {
           'build/deferred.js': source
-        }
-      },
-      test: {
-        files: {
-          'build/deferred.test.js': source
         }
       }
     },
 
     jasmine: {
       dev: {
-        src: 'build/deferred.test.js',
+        src: 'build/deferred.js',
         options: {
           specs: [
-            'test/spec/Deferred.spec.js',
-            'test/spec/all.spec.js',
-            'test/spec/any.spec.js'
+            'test/spec/Deferred.spec.js'
+            //'test/spec/all.spec.js',
+            //'test/spec/any.spec.js'
           ],
           template: require('grunt-template-jasmine-istanbul'),
           outfile: 'test.html',
@@ -83,8 +74,9 @@ module.exports = function(grunt) {
         src: 'build/deferred.min.js',
         options: {
           specs: [
-            'test/spec/deferred.spec.js',
-            'test/spec/when.spec.js'
+            'test/spec/Deferred.spec.js'
+            //'test/spec/all.spec.js',
+            //'test/spec/any.spec.js'
           ],
           template: require('grunt-template-jasmine-istanbul'),
           templateOptions: {
@@ -105,7 +97,7 @@ module.exports = function(grunt) {
     jshint: {
       all: [
         'Gruntfile.js',
-        'build/deferred.js'
+        'src/*.js'
       ],
       options: {
         jshintrc: '.jshintrc'
@@ -134,17 +126,6 @@ module.exports = function(grunt) {
             '}());\n'
           ]
         }
-      },
-      test: {
-        src: ['build/deferred.test.js'],
-        dest: '',
-        options: {
-          indent: '  ',
-          wrapper: [
-            ';(function (undefined) {\n  \'use strict\';\n',
-            '}());\n'
-          ]
-        }
       }
     }
   });
@@ -161,9 +142,27 @@ module.exports = function(grunt) {
     'concat:dev',
     'wrap:dev'
   ]);
+  grunt.registerTask('build-prod', [
+    'build-dev'
+  ]);
 
   grunt.registerTask('build-test', [
     'concat:test', 'wrap:test'
+  ]);
+
+  grunt.registerTask('test', [
+    'test-prod',
+    'test-dev'
+  ]);
+
+  grunt.registerTask('test-dev', [
+    'build-dev',
+    'jasmine:dev'
+  ]);
+
+  grunt.registerTask('test-prod', [
+    'build-prod',
+    'jasmine:prod'
   ]);
 
   grunt.registerTask('perf', 'Run benchmark', [
@@ -171,16 +170,11 @@ module.exports = function(grunt) {
     'benchmark'
   ]);
 
-  grunt.registerTask('build-prod', ['build-dev']);
-
-  grunt.registerTask('test-dev', [
-    'build-test',
-    'jasmine:dev'
+  grunt.registerTask('lint', [
+    'jshint'
   ]);
-  grunt.registerTask('test-prod', ['build-prod', 'jasmine:prod']);
 
-  grunt.registerTask('test', ['test-dev']);
-  grunt.registerTask('prod', ['build-prod']);
-  grunt.registerTask('hint', ['build-dev', 'jshint']);
-  grunt.registerTask('default', ['build-dev']);
+  grunt.registerTask('default', [
+    'build-dev'
+  ]);
 };

@@ -1,12 +1,15 @@
 {
   "globals": {
-    "window": true
+    "define": false,
+    "window": false,
+    "Deferred": true,
+    "Promise": true
   },
   "boss": true,
   "curly": true,
   "eqeqeq": true,
   "eqnull": true,
-  "es5": true,
+  "es3": true,
   "immed": true,
   "latedef": true,
   "newcap": true,

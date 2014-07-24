@@ -1,15 +1,13 @@
-/**
- * Export
- */
+'use strict';
 
-var obj = 'object';
+/** export */
 
-if (typeof module === obj && typeof module.exports === obj) {
+if (typeof module === 'object' && typeof module.exports === 'object') {
   module.exports = Deferred;
 } else if (typeof define === 'function' && define.amd) {
   define('Deferred', [], function () {
     return Deferred;
   });
-} else if (typeof window === obj) {
+} else if (typeof window === 'object') {
   window['Deferred'] = Deferred;
 }

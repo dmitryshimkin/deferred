@@ -1,6 +1,8 @@
 ;(function (undefined) {
   'use strict';
 
+  'use strict';
+  
   /** promise states */
   
   //PENDING:  0;
@@ -24,6 +26,7 @@
   /**
    * @TBD
    * @param arg {Function|Deferred} Listener or another deferred (@TODO: test this ==== arg)
+   * @param ctx {Object}
    * @returns {Object} Instance
    * @public
    */
@@ -231,6 +234,8 @@
     return deferred2.promise;
   };
   
+  'use strict';
+  
   var counter = 0;
   
   /**
@@ -289,6 +294,7 @@
   
     var func = 'function';
     var self = this;
+    var then;
   
     // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
     if (x === this || x === promise) {
@@ -306,7 +312,6 @@
     // 2.3.3.2. If retrieving the property x.then results in a thrown exception e, reject promise with e as the reason
     if (x !== null && (xType === 'object' || xType === func)) {
       try {
-        var then;
         if (isDeferred) {
           then = x.promise.then;
         } else {
@@ -320,6 +325,8 @@
   
     var thenable = typeof then === func;
     var isPending;
+    var onResolve;
+    var onReject;
   
     if (isPromise) {
       isPending = x._state === 0;
@@ -332,7 +339,7 @@
     // detect if we need onResolve and onReject
     // !!! comment this
     if (thenable && (!isPromiseOrDeferred || isPending)) {
-      var onResolve = function (argValue) {
+      onResolve = function (argValue) {
         if (promise._state !== 0) {
           return false;
         }
@@ -354,7 +361,7 @@
         return true;
       };
   
-      var onReject = function (reason) {
+      onReject = function (reason) {
         if (promise._state !== 0) {
           return false;
         }
@@ -396,9 +403,11 @@
       // 2.3.2.2. when x is fulfilled, fulfill promise with the same value.
       // 2.3.2.3. When x is rejected, reject promise with the same reason.
       try {
-        isDeferred
-          ? x.promise.then(onResolve, onReject)
-          : x.then(onResolve, onReject);
+        if (isDeferred) {
+          x.promise.then(onResolve, onReject);
+        } else {
+          x.then(onResolve, onReject);
+        }
       } catch (e) {
         if (this.promise._state === 0) {
           this.reject(e);
@@ -415,9 +424,11 @@
     // 2.3.3.3.2. If/when rejectPromise is called with a reason r, reject promise with r.
     if (thenable) {
       try {
-        isDeferred
-          ? x.promise.then(onResolve, onReject)
-          : x.then(onResolve, onReject);
+        if (isDeferred) {
+          x.promise.then(onResolve, onReject);
+        } else {
+          x.then(onResolve, onReject);
+        }
       } catch (e) {
         if (this.promise._state === 0) {
           this.reject(e);
@@ -455,6 +466,8 @@
   Deferred.isDeferred = function (arg) {
     return arg instanceof Deferred;
   };
+  
+  'use strict';
   
   /**
    * Returns promise that will be resolved when all passed promises or deferreds are resolved
@@ -509,6 +522,8 @@
   
     return d.promise;
   };
+  
+  'use strict';
   
   /**
    * Returns promise that will be resolved once any of passed promises or deferreds is resolved
@@ -568,19 +583,17 @@
   
   //
   
-  /**
-   * Export
-   */
+  'use strict';
   
-  var obj = 'object';
+  /** export */
   
-  if (typeof module === obj && typeof module.exports === obj) {
+  if (typeof module === 'object' && typeof module.exports === 'object') {
     module.exports = Deferred;
   } else if (typeof define === 'function' && define.amd) {
     define('Deferred', [], function () {
       return Deferred;
     });
-  } else if (typeof window === obj) {
+  } else if (typeof window === 'object') {
     window['Deferred'] = Deferred;
   }
   

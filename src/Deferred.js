@@ -1,3 +1,5 @@
+'use strict';
+
 var counter = 0;
 
 /**
@@ -56,6 +58,7 @@ fn['resolve'] = function (x) {
 
   var func = 'function';
   var self = this;
+  var then;
 
   // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
   if (x === this || x === promise) {
@@ -73,7 +76,6 @@ fn['resolve'] = function (x) {
   // 2.3.3.2. If retrieving the property x.then results in a thrown exception e, reject promise with e as the reason
   if (x !== null && (xType === 'object' || xType === func)) {
     try {
-      var then;
       if (isDeferred) {
         then = x.promise.then;
       } else {
@@ -87,6 +89,8 @@ fn['resolve'] = function (x) {
 
   var thenable = typeof then === func;
   var isPending;
+  var onResolve;
+  var onReject;
 
   if (isPromise) {
     isPending = x._state === 0;
@@ -99,7 +103,7 @@ fn['resolve'] = function (x) {
   // detect if we need onResolve and onReject
   // !!! comment this
   if (thenable && (!isPromiseOrDeferred || isPending)) {
-    var onResolve = function (argValue) {
+    onResolve = function (argValue) {
       if (promise._state !== 0) {
         return false;
       }
@@ -121,7 +125,7 @@ fn['resolve'] = function (x) {
       return true;
     };
 
-    var onReject = function (reason) {
+    onReject = function (reason) {
       if (promise._state !== 0) {
         return false;
       }
@@ -163,9 +167,11 @@ fn['resolve'] = function (x) {
     // 2.3.2.2. when x is fulfilled, fulfill promise with the same value.
     // 2.3.2.3. When x is rejected, reject promise with the same reason.
     try {
-      isDeferred
-        ? x.promise.then(onResolve, onReject)
-        : x.then(onResolve, onReject);
+      if (isDeferred) {
+        x.promise.then(onResolve, onReject);
+      } else {
+        x.then(onResolve, onReject);
+      }
     } catch (e) {
       if (this.promise._state === 0) {
         this.reject(e);
@@ -182,9 +188,11 @@ fn['resolve'] = function (x) {
   // 2.3.3.3.2. If/when rejectPromise is called with a reason r, reject promise with r.
   if (thenable) {
     try {
-      isDeferred
-        ? x.promise.then(onResolve, onReject)
-        : x.then(onResolve, onReject);
+      if (isDeferred) {
+        x.promise.then(onResolve, onReject);
+      } else {
+        x.then(onResolve, onReject);
+      }
     } catch (e) {
       if (this.promise._state === 0) {
         this.reject(e);

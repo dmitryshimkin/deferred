@@ -1,3 +1,5 @@
+'use strict';
+
 /** promise states */
 
 //PENDING:  0;
@@ -21,6 +23,7 @@ var proto = Promise.prototype;
 /**
  * @TBD
  * @param arg {Function|Deferred} Listener or another deferred (@TODO: test this ==== arg)
+ * @param ctx {Object}
  * @returns {Object} Instance
  * @public
  */
