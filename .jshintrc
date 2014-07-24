@@ -15,5 +15,5 @@
   "strict": true,
   "sub": true,
   "undef": true,
-  "white": true
+  "white": false
 }
