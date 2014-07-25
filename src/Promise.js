@@ -1,13 +1,13 @@
 'use strict';
 
-/** promise states */
-
-//PENDING:  0;
-//RESOLVED: 1;
-//REJECTED: 2;
-
 /**
- * Promise
+ * Promise constructor
+ *
+ * States
+ *  pending:  0
+ *  resolved: 1
+ *  rejected: 2
+ *
  * @class
  */
 
@@ -20,7 +20,8 @@ var Promise = function () {
 
 /**
  * @TBD
- * @param arg {Function|Deferred} Listener or another deferred (@TODO: test this ==== arg)
+ * @TODO: test this ==== arg
+ * @param arg {Function|Deferred} Listener or another deferred
  * @param ctx {Object}
  * @returns {Object} Instance
  * @public
@@ -46,7 +47,8 @@ Promise.prototype.always = function (arg, ctx) {
 
 /**
  * Adds onResolve listener
- * @param arg {Function|Deferred} Listener or another deferred (@TODO: test this === arg)
+ * @TODO: test this === arg
+ * @param arg {Function|Deferred} Listener or another deferred
  * @param [ctx] {Object} Listener context
  * @returns {Object} Instance
  * @public
@@ -85,7 +87,8 @@ Promise.prototype.done = function (arg, ctx) {
 
 /**
  * Adds onReject listener
- * @param arg {Function|Deferred} Listener or another deferred (@TODO: test this === arg)
+ * @TODO: test this === arg
+ * @param arg {Function|Deferred} Listener or another deferred
  * @param [ctx] {Object} Listener context
  * @returns {Object} Instance
  * @public
@@ -156,7 +159,7 @@ Promise.prototype.isResolved = function () {
  * @TBD
  * @param onResolve {Function}
  * @param onReject {Function}
- * @param [ctx] {Object} Context for listeners
+ * @param [argCtx] {Object} Context for listeners
  * @public
  */
 

@@ -14,7 +14,6 @@ describe('Deferred', function () {
   // constructor
 
   describe('constructor', function () {
-
     it('class', function () {
       expect(window.Deferred).toBeDefined();
     });
@@ -22,16 +21,13 @@ describe('Deferred', function () {
     it('instanceof', function () {
       expect(d instanceof Deferred).toBe(true);
     });
-
   });
 
   // done
 
   describe('done', function () {
-
-    it('handler', function () {
+    it('handler', function (done) {
       var spy = jasmine.createSpy('done-spy');
-      var resolved = false;
       var _this;
 
       d.promise.done(function () {
@@ -39,25 +35,17 @@ describe('Deferred', function () {
         spy();
       });
 
-      runs(function () {
-        setTimeout(function () {
-          d.resolve();
-          resolved = true;
-        }, 30);
-      });
+      setTimeout(function () {
+        d.resolve();
 
-      waitsFor(function () {
-        return resolved;
-      }, 'timeout', 100);
-
-      runs(function () {
         expect(spy).toHaveBeenCalled();
         expect(_this).toBe(d.promise);
-      });
+
+        done();
+      }, 30);
     });
 
-    it ('handler with context', function () {
-      var resolved = false;
+    it ('handler with context', function (done) {
       var _this1;
       var _this2;
       var obj = {
@@ -72,24 +60,17 @@ describe('Deferred', function () {
           _this2 = this;
         }, null);
 
-      runs(function () {
-        setTimeout(function () {
-          d.resolve();
-          resolved = true;
-        }, 30);
-      });
+      setTimeout(function () {
+        d.resolve();
 
-      waitsFor(function () {
-        return resolved;
-      }, 'timeout', 100);
-
-      runs(function () {
         expect(_this1).toBe(obj);
         expect(_this2).toBe(null);
-      });
+
+        done();
+      }, 30);
     });
 
-    it('many handlers', function () {
+    it('many handlers', function (done) {
       var resolved = false;
 
       var handler1 = function () {
@@ -107,23 +88,16 @@ describe('Deferred', function () {
         .done(handler2)
         .done(handler3);
 
-      runs(function () {
-        setTimeout(function () {
-          d.resolve();
-          resolved = true;
-        }, 30);
-      });
+      setTimeout(function () {
+        d.resolve();
 
-      waitsFor(function () {
-        return resolved;
-      }, 'timeout', 100);
-
-      runs(function () {
         expect(__log.length).toBe(3);
         expect(__log[0]).toBe(1);
         expect(__log[1]).toBe(2);
         expect(__log[2]).toBe(3);
-      });
+
+        done();
+      }, 30);
     });
 
     it('sync call', function () {
@@ -149,13 +123,13 @@ describe('Deferred', function () {
         .done(spy3);
 
       expect(spy1).toHaveBeenCalled();
-      expect(spy1.calls.length).toBe(1);
+      expect(spy1.calls.count()).toBe(1);
 
       expect(spy2).toHaveBeenCalled();
-      expect(spy2.calls.length).toBe(1);
+      expect(spy2.calls.count()).toBe(1);
 
       expect(spy3).toHaveBeenCalled();
-      expect(spy3.calls.length).toBe(1);
+      expect(spy3.calls.count()).toBe(1);
     });
 
     it('another deferred', function () {
@@ -172,31 +146,19 @@ describe('Deferred', function () {
   // fail
 
   describe('fail', function () {
-
-    it('handler', function () {
+    it('handler', function (done) {
       var spy = jasmine.createSpy('fail-spy');
-      var rejected = false;
 
       d.promise.fail(spy);
 
-      runs(function () {
-        setTimeout(function () {
-          d.reject();
-          rejected = true;
-        }, 30);
-      });
-
-      waitsFor(function () {
-        return rejected;
-      }, 'timeout', 100);
-
-      runs(function () {
+      setTimeout(function () {
+        d.reject();
         expect(spy).toHaveBeenCalled();
-      });
+        done();
+      }, 30);
     });
 
-    it ('handler with context', function () {
-      var rejected = false;
+    it ('handler with context', function (done) {
       var ctx;
       var obj = {
         fn: function () {
@@ -206,25 +168,14 @@ describe('Deferred', function () {
 
       d.promise.fail(obj.fn, obj);
 
-      runs(function () {
-        setTimeout(function () {
-          d.reject();
-          rejected = true;
-        }, 30);
-      });
-
-      waitsFor(function () {
-        return rejected;
-      }, 'timeout', 100);
-
-      runs(function () {
+      setTimeout(function () {
+        d.reject();
         expect(ctx).toBe(obj);
-      });
+        done();
+      }, 30);
     });
 
-    it('many handlers', function () {
-      var rejected = false;
-
+    it('many handlers', function (done) {
       var handler1 = function () {
         __log.push(1);
       };
@@ -240,23 +191,16 @@ describe('Deferred', function () {
         .fail(handler2)
         .fail(handler3);
 
-      runs(function () {
-        setTimeout(function () {
-          d.reject();
-          rejected = true;
-        }, 30);
-      });
+      setTimeout(function () {
+        d.reject();
 
-      waitsFor(function () {
-        return rejected;
-      }, 'timeout', 100);
-
-      runs(function () {
         expect(__log.length).toBe(3);
         expect(__log[0]).toBe(1);
         expect(__log[1]).toBe(2);
         expect(__log[2]).toBe(3);
-      });
+
+        done();
+      }, 30);
     });
 
     it('sync call', function () {
@@ -283,13 +227,13 @@ describe('Deferred', function () {
         .fail(spy3);
 
       expect(spy1).toHaveBeenCalled();
-      expect(spy1.calls.length).toBe(1);
+      expect(spy1.calls.count()).toBe(1);
 
       expect(spy2).toHaveBeenCalled();
-      expect(spy2.calls.length).toBe(1);
+      expect(spy2.calls.count()).toBe(1);
 
       expect(spy3).toHaveBeenCalled();
-      expect(spy3.calls.length).toBe(1);
+      expect(spy3.calls.count()).toBe(1);
     });
 
     it('another deferred', function () {
@@ -306,10 +250,8 @@ describe('Deferred', function () {
   // always
 
   describe('always', function () {
-
-    it('done', function () {
+    it('done', function (done) {
       var spy = jasmine.createSpy('done-spy');
-      var resolved = false;
       var _this;
 
       d.promise.always(function () {
@@ -317,52 +259,35 @@ describe('Deferred', function () {
         spy.apply(this, arguments);
       });
 
-      runs(function () {
-        setTimeout(function () {
-          d.resolve();
-          resolved = true;
-        }, 30);
-      });
+      setTimeout(function () {
+        d.resolve();
 
-      waitsFor(function () {
-        return resolved;
-      }, 'timeout', 100);
-
-      runs(function () {
         expect(spy).toHaveBeenCalled();
         expect(_this).toBe(d.promise);
-      });
+
+        done();
+      }, 30);
     });
 
-    it('fail', function () {
+    it('fail', function (done) {
       var failSpy = jasmine.createSpy('fail-spy');
-      var rejected = false;
       var ctx = {
         foo: 'bar'
       };
 
       d.promise.always(failSpy, ctx);
 
-      runs(function () {
-        setTimeout(function () {
-          d.reject();
-          rejected = true;
-        }, 30);
-      });
+      setTimeout(function () {
+        d.reject();
 
-      waitsFor(function () {
-        return rejected;
-      }, 'timeout', 100);
-
-      runs(function () {
         expect(failSpy).toHaveBeenCalled();
-        expect(failSpy.calls[0].object).toBe(ctx);
-      });
+        expect(failSpy.calls.all()[0].object).toBe(ctx);
+
+        done();
+      }, 30);
     });
 
-    it('many handlers', function () {
-      var resolved = false;
-
+    it('many handlers', function (done) {
       var handler1 = function () {
         __log.push(1);
       };
@@ -378,23 +303,16 @@ describe('Deferred', function () {
         .always(handler2)
         .always(handler3);
 
-      runs(function () {
-        setTimeout(function () {
-          d.resolve();
-          resolved = true;
-        }, 30);
-      });
+      setTimeout(function () {
+        d.resolve();
 
-      waitsFor(function () {
-        return resolved;
-      }, 'timeout', 100);
-
-      runs(function () {
         expect(__log.length).toBe(3);
         expect(__log[0]).toBe(1);
         expect(__log[1]).toBe(2);
         expect(__log[2]).toBe(3);
-      });
+
+        done();
+      }, 30);
     });
 
     it('resolved promise', function () {
@@ -412,13 +330,13 @@ describe('Deferred', function () {
         .always(spy3);
 
       expect(spy1).toHaveBeenCalled();
-      expect(spy1.calls.length).toBe(1);
+      expect(spy1.calls.count()).toBe(1);
 
       expect(spy2).toHaveBeenCalled();
-      expect(spy2.calls.length).toBe(1);
+      expect(spy2.calls.count()).toBe(1);
 
       expect(spy3).toHaveBeenCalled();
-      expect(spy3.calls.length).toBe(1);
+      expect(spy3.calls.count()).toBe(1);
     });
 
     it('rejected promise', function () {
@@ -436,13 +354,13 @@ describe('Deferred', function () {
         .always(spy3);
 
       expect(spy1).toHaveBeenCalled();
-      expect(spy1.calls.length).toBe(1);
+      expect(spy1.calls.count()).toBe(1);
 
       expect(spy2).toHaveBeenCalled();
-      expect(spy2.calls.length).toBe(1);
+      expect(spy2.calls.count()).toBe(1);
 
       expect(spy3).toHaveBeenCalled();
-      expect(spy3.calls.length).toBe(1);
+      expect(spy3.calls.count()).toBe(1);
     });
 
     it('another deferred (done)', function () {
@@ -540,7 +458,7 @@ describe('Deferred', function () {
         d.resolve('foo').resolve(true);
 
         expect(onFulfill).toHaveBeenCalledWith('foo');
-        expect(onFulfill.calls.length).toBe(1);
+        expect(onFulfill.calls.count()).toBe(1);
       });
 
       // 2.2.4. onFulfilled or onReject must not be called until the execution context stack contains
@@ -627,7 +545,7 @@ describe('Deferred', function () {
         d.reject(data).reject(true);
 
         expect(onReject).toHaveBeenCalledWith(data);
-        expect(onReject.calls.length).toBe(1);
+        expect(onReject.calls.count()).toBe(1);
       });
 
       // 2.2.4. onFulfilled or onReject must not be called until the execution context stack contains
@@ -880,10 +798,10 @@ describe('Deferred', function () {
       d.resolve();
 
       expect(spy1).toHaveBeenCalled();
-      expect(spy1.calls.length).toBe(1);
+      expect(spy1.calls.count()).toBe(1);
 
       expect(spy2).toHaveBeenCalled();
-      expect(spy2.calls.length).toBe(1);
+      expect(spy2.calls.count()).toBe(1);
     });
 
     it('already rejected', function () {
@@ -946,61 +864,45 @@ describe('Deferred', function () {
       describe('pending', function () {
 
         // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
-        it('fulfill', function () {
+        it('fulfill', function (done) {
           var x = new Deferred();
           var spy = jasmine.createSpy('done-spy');
-          var done = false;
           var isPending;
 
-          runs(function () {
-            d.promise.done(spy);
-            d.resolve(x);
+          d.promise.done(spy);
+          d.resolve(x);
 
-            isPending = d.promise.isPending();
+          isPending = d.promise.isPending();
 
-            setTimeout(function () {
-              x.resolve('foo');
-              done = true;
-            }, 20);
-          });
+          setTimeout(function () {
+            x.resolve('foo');
 
-          waitsFor(function () {
-            return done;
-          }, 'timeout', 40);
-
-          runs(function () {
             expect(isPending).toBe(true);
             expect(spy).toHaveBeenCalledWith('foo');
-          });
+
+            done();
+          }, 20);
         });
 
         // 2.3.2.3. If/when x is rejected, reject promise with the same reason.
-        it('reject', function () {
+        it('reject', function (done) {
           var x = new Deferred();
           var spy = jasmine.createSpy('fail-spy');
-          var done = false;
           var isPending;
 
-          runs(function () {
-            d.promise.fail(spy);
-            d.resolve(x);
+          d.promise.fail(spy);
+          d.resolve(x);
 
-            isPending = d.promise.isPending();
+          isPending = d.promise.isPending();
 
-            setTimeout(function () {
-              x.reject('bar');
-              done = true;
-            }, 20);
-          });
+          setTimeout(function () {
+            x.reject('bar');
 
-          waitsFor(function () {
-            return done;
-          }, 'timeout', 40);
-
-          runs(function () {
             expect(isPending).toBe(true);
             expect(spy).toHaveBeenCalledWith('bar');
-          });
+
+            done();
+          }, 20);
         });
       });
     });
@@ -1030,71 +932,54 @@ describe('Deferred', function () {
       describe('has method then', function () {
 
         // 2.3.3.3.1. If/when resolvePromise is called with a value y, run [[Resolve]](promise, y).
-        it('resolvePromise called', function () {
+        it('resolvePromise called', function (done) {
           var isPending;
-          var done = false;
           var spy = jasmine.createSpy('done-spy');
           var x = {
             then: function (resolvePromise, rejectPromise) {
               setTimeout(function () {
                 resolvePromise('foo');
-                done = true;
+
+                expect(isPending).toBe(true);
+                expect(spy).toHaveBeenCalledWith('foo');
+
+                done();
               }, 20);
             }
           };
 
-          runs(function () {
-            d.promise.done(spy);
-            d.resolve(x);
-            isPending = d.promise.isPending();
-          });
-
-          waitsFor(function () {
-            return done;
-          }, 'timeout', 40);
-
-          runs(function () {
-            expect(isPending).toBe(true);
-            expect(spy).toHaveBeenCalledWith('foo');
-          });
+          d.promise.done(spy);
+          d.resolve(x);
+          isPending = d.promise.isPending();
         });
 
         // 2.3.3.3.2. If/when rejectPromise is called with a reason r, reject promise with r.
-        it('rejectPromise called', function () {
+        it('rejectPromise called', function (done) {
           var isPending;
-          var done = false;
           var spy = jasmine.createSpy('fail-spy');
           var x = {
             then: function (resolvePromise, rejectPromise) {
               setTimeout(function () {
                 rejectPromise('bar');
-                done = true;
+
+                expect(isPending).toBe(true);
+                expect(spy).toHaveBeenCalledWith('bar');
+
+                done();
               }, 20);
             }
           };
 
-          runs(function () {
-            d.promise.fail(spy);
-            d.resolve(x);
-            isPending = d.promise.isPending();
-          });
-
-          waitsFor(function () {
-            return done;
-          }, 'timeout', 40);
-
-          runs(function () {
-            expect(isPending).toBe(true);
-            expect(spy).toHaveBeenCalledWith('bar');
-          });
+          d.promise.fail(spy);
+          d.resolve(x);
+          isPending = d.promise.isPending();
         });
 
         // 2.3.3.3.3. If both resolvePromise and rejectPromise are called, or multiple calls
         //            to the same argument are made, the first call takes precedence,
         //            and any further calls are ignored.
-        it('both called', function() {
+        it('both called', function (done) {
           var isPending;
-          var done = false;
           var doneSpy = jasmine.createSpy('done-spy');
           var failSpy = jasmine.createSpy('fail-spy');
           var x = {
@@ -1102,28 +987,21 @@ describe('Deferred', function () {
               setTimeout(function () {
                 resolvePromise('foo');
                 rejectPromise('bar');
-                done = true;
+
+                expect(isPending).toBe(true);
+                expect(doneSpy).toHaveBeenCalledWith('foo');
+                expect(failSpy).not.toHaveBeenCalled();
+
+                done();
               }, 20);
             }
           };
 
-          runs(function () {
-            d.promise
-              .done(doneSpy)
-              .fail(failSpy);
-            d.resolve(x);
-            isPending = d.promise.isPending();
-          });
-
-          waitsFor(function () {
-            return done;
-          }, 'timeout', 40);
-
-          runs(function () {
-            expect(isPending).toBe(true);
-            expect(doneSpy).toHaveBeenCalledWith('foo');
-            expect(failSpy).not.toHaveBeenCalled();
-          });
+          d.promise
+            .done(doneSpy)
+            .fail(failSpy);
+          d.resolve(x);
+          isPending = d.promise.isPending();
         });
 
         // 2.3.3.3.4. If calling then throws an exception e,
@@ -1198,7 +1076,7 @@ describe('Deferred', function () {
     });
 
     // 2.3.4. If x is not an object or function, fulfill promise with x.
-    describe('with value', function () {
+    it('with value', function () {
       var d = new Deferred();
       var x = 'foo';
       var spy = jasmine.createSpy('done-spy');
@@ -1230,10 +1108,10 @@ describe('Deferred', function () {
       d.reject();
 
       expect(spy1).toHaveBeenCalled();
-      expect(spy1.calls.length).toBe(1);
+      expect(spy1.calls.count()).toBe(1);
 
       expect(spy2).toHaveBeenCalled();
-      expect(spy2.calls.length).toBe(1);
+      expect(spy2.calls.count()).toBe(1);
     });
 
     it('already resolved', function () {
@@ -1265,28 +1143,28 @@ describe('Deferred', function () {
 
   // when
 
-  xdescribe('when', function () {
-    //
-  });
+//  xdescribe('when', function () {
+//    //
+//  });
 
   // any
 
-  xdescribe('any', function () {
-    //
-  });
+//  xdescribe('any', function () {
+//    //
+//  });
 
   // helpers
 
-  xdescribe('helpers', function () {
-
-    xit('isPromise', function () {
-      //
-    });
-
-    xit('isDeferred', function () {
-      //
-    });
-
-  });
+//  xdescribe('helpers', function () {
+//
+//    xit('isPromise', function () {
+//      //
+//    });
+//
+//    xit('isDeferred', function () {
+//      //
+//    });
+//
+//  });
   // nested subscriptions and state changing
 });
