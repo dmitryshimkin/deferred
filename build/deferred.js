@@ -1,8 +1,6 @@
 ;(function (undefined) {
   'use strict';
 
-  'use strict';
-  
   /** promise states */
   
   //PENDING:  0;
@@ -233,8 +231,6 @@
   
     return deferred2.promise;
   };
-  
-  'use strict';
   
   var counter = 0;
   
@@ -469,8 +465,6 @@
     return arg instanceof Deferred;
   };
   
-  'use strict';
-  
   /**
    * Returns promise that will be resolved when all passed promises or deferreds are resolved
    * Promise will be rejected if at least on of passed promises or deferreds is rejected
@@ -526,8 +520,6 @@
   
     return d.promise;
   };
-  
-  'use strict';
   
   /**
    * Returns promise that will be resolved once any of passed promises or deferreds is resolved
@@ -586,8 +578,6 @@
   };
   
   //
-  
-  'use strict';
   
   /** export */
   

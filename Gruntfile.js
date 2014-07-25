@@ -116,6 +116,23 @@ module.exports = function (grunt) {
       }
     },
 
+    replace: {
+      dev: {
+        src: ['build/deferred.js'],
+        overwrite: true,
+        replacements: [
+          {
+            from: '\'use strict\';\n\n',
+            to: ''
+          },
+          {
+            from: /\/\* jshint \S+:\S+ \*\/\n/g,
+            to: ''
+          }
+        ]
+      }
+    },
+
     watch: {
       dev: {
         files: [
@@ -149,10 +166,12 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-jscs-checker');
+  grunt.loadNpmTasks('grunt-text-replace');
   grunt.loadNpmTasks('grunt-wrap');
 
   grunt.registerTask('build-dev', 'Create development build', [
     'concat:dev',
+    'replace:dev',
     'wrap:dev'
   ]);
 
