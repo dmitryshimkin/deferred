@@ -118,7 +118,10 @@
   "maximumLineLength": 120,
   "requireCapitalizedConstructors": true,
   "safeContextKeyword": [
+    "ctx",
     "self",
+    "self1",
+    "self2",
     "instance"
   ],
   "requireDotNotation": true,

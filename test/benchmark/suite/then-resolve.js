@@ -1,3 +1,5 @@
+'use strict';
+
 var Deferred = require('../../../build/deferred.js');
 var Q        = require('../lib/q.js');
 var vow      = require('../lib/vow.js');
@@ -21,25 +23,25 @@ module.exports = {
     //      d.then(onResolve);
     //    },
 
-    '$': function () {
+    $: function () {
       var d = new $.Deferred();
       d.then(onResolve);
       d.resolve();
     },
 
-    'Q': function () {
+    Q: function () {
       var d = new Q.defer();
       d.promise.then(onResolve);
       d.resolve();
     },
 
-    'vow': function () {
+    vow: function () {
       var d = new vow.Deferred();
       d.promise().then(onResolve);
       d.resolve();
     },
 
-    'Rubaxa': function () {
+    Rubaxa: function () {
       var d = new Rubaxa();
       d.then(onResolve);
       d.resolve();

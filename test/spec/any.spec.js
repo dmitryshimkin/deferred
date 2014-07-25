@@ -1,11 +1,14 @@
 describe('any', function () {
+  'use strict';
 
   it('done', function () {
     var d1 = new Deferred();
     var d2 = new Deferred();
     var d3 = new Deferred();
     var spy = jasmine.createSpy('done-spy');
-    var obj = { foo: 'bar' };
+    var obj = {
+      foo: 'bar'
+    };
 
     var promise = Deferred.any([d1, d2.promise, d3]);
 
@@ -25,7 +28,9 @@ describe('any', function () {
     var d2 = new Deferred();
     var d3 = new Deferred();
     var doneSpy = jasmine.createSpy('done-spy');
-    var obj = { foo: 'bar' };
+    var obj = {
+      foo: 'bar'
+    };
 
     var promise = Deferred.any([d1, d2.promise, d3]);
 
@@ -51,7 +56,9 @@ describe('any', function () {
     var d2 = new Deferred();
     var d3 = new Deferred();
     var spy = jasmine.createSpy('fail-spy');
-    var obj = { foo: 'bar' };
+    var obj = {
+      foo: 'bar'
+    };
 
     var promise = Deferred.any([d1, d2.promise, d3]);
 

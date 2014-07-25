@@ -1,3 +1,5 @@
+'use strict';
+
 var Deferred       = require('../../../build/deferred.min');
 var Q              = require('../lib/q');
 var kew            = require('../lib/kew');
@@ -10,7 +12,7 @@ var $              = require('../lib/jquery');
 module.exports = {
   name: ' *** instantiate *** ',
   tests: {
-    'Deferred': function () {
+    Deferred: function () {
       return new Deferred();
     },
 
@@ -19,31 +21,31 @@ module.exports = {
     //      return new Promise();
     //    },
 
-    '$': function () {
+    $: function () {
       return new $.Deferred();
     },
 
-    'Bluebird': function () {
+    Bluebird: function () {
       return new Bluebird(function (resolve, reject) {});
     },
 
-    'Q': function () {
+    Q: function () {
       return new Q.defer();
     },
 
-    'kew': function () {
+    kew: function () {
       return new kew.defer();
     },
 
-    'vow': function () {
+    vow: function () {
       return new vow.Deferred();
     },
 
-    'Rubaxa': function () {
+    Rubaxa: function () {
       return new RubaxaDeferred();
     },
 
-    'RSVP': function () {
+    RSVP: function () {
       return new RSVP.Promise(function (resolve, reject) {});
     }
   }

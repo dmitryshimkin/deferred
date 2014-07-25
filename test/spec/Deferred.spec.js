@@ -3,7 +3,9 @@ describe('Deferred', function () {
   'use strict';
 
   var __log = [];
-  var data = { foo: 'bar' };
+  var data = {
+    foo: 'bar'
+  };
   var d;
 
   beforeEach(function () {
@@ -28,10 +30,10 @@ describe('Deferred', function () {
   describe('done', function () {
     it('handler', function (done) {
       var spy = jasmine.createSpy('done-spy');
-      var _this;
+      var self;
 
       d.promise.done(function () {
-        _this = this;
+        self = this;
         spy();
       });
 
@@ -39,32 +41,32 @@ describe('Deferred', function () {
         d.resolve();
 
         expect(spy).toHaveBeenCalled();
-        expect(_this).toBe(d.promise);
+        expect(self).toBe(d.promise);
 
         done();
       }, 30);
     });
 
     it ('handler with context', function (done) {
-      var _this1;
-      var _this2;
+      var self1;
+      var self2;
       var obj = {
         fn: function () {
-          _this1 = this;
+          self1 = this;
         }
       };
 
       d.promise
         .done(obj.fn, obj)
         .done(function () {
-          _this2 = this;
+          self2 = this;
         }, null);
 
       setTimeout(function () {
         d.resolve();
 
-        expect(_this1).toBe(obj);
-        expect(_this2).toBe(null);
+        expect(self1).toBe(obj);
+        expect(self2).toBe(null);
 
         done();
       }, 30);
@@ -252,10 +254,10 @@ describe('Deferred', function () {
   describe('always', function () {
     it('done', function (done) {
       var spy = jasmine.createSpy('done-spy');
-      var _this;
+      var self;
 
       d.promise.always(function () {
-        _this = this;
+        self = this;
         spy.apply(this, arguments);
       });
 
@@ -263,7 +265,7 @@ describe('Deferred', function () {
         d.resolve();
 
         expect(spy).toHaveBeenCalled();
-        expect(_this).toBe(d.promise);
+        expect(self).toBe(d.promise);
 
         done();
       }, 30);
@@ -435,10 +437,8 @@ describe('Deferred', function () {
    */
 
   describe('then', function () {
-
     // 2.2.2. If onFulfilled is a function:
     describe('onFulfilled is function', function () {
-
       // 2.2.2.1. it must be called after promise is fulfilled, with promise’s value as its first argument.
       // 2.2.1.2. If onReject is not a function, it must be ignored.
       it('fulfill', function () {
@@ -471,27 +471,27 @@ describe('Deferred', function () {
       describe('context', function () {
         it('promise', function () {
           var onResolved = function () {
-            _this = this;
+            self = this;
           };
-          var _this;
+          var self;
 
           d.promise.then(onResolved);
           d.resolve();
 
-          expect(_this).toBe(d.promise);
+          expect(self).toBe(d.promise);
         });
 
         it('custom', function () {
           var onFulfill = function () {
-            _this = this;
+            self = this;
           };
           var context = {};
-          var _this;
+          var self;
 
           d.promise.then(onFulfill, undefined, context);
           d.resolve('foo');
 
-          expect(_this).toBe(context);
+          expect(self).toBe(context);
         });
       });
 
@@ -525,7 +525,6 @@ describe('Deferred', function () {
 
     // 2.2.3. If onReject is a function
     describe('onReject', function () {
-
       // 2.2.3.1. it must be called after promise is rejected, with promise’s reason as its first argument.
       it('fulfill', function () {
         var onReject = jasmine.createSpy('reject');
@@ -558,27 +557,27 @@ describe('Deferred', function () {
       describe('context', function () {
         it('promise', function () {
           var onReject = function () {
-            _this = this;
+            self = this;
           };
-          var _this;
+          var self;
 
           d.promise.then('', onReject);
           d.reject();
 
-          expect(_this).toBe(d.promise);
+          expect(self).toBe(d.promise);
         });
 
         it('custom', function () {
           var onReject = function () {
-            _this = this;
+            self = this;
           };
           var context = {};
-          var _this;
+          var self;
 
           d.promise.then(function () {}, onReject, context);
           d.reject();
 
-          expect(_this).toBe(context);
+          expect(self).toBe(context);
         });
       });
 
@@ -612,7 +611,6 @@ describe('Deferred', function () {
 
     // 2.2.7. then must return a promise 3.3.
     describe('return', function () {
-
       it('promise', function () {
         var promise2 = d.promise.then();
 
@@ -674,11 +672,9 @@ describe('Deferred', function () {
       });
 
       describe('reject', function () {
-
         // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
         //          promise2 must be rejected with e as the reason.
         describe('on exception', function () {
-
           it('onFulfill', function () {
             var e = new TypeError('error');
             var spy = jasmine.createSpy('');
@@ -780,7 +776,6 @@ describe('Deferred', function () {
    */
 
   describe('resolve', function () {
-
     // @TODO: move from this describe
     it('isResolved', function () {
       expect(d.promise.isPending()).toBe(true);
@@ -819,7 +814,6 @@ describe('Deferred', function () {
 
     // 2.3.2. If x is a promise, adopt its state 3.4:
     describe('with promise', function () {
-
       // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
       it('the same', function () {
         var x = d.promise;
@@ -862,7 +856,6 @@ describe('Deferred', function () {
 
       // 2.3.2.1. If x is pending, promise must remain pending until x is fulfilled or rejected.
       describe('pending', function () {
-
         // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
         it('fulfill', function (done) {
           var x = new Deferred();
@@ -909,13 +902,12 @@ describe('Deferred', function () {
 
     // 2.3.3. Otherwise, if x is an object or function,
     describe('with object', function () {
-
       // 2.3.3.2. If retrieving the property x.then results in a thrown exception e,
       //          reject promise with e as the reason.
       it('exception', function () {
         var x = {};
         var spy = jasmine.createSpy('fail-spy');
-        var e = new TypeError;
+        var e = new TypeError();
 
         x.__defineGetter__('then', function () {
           throw e;
@@ -930,7 +922,6 @@ describe('Deferred', function () {
       // 2.3.3.3. If then is a function, call it with x as this, first argument resolvePromise,
       // and second argument rejectPromise, where:
       describe('has method then', function () {
-
         // 2.3.3.3.1. If/when resolvePromise is called with a value y, run [[Resolve]](promise, y).
         it('resolvePromise called', function (done) {
           var isPending;
@@ -1006,7 +997,6 @@ describe('Deferred', function () {
 
         // 2.3.3.3.4. If calling then throws an exception e,
         describe('exception thrown', function () {
-
           //2.3.3.3.4.1. If resolvePromise or rejectPromise have been called, ignore it.
           it('after resolvePromise', function () {
             var done = false;
@@ -1014,7 +1004,7 @@ describe('Deferred', function () {
             var x = {
               then: function (resolvePromise, rejectPromise) {
                 resolvePromise(null);
-                throw new Error;
+                throw new Error();
               }
             };
 
@@ -1031,7 +1021,7 @@ describe('Deferred', function () {
             var x = {
               then: function (resolvePromise, rejectPromise) {
                 rejectPromise(null);
-                throw new Error;
+                throw new Error();
               }
             };
 
@@ -1045,7 +1035,7 @@ describe('Deferred', function () {
           it('before resolvePromise/rejectPromise', function () {
             var done = false;
             var spy = jasmine.createSpy('fail-spy');
-            var e = new Error;
+            var e = new Error();
             var x = {
               then: function () {
                 throw e;
@@ -1091,7 +1081,6 @@ describe('Deferred', function () {
   // reject
 
   describe('reject', function () {
-
     it('isRejected', function () {
       expect(d.promise.isPending()).toBe(true);
       d.reject();
@@ -1140,31 +1129,4 @@ describe('Deferred', function () {
       expect(spy2).toHaveBeenCalledWith('bar');
     });
   });
-
-  // when
-
-//  xdescribe('when', function () {
-//    //
-//  });
-
-  // any
-
-//  xdescribe('any', function () {
-//    //
-//  });
-
-  // helpers
-
-//  xdescribe('helpers', function () {
-//
-//    xit('isPromise', function () {
-//      //
-//    });
-//
-//    xit('isDeferred', function () {
-//      //
-//    });
-//
-//  });
-  // nested subscriptions and state changing
 });

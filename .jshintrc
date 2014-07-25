@@ -3,7 +3,13 @@
     "define": false,
     "window": false,
     "Deferred": true,
-    "Promise": true
+    "Promise": true,
+    "expect": false,
+    "describe": false,
+    "it": false,
+    "jasmine": false,
+    "beforeEach": false,
+    "afterEach": false
   },
   "boss": true,
   "curly": true,

@@ -1,11 +1,14 @@
 describe('Promise.all', function () {
+  'use strict';
 
   it('done', function () {
     var d1 = new Deferred();
     var d2 = new Deferred();
     var d3 = new Deferred();
     var spy = jasmine.createSpy('done');
-    var obj = { foo: 'bar' };
+    var obj = {
+      foo: 'bar'
+    };
 
     var promise = Deferred.all([d1, d2.promise, d3]);
 
@@ -31,8 +34,10 @@ describe('Promise.all', function () {
     var d2 = new Deferred();
     var d3 = new Deferred();
     var spy = jasmine.createSpy('fail');
-    var obj = { foo: 'bar' };
-    var e = new TypeError;
+    var obj = {
+      foo: 'bar'
+    };
+    var e = new TypeError();
     var promise = Deferred.all([d1.promise, d2, d3]);
 
     promise.fail(spy);
@@ -70,7 +75,9 @@ describe('Promise.all', function () {
     var d2 = new Deferred();
     var d3 = new Deferred();
     var spy = jasmine.createSpy('done');
-    var obj = { foo: 'bar' };
+    var obj = {
+      foo: 'bar'
+    };
 
     d2.resolve('2', 'foo');
     d1.resolve('1');
