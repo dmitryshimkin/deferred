@@ -16,10 +16,10 @@ module.exports = function (grunt) {
         options: {
           filter: 'include',
           tasks: [
-            'benchmark',
             'build-dev',
             'build-prod',
             'lint',
+            'perf',
             'test'
           ]
         }
@@ -142,28 +142,25 @@ module.exports = function (grunt) {
     }
   });
 
+  grunt.loadNpmTasks('grunt-available-tasks');
   grunt.loadNpmTasks('grunt-benchmark');
-  //grunt.loadNpmTasks('grunt-available-tasks');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
-  grunt.loadNpmTasks('grunt-jscs-checker');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-jscs-checker');
   grunt.loadNpmTasks('grunt-wrap');
 
-  grunt.registerTask('build-dev', [
+  grunt.registerTask('build-dev', 'Create development build', [
     'concat:dev',
     'wrap:dev'
   ]);
-  grunt.registerTask('build-prod', [
+
+  grunt.registerTask('build-prod', 'Create production build', [
     'build-dev'
   ]);
 
-  grunt.registerTask('build-test', [
-    'concat:test', 'wrap:test'
-  ]);
-
-  grunt.registerTask('test', [
+  grunt.registerTask('test', 'Run tests with code coverage using jasmine and istanbul', [
     'test-prod',
     'test-dev'
   ]);
@@ -183,11 +180,11 @@ module.exports = function (grunt) {
     'benchmark'
   ]);
 
-  grunt.registerTask('lint', [
+  grunt.registerTask('lint', 'Lint source files using jscs and jshint', [
     'jshint'
   ]);
 
   grunt.registerTask('default', [
-    'build-dev'
+    'availabletasks'
   ]);
 };
