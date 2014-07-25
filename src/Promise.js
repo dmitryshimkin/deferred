@@ -18,8 +18,6 @@ var Promise = function () {
   this._failCallbacks = [];
 };
 
-var proto = Promise.prototype;
-
 /**
  * @TBD
  * @param arg {Function|Deferred} Listener or another deferred (@TODO: test this ==== arg)
@@ -28,7 +26,7 @@ var proto = Promise.prototype;
  * @public
  */
 
-proto['always'] = function (arg, ctx) {
+Promise.prototype.always = function (arg, ctx) {
   if (arg instanceof Deferred) {
     this
       .done(function (value) {
@@ -54,7 +52,7 @@ proto['always'] = function (arg, ctx) {
  * @public
  */
 
-proto['done'] = function (arg, ctx) {
+Promise.prototype.done = function (arg, ctx) {
   var state = this._state;
   var isDeferred = arg instanceof Deferred;
 
@@ -93,7 +91,7 @@ proto['done'] = function (arg, ctx) {
  * @public
  */
 
-proto['fail'] = function (arg, ctx) {
+Promise.prototype.fail = function (arg, ctx) {
   var state = this._state;
   var isDeferred = arg instanceof Deferred;
 
@@ -130,7 +128,7 @@ proto['fail'] = function (arg, ctx) {
  * @public
  */
 
-proto['isPending'] = function () {
+Promise.prototype.isPending = function () {
   return this._state === 0;
 };
 
@@ -140,7 +138,7 @@ proto['isPending'] = function () {
  * @public
  */
 
-proto['isRejected'] = function () {
+Promise.prototype.isRejected = function () {
   return this._state === 2;
 };
 
@@ -150,7 +148,7 @@ proto['isRejected'] = function () {
  * @public
  */
 
-proto['isResolved'] = function () {
+Promise.prototype.isResolved = function () {
   return this._state === 1;
 };
 
@@ -162,7 +160,7 @@ proto['isResolved'] = function () {
  * @public
  */
 
-proto['then'] = function (onResolve, onReject, argCtx) {
+Promise.prototype.then = function (onResolve, onReject, argCtx) {
   var lastArg = arguments[arguments.length - 1];
   var deferred2 = new Deferred();
   var func = 'function';
@@ -178,7 +176,8 @@ proto['then'] = function (onResolve, onReject, argCtx) {
 
   if (typeof onResolve === func) {
     this.done(function (value) {
-      var x, error;
+      var x;
+      var error;
 
       try {
         x = onResolve.call(ctx, value);
@@ -204,7 +203,8 @@ proto['then'] = function (onResolve, onReject, argCtx) {
 
   if (typeof onReject === func) {
     this.fail(function (reason) {
-      var x, error;
+      var x;
+      var error;
 
       try {
         x = onReject.call(ctx, reason);

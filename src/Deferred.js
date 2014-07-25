@@ -9,18 +9,16 @@ var counter = 0;
 
 var Deferred = function () {
   this.uid = counter++;
-  this['promise'] = new Promise();
-  this['promise'].uid = this.uid;
+  this.promise = new Promise();
+  this.promise.uid = this.uid;
 };
-
-var fn = Deferred.prototype;
 
 /**
  * Translates promise into rejected state
  * @public
  */
 
-fn['reject'] = function (reason) {
+Deferred.prototype.reject = function (reason) {
   var promise = this.promise;
 
   // ignore non-pending promises
@@ -47,9 +45,13 @@ fn['reject'] = function (reason) {
  * @public
  */
 
-fn['resolve'] = function (x) {
+Deferred.prototype.resolve = function (x) {
   var promise = this.promise;
-  var value, callback, callbacks, i, l;
+  var value;
+  var callback;
+  var callbacks;
+  var i;
+  var l;
 
   // ignore non-pending promises
   if (promise._state !== 0) {

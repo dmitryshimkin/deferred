@@ -7,7 +7,7 @@
  * @returns {Promise}
  */
 
-Deferred['any'] = function (promises) {
+Deferred.any = function (promises) {
   var d = new Deferred();
   var promise;
   var remain = promises.length;

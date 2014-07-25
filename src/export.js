@@ -9,5 +9,5 @@ if (typeof module === 'object' && typeof module.exports === 'object') {
     return Deferred;
   });
 } else if (typeof window === 'object') {
-  window['Deferred'] = Deferred;
+  window.Deferred = Deferred;
 }

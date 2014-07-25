@@ -1,4 +1,4 @@
-module.exports = function(grunt) {
+module.exports = function (grunt) {
   'use strict';
 
   var source = [
@@ -94,6 +94,18 @@ module.exports = function(grunt) {
       }
     },
 
+    jscs: {
+      all: {
+        options: require('./.jscs.json'),
+        files: {
+          src: [
+            'Gruntfile.js',
+            'src/**'
+          ]
+        }
+      }
+    },
+
     jshint: {
       all: [
         'Gruntfile.js',
@@ -134,6 +146,7 @@ module.exports = function(grunt) {
   //grunt.loadNpmTasks('grunt-available-tasks');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
+  grunt.loadNpmTasks('grunt-jscs-checker');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-wrap');

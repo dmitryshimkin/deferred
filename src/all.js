@@ -7,9 +7,11 @@
  * @returns {Promise}
  */
 
-Deferred['all'] = function (promises) {
+Deferred.all = function (promises) {
   var d = new Deferred();
-  var promise, index, value;
+  var promise;
+  var index;
+  var value;
   var remain = promises.length;
   var values = [];
   var uids = [];

@@ -21,8 +21,6 @@
     this._failCallbacks = [];
   };
   
-  var proto = Promise.prototype;
-  
   /**
    * @TBD
    * @param arg {Function|Deferred} Listener or another deferred (@TODO: test this ==== arg)
@@ -31,7 +29,7 @@
    * @public
    */
   
-  proto['always'] = function (arg, ctx) {
+  Promise.prototype.always = function (arg, ctx) {
     if (arg instanceof Deferred) {
       this
         .done(function (value) {
@@ -57,7 +55,7 @@
    * @public
    */
   
-  proto['done'] = function (arg, ctx) {
+  Promise.prototype.done = function (arg, ctx) {
     var state = this._state;
     var isDeferred = arg instanceof Deferred;
   
@@ -96,7 +94,7 @@
    * @public
    */
   
-  proto['fail'] = function (arg, ctx) {
+  Promise.prototype.fail = function (arg, ctx) {
     var state = this._state;
     var isDeferred = arg instanceof Deferred;
   
@@ -133,7 +131,7 @@
    * @public
    */
   
-  proto['isPending'] = function () {
+  Promise.prototype.isPending = function () {
     return this._state === 0;
   };
   
@@ -143,7 +141,7 @@
    * @public
    */
   
-  proto['isRejected'] = function () {
+  Promise.prototype.isRejected = function () {
     return this._state === 2;
   };
   
@@ -153,7 +151,7 @@
    * @public
    */
   
-  proto['isResolved'] = function () {
+  Promise.prototype.isResolved = function () {
     return this._state === 1;
   };
   
@@ -165,7 +163,7 @@
    * @public
    */
   
-  proto['then'] = function (onResolve, onReject, argCtx) {
+  Promise.prototype.then = function (onResolve, onReject, argCtx) {
     var lastArg = arguments[arguments.length - 1];
     var deferred2 = new Deferred();
     var func = 'function';
@@ -181,7 +179,8 @@
   
     if (typeof onResolve === func) {
       this.done(function (value) {
-        var x, error;
+        var x;
+        var error;
   
         try {
           x = onResolve.call(ctx, value);
@@ -207,7 +206,8 @@
   
     if (typeof onReject === func) {
       this.fail(function (reason) {
-        var x, error;
+        var x;
+        var error;
   
         try {
           x = onReject.call(ctx, reason);
@@ -245,18 +245,16 @@
   
   var Deferred = function () {
     this.uid = counter++;
-    this['promise'] = new Promise();
-    this['promise'].uid = this.uid;
+    this.promise = new Promise();
+    this.promise.uid = this.uid;
   };
-  
-  var fn = Deferred.prototype;
   
   /**
    * Translates promise into rejected state
    * @public
    */
   
-  fn['reject'] = function (reason) {
+  Deferred.prototype.reject = function (reason) {
     var promise = this.promise;
   
     // ignore non-pending promises
@@ -283,9 +281,13 @@
    * @public
    */
   
-  fn['resolve'] = function (x) {
+  Deferred.prototype.resolve = function (x) {
     var promise = this.promise;
-    var value, callback, callbacks, i, l;
+    var value;
+    var callback;
+    var callbacks;
+    var i;
+    var l;
   
     // ignore non-pending promises
     if (promise._state !== 0) {
@@ -476,9 +478,11 @@
    * @returns {Promise}
    */
   
-  Deferred['all'] = function (promises) {
+  Deferred.all = function (promises) {
     var d = new Deferred();
-    var promise, index, value;
+    var promise;
+    var index;
+    var value;
     var remain = promises.length;
     var values = [];
     var uids = [];
@@ -532,7 +536,7 @@
    * @returns {Promise}
    */
   
-  Deferred['any'] = function (promises) {
+  Deferred.any = function (promises) {
     var d = new Deferred();
     var promise;
     var remain = promises.length;
@@ -594,7 +598,7 @@
       return Deferred;
     });
   } else if (typeof window === 'object') {
-    window['Deferred'] = Deferred;
+    window.Deferred = Deferred;
   }
   
 }());
