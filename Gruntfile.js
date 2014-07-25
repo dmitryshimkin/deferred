@@ -40,14 +40,14 @@ module.exports = function (grunt) {
     concat: {
       dev: {
         files: {
-          'build/deferred.js': source
+          'dist/deferred.js': source
         }
       }
     },
 
     jasmine: {
       dev: {
-        src: 'build/deferred.js',
+        src: 'dist/deferred.js',
         options: {
           specs: [
             'test/spec/Deferred.spec.js'
@@ -71,7 +71,7 @@ module.exports = function (grunt) {
         }
       },
       prod: {
-        src: 'build/deferred.min.js',
+        src: 'dist/deferred.min.js',
         options: {
           specs: [
             'test/spec/Deferred.spec.js'
@@ -116,9 +116,13 @@ module.exports = function (grunt) {
       }
     },
 
+    pkg: grunt.file.readJSON('package.json'),
+
     replace: {
       dev: {
-        src: ['build/deferred.js'],
+        src: [
+          'dist/deferred.js'
+        ],
         overwrite: true,
         replacements: [
           {
@@ -130,6 +134,28 @@ module.exports = function (grunt) {
             to: ''
           }
         ]
+      }
+    },
+
+    uglify: {
+      compress: {
+        files: {
+          'dist/deferred.min.js': [
+            'dist/deferred.js'
+          ]
+        },
+        options: {
+          banner: [
+            '/*!',
+            ' * <%= pkg.name %> - v<%= pkg.version %>',
+            ' * <%= grunt.template.today("yyyy-mm-dd") %>',
+            ' */',
+            ''
+          ].join('\n'),
+          mangle: true,
+          report: 'gzip'
+          //sourceMap: 'dist/deferred_sourcemap'
+        }
       }
     },
 
@@ -146,7 +172,9 @@ module.exports = function (grunt) {
 
     wrap: {
       dev: {
-        src: ['build/deferred.js'],
+        src: [
+          'dist/deferred.js'
+        ],
         dest: '',
         options: {
           indent: '  ',
@@ -164,8 +192,10 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-jscs-checker');
+  grunt.loadNpmTasks('grunt-text-replace');
   grunt.loadNpmTasks('grunt-text-replace');
   grunt.loadNpmTasks('grunt-wrap');
 
@@ -176,7 +206,8 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('build-prod', 'Create production build', [
-    'build-dev'
+    'build-dev',
+    'uglify:compress'
   ]);
 
   grunt.registerTask('test', 'Run tests with code coverage using jasmine and istanbul', [
@@ -200,6 +231,7 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('lint', 'Lint source files using jscs and jshint', [
+    'jscs',
     'jshint'
   ]);
 
