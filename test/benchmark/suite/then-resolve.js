@@ -1,6 +1,6 @@
 'use strict';
 
-var Deferred = require('../../../build/deferred.js');
+var Deferred = require('../../../dist/deferred.js');
 var Q        = require('../lib/q.js');
 var vow      = require('../lib/vow.js');
 var Rubaxa   = require('../lib/rubaxa-deferred.js');

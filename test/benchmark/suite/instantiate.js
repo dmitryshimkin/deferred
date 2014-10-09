@@ -1,6 +1,6 @@
 'use strict';
 
-var Deferred       = require('../../../build/deferred.min');
+var Deferred       = require('../../../dist/deferred.min');
 var Q              = require('../lib/q');
 var kew            = require('../lib/kew');
 var vow            = require('../lib/vow');
@@ -21,22 +21,27 @@ module.exports = {
     //      return new Promise();
     //    },
 
+    /*
     $: function () {
       return new $.Deferred();
     },
+    */
 
     Bluebird: function () {
       return new Bluebird(function (resolve, reject) {});
     },
 
+    kew: function () {
+      return new kew.defer();
+    }
+
+    /*
     Q: function () {
       return new Q.defer();
     },
+    */
 
-    kew: function () {
-      return new kew.defer();
-    },
-
+    /*
     vow: function () {
       return new vow.Deferred();
     },
@@ -48,5 +53,6 @@ module.exports = {
     RSVP: function () {
       return new RSVP.Promise(function (resolve, reject) {});
     }
+    */
   }
 };

@@ -14,8 +14,6 @@
 var Promise = function () {
   this.value = void 0;
   this._state = 0;
-  this._doneCallbacks = [];
-  this._failCallbacks = [];
 };
 
 /**
@@ -75,6 +73,9 @@ Promise.prototype.done = function (arg, ctx) {
         arg.resolve.call(arg, value);
       });
     } else {
+      if (!this.hasOwnProperty('_doneCallbacks')) {
+        this._doneCallbacks = [];
+      }
       this._doneCallbacks.push({
         fn: arg,
         ctx: ctx
@@ -115,6 +116,9 @@ Promise.prototype.fail = function (arg, ctx) {
         arg.reject(reason);
       });
     } else {
+      if (!this.hasOwnProperty('_failCallbacks')) {
+        this._failCallbacks = [];
+      }
       this._failCallbacks.push({
         fn: arg,
         ctx: ctx

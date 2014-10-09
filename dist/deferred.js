@@ -15,8 +15,6 @@
   var Promise = function () {
     this.value = void 0;
     this._state = 0;
-    this._doneCallbacks = [];
-    this._failCallbacks = [];
   };
   
   /**
@@ -76,6 +74,9 @@
           arg.resolve.call(arg, value);
         });
       } else {
+        if (!this.hasOwnProperty('_doneCallbacks')) {
+          this._doneCallbacks = [];
+        }
         this._doneCallbacks.push({
           fn: arg,
           ctx: ctx
@@ -116,6 +117,9 @@
           arg.reject(reason);
         });
       } else {
+        if (!this.hasOwnProperty('_failCallbacks')) {
+          this._failCallbacks = [];
+        }
         this._failCallbacks.push({
           fn: arg,
           ctx: ctx
@@ -235,17 +239,13 @@
     return deferred2.promise;
   };
   
-  var counter = 0;
-  
   /**
    * Deferred class
    * @class
    */
   
   var Deferred = function () {
-    this.uid = counter++;
     this.promise = new Promise();
-    this.promise.uid = this.uid;
   };
   
   /**

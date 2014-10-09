@@ -1,16 +1,12 @@
 'use strict';
 
-var counter = 0;
-
 /**
  * Deferred class
  * @class
  */
 
 var Deferred = function () {
-  this.uid = counter++;
   this.promise = new Promise();
-  this.promise.uid = this.uid;
 };
 
 /**
