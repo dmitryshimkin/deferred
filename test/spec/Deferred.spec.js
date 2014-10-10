@@ -1181,14 +1181,6 @@ describe('Deferred', function () {
           expect(d.promise.isPending()).toBe(true);
         });
 
-        xit('next attempt to resolve promise should be ignored', function () {
-          //
-        });
-
-        xit('next attempt to reject promise should be ignored', function () {
-          //
-        });
-
         it('method `then` should be called with `x` as context', function () {
           var d = new Deferred();
           var handler = jasmine.createSpy();
@@ -1398,5 +1390,5 @@ describe('Deferred', function () {
 
   // 2.3.2.1   If x is pending, promise must remain pending until x is fulfilled or rejected.
   // todo restrict double resolve when first resolve was using pending promise and second with value
-  // todo done, fail and always - the same handler many times
+  // todo its not obvious what should happen when we resolve promise with thenable object
 });
