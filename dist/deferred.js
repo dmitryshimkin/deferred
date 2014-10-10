@@ -291,10 +291,6 @@
       return this;
     }
   
-    var func = 'function';
-    var self = this;
-    var then;
-  
     // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
     if (x === this || x === promise) {
       var e = new TypeError('Promise and argument refer to the same object');
@@ -303,34 +299,39 @@
     }
   
     var isPromise = x instanceof Promise;
-    var isPromiseOrDeferred = isPromise;
-  
-    var xType = typeof x;
-  
-    // 2.3.3.2. If retrieving the property x.then results in a thrown exception e, reject promise with e as the reason
-    if (x !== null && (xType === 'object' || xType === func)) {
-      try {
-        then = x.then;
-      } catch (e) {
-        this.reject(e);
-        return this;
-      }
-    }
-  
-    var thenable = typeof then === func;
-    var isPending;
     var onResolve;
     var onReject;
   
+    // Detect if we need onResolve and onReject
     if (isPromise) {
-      isPending = x._state === 0;
-    } else {
-      isPending = false;
-    }
+      var xState = x._state;
   
-    // detect if we need onResolve and onReject
-    // !!! comment this
-    if (thenable && (!isPromise || isPending)) {
+      // 2.3.2.3. If x is rejected, reject promise with the same reason.
+      if (xState === 2) {
+        this.reject(x.value);
+        return this;
+      }
+  
+      // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
+      if (xState === 1) {
+        promise._state = 1;
+        promise.value = x.value;
+  
+        callbacks = promise._doneCallbacks;
+        if (callbacks) {
+          for (i = 0, l = callbacks.length; i < l; i++) {
+            callback = callbacks[i];
+            callback.fn.call(callback.ctx, promise.value);
+          }
+        }
+  
+        return this;
+      }
+  
+      // 2.3.2.2. when x is fulfilled, fulfill promise with the same value.
+      // 2.3.2.3. When x is rejected, reject promise with the same reason.
+      var deferred = this;
+  
       onResolve = function (argValue) {
         if (promise._state !== 0) {
           return false;
@@ -360,61 +361,13 @@
         if (promise._state !== 0) {
           return false;
         }
-  
         if (isPromise) {
           value = x.value;
         }
-  
-        self.reject(value || reason);
-  
+        deferred.reject(value || reason);
         return true;
       };
-    }
   
-    if (isPromise) {
-      var xState = x._state;
-  
-      // 2.3.2.3. If x is rejected, reject promise with the same reason.
-      if (xState === 2) {
-        this.reject(x.value);
-        return this;
-      }
-  
-      // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
-      if (xState === 1) {
-        promise._state = 1;
-        promise.value = x.value;
-  
-        callbacks = promise._doneCallbacks;
-        if (callbacks) {
-          for (i = 0, l = callbacks.length; i < l; i++) {
-            callback = callbacks[i];
-            callback.fn.call(callback.ctx, promise.value);
-          }
-        }
-  
-        return this;
-      }
-  
-      // 2.3.2.2. when x is fulfilled, fulfill promise with the same value.
-      // 2.3.2.3. When x is rejected, reject promise with the same reason.
-      try {
-        x.then(onResolve, onReject);
-      } catch (e) {
-        if (this.promise._state === 0) {
-          this.reject(e);
-        }
-      }
-  
-      onResolve = null;
-      onReject = null;
-  
-      return this;
-    }
-  
-    // 2.3.3.3.1. If/when resolvePromise is called with a value y, run [[Resolve]](promise, y).
-    // 2.3.3.3.2. If/when rejectPromise is called with a reason r, reject promise with r.
-    if (thenable) {
       try {
         x.then(onResolve, onReject);
       } catch (e) {
@@ -457,120 +410,6 @@
   Deferred.isDeferred = function (arg) {
     return arg instanceof Deferred;
   };
-  
-  /**
-   * Returns promise that will be resolved when all passed promises or deferreds are resolved
-   * Promise will be rejected if at least on of passed promises or deferreds is rejected
-   * @param promises {Array}
-   * @returns {Promise}
-   */
-  
-  Deferred.all = function (promises) {
-    var d = new Deferred();
-    var promise;
-    var index;
-    var value;
-    var remain = promises.length;
-    var values = [];
-    var uids = [];
-  
-    values.length = promises.length;
-  
-    var done = function (value) {
-      var index = uids.indexOf(this.uid);
-      values[index] = value;
-      remain = remain - 1;
-      if (remain === 0) {
-        d.resolve(values);
-      }
-    };
-  
-    var fail = function (reason) {
-      var index = uids.indexOf(this.uid);
-      values[index] = reason;
-      d.reject(values);
-    };
-  
-    for (var i = 0, l = promises.length; i < l; i++) {
-      promise = promises[i];
-  
-      if (promise instanceof Deferred) {
-        promise = promise.promise;
-      }
-  
-      uids.push(promise.uid);
-  
-      if (promise._state === 2) {
-        index = uids.indexOf(promise.uid);
-        values[index] = promise.value;
-        return d.reject(values).promise;
-      }
-  
-      promise
-        .done(done)
-        .fail(fail);
-    }
-  
-    return d.promise;
-  };
-  
-  /**
-   * Returns promise that will be resolved once any of passed promises or deferreds is resolved
-   * Promise will be rejected if all of passed promises or deferreds are rejected
-   * @param promises {Array}
-   * @returns {Promise}
-   */
-  
-  Deferred.any = function (promises) {
-    var d = new Deferred();
-    var promise;
-    var remain = promises.length;
-    var values = [];
-    var value;
-    var index;
-    var uids = [];
-  
-    values.length = promises.length;
-  
-    var done = function (value) {
-      var index = uids.indexOf(this.uid);
-      values[index] = value;
-      d.resolve(values);
-    };
-  
-    var fail = function (reason) {
-      var index = uids.indexOf(this.uid);
-      values[index] = reason;
-      remain = remain - 1;
-      if (remain === 0) {
-        d.reject(values);
-      }
-    };
-  
-    for (var i = 0, l = promises.length; i < l; i++) {
-      promise = promises[i];
-  
-      if (promise instanceof Deferred) {
-        promise = promise.promise;
-      }
-  
-      uids.push(promise.uid);
-  
-      if (promise._state === 1) {
-        index = uids.indexOf(promise.uid);
-        values[index] = promise.value;
-        return d.resolve(values).promise;
-      }
-  
-      promise
-        .done(done)
-        .fail(fail);
-    }
-  
-    return d.promise;
-  };
-  
-  //
   
   /** export */
   

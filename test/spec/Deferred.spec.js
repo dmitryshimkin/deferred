@@ -1066,213 +1066,12 @@ describe('Deferred', function () {
     });
 
     // 2.3.3. Otherwise, if x is an object or function,
-    describe('with object', function () {
-      // 2.3.3.2. If retrieving the property x.then results in a thrown exception e,
-      //          reject promise with e as the reason.
-      it('should be rejected if retrieving the property then of passed object throws exception', function () {
-        var d = new Deferred();
-        var handler = jasmine.createSpy();
-        var err = new TypeError();
-        var x = {};
-
-        // filter old browsers
-        if (!x.__defineGetter__) {
-          expect(true).toBe(true);
-          return;
-        }
-
-        x.__defineGetter__('then', function () {
-          throw err;
-        });
-
-        d.promise.fail(handler);
-        d.resolve(x);
-
-        expect(d.promise.isRejected()).toBe(true);
-        expect(handler.calls.count()).toBe(1);
-        expect(handler.calls.argsFor(0)[0]).toBe(err);
-      });
-
-      // 2.3.3.3. If then is a function, call it with x as this, first argument resolvePromise,
-      // and second argument rejectPromise, where:
-      describe('has method then', function () {
-        // 2.3.3.3.1. If/when resolvePromise is called with a value y, run [[Resolve]](promise, y).
-        it('should be resolved when `resolvePromise` is called', function (done) {
-          var d = new Deferred();
-          var handler = jasmine.createSpy();
-          var value = {};
-
-          var x = {
-            then: function (resolvePromise, rejectPromise) {
-              setTimeout(function () {
-                resolvePromise(value);
-
-                expect(handler.calls.count()).toBe(1);
-                expect(handler.calls.argsFor(0)[0]).toBe(value);
-
-                done();
-              }, 20);
-            }
-          };
-
-          d.promise.done(handler);
-          d.resolve(x);
-
-          expect(d.promise.isPending()).toBe(true);
-        });
-
-        // 2.3.3.3.2. If/when rejectPromise is called with a reason r, reject promise with r.
-        it('should be rejected when `rejectPromise` is called', function (done) {
-          var d = new Deferred();
-          var handler = jasmine.createSpy();
-          var reason = {};
-
-          var x = {
-            then: function (resolvePromise, rejectPromise) {
-              setTimeout(function () {
-                rejectPromise(reason);
-
-                expect(handler.calls.count()).toBe(1);
-                expect(handler.calls.argsFor(0)[0]).toBe(reason);
-
-                done();
-              }, 20);
-            }
-          };
-
-          d.promise.fail(handler);
-          d.resolve(x);
-
-          expect(d.promise.isPending()).toBe(true);
-        });
-
-        // 2.3.3.3.3. If both resolvePromise and rejectPromise are called, or multiple calls
-        //            to the same argument are made, the first call takes precedence,
-        //            and any further calls are ignored.
-        it('should be resolved or rejected when both `resolvePromise` and `rejectPromise` are called according to first call', function (done) {
-          var d = new Deferred();
-
-          var doneHandler = jasmine.createSpy();
-          var failHandler = jasmine.createSpy();
-          var value = {};
-          var reason = {};
-
-          var x = {
-            then: function (resolvePromise, rejectPromise) {
-              setTimeout(function () {
-                resolvePromise(value);
-                rejectPromise(reason);
-
-                expect(doneHandler.calls.count()).toBe(1);
-                expect(doneHandler.calls.argsFor(0)[0]).toBe(value);
-                expect(failHandler).not.toHaveBeenCalled();
-
-                done();
-              }, 20);
-            }
-          };
-
-          d.promise
-            .done(doneHandler)
-            .fail(failHandler);
-
-          d.resolve(x);
-
-          expect(d.promise.isPending()).toBe(true);
-        });
-
-        it('method `then` should be called with `x` as context', function () {
-          var d = new Deferred();
-          var handler = jasmine.createSpy();
-
-          var x = {
-            then: handler
-          };
-
-          d.resolve(x);
-          expect(handler.calls.mostRecent().object).toBe(x);
-        });
-
-        // 2.3.3.3.4. If calling then throws an exception e,
-        describe('exception thrown', function () {
-          //2.3.3.3.4.1. If resolvePromise or rejectPromise have been called, ignore it.
-          it('exception thrown after `resolvePromise` should be ignored', function () {
-            var d = new Deferred();
-            var handler = jasmine.createSpy();
-
-            var x = {
-              then: function (resolvePromise) {
-                resolvePromise(null);
-                throw new Error();
-              }
-            };
-
-            d.promise.done(handler);
-            d.resolve(x);
-
-            expect(d.promise.isResolved()).toBe(true);
-            expect(handler.calls.count()).toBe(1);
-            expect(handler.calls.argsFor(0)[0]).toBe(null);
-          });
-
-          //2.3.3.3.4.1   If resolvePromise or rejectPromise have been called, ignore it.
-          it('exception thrown after `rejectPromise` should be ignored', function () {
-            var d = new Deferred();
-            var handler = jasmine.createSpy();
-
-            var x = {
-              then: function (resolvePromise, rejectPromise) {
-                rejectPromise(null);
-                throw new Error();
-              }
-            };
-
-            d.promise.fail(handler);
-            d.resolve(x);
-
-            expect(d.promise.isRejected()).toBe(true);
-            expect(handler.calls.count()).toBe(1);
-            expect(handler.calls.argsFor(0)[0]).toBe(null);
-          });
-
-          // 2.3.3.3.4.2. Otherwise, reject promise with e as the reason.
-          it('should be rejected if exception thrown before resolvePromise', function () {
-            var d = new Deferred();
-            var handler = jasmine.createSpy();
-            var err = new Error();
-            var x = {
-              then: function () {
-                throw err;
-              }
-            };
-
-            d.promise.fail(handler);
-            d.resolve(x);
-
-            expect(d.promise.isRejected()).toBe(true);
-            expect(handler.calls.count()).toBe(1);
-            expect(handler.calls.argsFor(0)[0]).toBe(err);
-          });
-        });
-      });
-
-      describe('has no method then', function () {
-        // 2.3.3.4. If then is not a function, fulfill promise with x.
-        it('should be resolved with passed object', function () {
-          var d = new Deferred();
-          var x = {
-            then: {}
-          };
-
-          d.resolve(x);
-
-          expect(d.promise.isResolved()).toBe(true);
-          expect(d.promise.value).toBe(x);
-        });
-      });
-    });
-
-    describe('with not an object', function () {
+    // 2.3.3.2. If retrieving the property x.then results in a thrown exception e,
+    //          reject promise with e as the reason.
+    // 2.3.3.3. If then is a function, call it with x as this, first argument resolvePromise,
+    // and second argument rejectPromise, where:
+    // NOTE: "thenable" objects is absolute shit. Use native Promise and polyfill if you need this
+    describe('with value', function () {
       // 2.3.4. If x is not an object or function, fulfill promise with x.
       it('should be resolved with passed value', function () {
         var d = new Deferred();
@@ -1281,6 +1080,18 @@ describe('Deferred', function () {
 
         expect(d.promise.isResolved()).toBe(true);
         expect(d.promise.value).toBe('foo');
+      });
+
+      it('should use `thenable` objects as usual value', function () {
+        var d = new Deferred();
+        var value = {
+          then: function () {}
+        };
+
+        d.resolve(value);
+
+        expect(d.promise.isResolved()).toBe(true);
+        expect(d.promise.value).toBe(value);
       });
 
       it('the rest arguments should be ignored', function () {
@@ -1390,5 +1201,7 @@ describe('Deferred', function () {
 
   // 2.3.2.1   If x is pending, promise must remain pending until x is fulfilled or rejected.
   // todo restrict double resolve when first resolve was using pending promise and second with value
-  // todo its not obvious what should happen when we resolve promise with thenable object
+  // todo its not obvious what to do if promise is resolved with another promise
+
+  // todo pass deferreds to done/fail/always
 });

@@ -4,9 +4,9 @@ module.exports = function (grunt) {
   var source = [
     'src/Promise.js',
     'src/Deferred.js',
-    'src/all.js',
-    'src/any.js',
-    'src/when.js',
+    //'src/all.js',
+    //'src/any.js',
+    //'src/when.js',
     'src/export.js'
   ];
 
