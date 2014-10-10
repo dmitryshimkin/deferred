@@ -1200,66 +1200,90 @@ describe('Deferred', function () {
     });
   });
 
-  // reject
+  //
+  // Reject
+  //
 
-//  describe('reject', function () {
-//    it('isRejected', function () {
-//      expect(d.promise.isPending()).toBe(true);
-//      d.reject();
-//      expect(d.promise.isRejected()).toBe(true);
-//    });
-//
-//    it('already rejected', function () {
-//      var spy1 = jasmine.createSpy('fail1');
-//      var spy2 = jasmine.createSpy('fail2');
-//
-//      d.promise.fail(spy1);
-//      d.reject();
-//      d.promise.fail(spy2);
-//      d.reject();
-//
-//      expect(spy1).toHaveBeenCalled();
-//      expect(spy1.calls.count()).toBe(1);
-//
-//      expect(spy2).toHaveBeenCalled();
-//      expect(spy2.calls.count()).toBe(1);
-//    });
-//
-//    it('already resolved', function () {
-//      var spy1 = jasmine.createSpy('fail1');
-//      var spy2 = jasmine.createSpy('fail2');
-//
-//      d.promise.fail(spy1);
-//      d.resolve();
-//      d.promise.fail(spy2);
-//      d.reject();
-//
-//      expect(spy1).not.toHaveBeenCalled();
-//      expect(spy2).not.toHaveBeenCalled();
-//    });
-//
-//    it('value', function () {
-//      var spy1 = jasmine.createSpy('fail1');
-//      var spy2 = jasmine.createSpy('fail2');
-//
-//      d.promise.fail(spy1);
-//      d.reject('bar');
-//      d.reject('another reason');
-//      d.promise.fail(spy2);
-//
-//      expect(spy1).toHaveBeenCalledWith('bar');
-//      expect(spy2).toHaveBeenCalledWith('bar');
-//    });
+  describe('reject', function () {
+    it('should translate promise to rejected state', function () {
+      var d = new Deferred();
+      expect(d.promise.isPending()).toBe(true);
+      d.reject();
+      expect(d.promise.isRejected()).toBe(true);
+    });
 
-//    it('isResolved', function () {
-//      expect(d.promise.isPending()).toBe(true);
-//      d.resolve();
-//      expect(d.promise.isResolved()).toBe(true);
-//    });
+    it('should be ignored if promise is already rejected', function () {
+      var d = new Deferred();
 
+      var handler1 = jasmine.createSpy();
+      var handler2 = jasmine.createSpy();
+
+      d.promise.fail(handler1);
+      d.reject('foo');
+      d.promise.fail(handler2);
+      d.reject('bar');
+
+      expect(handler1.calls.count()).toBe(1);
+      expect(handler1.calls.argsFor(0)[0]).toBe('foo');
+      expect(handler2.calls.count()).toBe(1);
+      expect(handler2.calls.argsFor(0)[0]).toBe('foo');
+      expect(d.promise.value).toBe('foo');
+    });
+
+    it('should be ignored if promise is already resolved', function () {
+      var d = new Deferred();
+      var handler = jasmine.createSpy();
+
+      d.resolve('foo');
+      d.promise.fail(handler);
+      d.reject('bar');
+
+      expect(d.promise.isResolved()).toBe(true);
+      expect(handler.calls.count()).toBe(0);
+      expect(d.promise.value).toBe('foo');
+    });
+
+    it('should set reject reason as promise value', function () {
+      var d = new Deferred();
+
+      d.reject('foo');
+      d.reject('another reason');
+
+      expect(d.promise.value).toBe('foo');
+    });
+  });
+
+  //
+  // API
+  //
+
+  describe('promise API', function () {
+    it('isPending', function () {
+      var d = new Deferred();
+      expect(d.promise.isPending()).toBe(true);
+      d.resolve();
+      expect(d.promise.isPending()).toBe(false);
+    });
+
+    it('isRejected', function () {
+      var d = new Deferred();
+      expect(d.promise.isRejected()).toBe(false);
+      d.reject();
+      expect(d.promise.isRejected()).toBe(true);
+    });
+
+    it('isResolved', function () {
+      var d = new Deferred();
+      expect(d.promise.isResolved()).toBe(false);
+      d.resolve();
+      expect(d.promise.isResolved()).toBe(true);
+    });
+  });
 
   // 2.3.2.1   If x is pending, promise must remain pending until x is fulfilled or rejected.
   // todo restrict double resolve when first resolve was using pending promise and second with value
+
+  // todo order
 
   // todo ignore all but first arguments passed to resolve/reject
   // todo done, fail and always - the same handler many times
