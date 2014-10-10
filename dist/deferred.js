@@ -61,7 +61,7 @@
   
     if (state === 1) {
       if (isDeferred) {
-        arg.resolve.call(arg, this.value);
+        arg.resolve(this.value);
       } else {
         arg.call(ctx, this.value);
       }
@@ -104,7 +104,7 @@
   
     if (state === 2) {
       if (isDeferred) {
-        arg.reject.call(arg, this.value);
+        arg.reject(this.value);
       } else {
         arg.call(ctx, this.value);
       }
@@ -335,7 +335,7 @@
   
         // set value and state
         promise._state = 1;
-        promise.value = x.value || argValue;
+        promise.value = argValue;
   
         // notify subscribers
         var callbacks = promise._doneCallbacks;
@@ -358,7 +358,7 @@
   
         // set reason and state
         promise._state = 2;
-        promise.value = x.value || reason;
+        promise.value = reason;
   
         // notify subscribers
         var callbacks = promise._failCallbacks;
@@ -418,8 +418,7 @@
     return arg instanceof Deferred;
   };
   
-  /** export */
-  
+  /* istanbul ignore next */
   if (typeof module === 'object' && typeof module.exports === 'object') {
     module.exports = Deferred;
   } else if (typeof define === 'function' && define.amd) {

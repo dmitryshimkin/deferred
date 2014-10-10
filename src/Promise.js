@@ -60,7 +60,7 @@ Promise.prototype.done = function (arg, ctx) {
 
   if (state === 1) {
     if (isDeferred) {
-      arg.resolve.call(arg, this.value);
+      arg.resolve(this.value);
     } else {
       arg.call(ctx, this.value);
     }
@@ -103,7 +103,7 @@ Promise.prototype.fail = function (arg, ctx) {
 
   if (state === 2) {
     if (isDeferred) {
-      arg.reject.call(arg, this.value);
+      arg.reject(this.value);
     } else {
       arg.call(ctx, this.value);
     }

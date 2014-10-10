@@ -100,7 +100,7 @@ Deferred.prototype.resolve = function (x) {
 
       // set value and state
       promise._state = 1;
-      promise.value = x.value || argValue;
+      promise.value = argValue;
 
       // notify subscribers
       var callbacks = promise._doneCallbacks;
@@ -123,7 +123,7 @@ Deferred.prototype.resolve = function (x) {
 
       // set reason and state
       promise._state = 2;
-      promise.value = x.value || reason;
+      promise.value = reason;
 
       // notify subscribers
       var callbacks = promise._failCallbacks;
