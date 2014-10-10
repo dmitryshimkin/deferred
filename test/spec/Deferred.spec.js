@@ -256,191 +256,214 @@ describe('Deferred', function () {
 
   // always
 
-//  describe('always', function () {
-//    it('done', function (done) {
-//      var spy = jasmine.createSpy('done-spy');
-//      var self;
-//
-//      d.promise.always(function () {
-//        self = this;
-//        spy.apply(this, arguments);
-//      });
-//
-//      setTimeout(function () {
-//        d.resolve();
-//
-//        expect(spy).toHaveBeenCalled();
-//        expect(self).toBe(d.promise);
-//
-//        done();
-//      }, 30);
-//    });
-//
-//    it('fail', function (done) {
-//      var failSpy = jasmine.createSpy('fail-spy');
-//      var ctx = {
-//        foo: 'bar'
-//      };
-//
-//      d.promise.always(failSpy, ctx);
-//
-//      setTimeout(function () {
-//        d.reject();
-//
-//        expect(failSpy).toHaveBeenCalled();
-//        expect(failSpy.calls.all()[0].object).toBe(ctx);
-//
-//        done();
-//      }, 30);
-//    });
-//
-//    it('many handlers', function (done) {
-//      var handler1 = function () {
-//        __log.push(1);
-//      };
-//      var handler2 = function () {
-//        __log.push(2);
-//      };
-//      var handler3 = function () {
-//        __log.push(3);
-//      };
-//
-//      d.promise
-//        .always(handler1)
-//        .always(handler2)
-//        .always(handler3);
-//
-//      setTimeout(function () {
-//        d.resolve();
-//
-//        expect(__log.length).toBe(3);
-//        expect(__log[0]).toBe(1);
-//        expect(__log[1]).toBe(2);
-//        expect(__log[2]).toBe(3);
-//
-//        done();
-//      }, 30);
-//    });
-//
-//    it('resolved promise', function () {
-//      var d = new Deferred();
-//      var spy1 = jasmine.createSpy('fail1');
-//      var spy2 = jasmine.createSpy('fail2');
-//      var spy3 = jasmine.createSpy('fail3');
-//
-//      d.promise.always(spy1);
-//
-//      d.resolve();
-//
-//      d.promise
-//        .always(spy2)
-//        .always(spy3);
-//
-//      expect(spy1).toHaveBeenCalled();
-//      expect(spy1.calls.count()).toBe(1);
-//
-//      expect(spy2).toHaveBeenCalled();
-//      expect(spy2.calls.count()).toBe(1);
-//
-//      expect(spy3).toHaveBeenCalled();
-//      expect(spy3.calls.count()).toBe(1);
-//    });
-//
-//    it('rejected promise', function () {
-//      var d = new Deferred();
-//      var spy1 = jasmine.createSpy('fail1');
-//      var spy2 = jasmine.createSpy('fail2');
-//      var spy3 = jasmine.createSpy('fail3');
-//
-//      d.promise.always(spy1);
-//
-//      d.reject();
-//
-//      d.promise
-//        .always(spy2)
-//        .always(spy3);
-//
-//      expect(spy1).toHaveBeenCalled();
-//      expect(spy1.calls.count()).toBe(1);
-//
-//      expect(spy2).toHaveBeenCalled();
-//      expect(spy2.calls.count()).toBe(1);
-//
-//      expect(spy3).toHaveBeenCalled();
-//      expect(spy3.calls.count()).toBe(1);
-//    });
-//
-//    it('another deferred (done)', function () {
-//      var d2 = new Deferred();
-//
-//      d.promise.always(d2);
-//      d.resolve(data);
-//
-//      expect(d2.promise.isResolved()).toBe(true);
-//      expect(d2.promise.value).toEqual(data);
-//    });
-//
-//    it('another deferred (fail)', function () {
-//      var d = new Deferred();
-//      var d2 = new Deferred();
-//
-//      d.promise.always(d2);
-//      d.reject('bar');
-//
-//      expect(d2.promise.isRejected()).toBe(true);
-//      expect(d2.promise.value).toEqual('bar');
-//    });
-//  });
-//
-//  /**
-//   * 2.2. The then Method
-//   *
-//   * A promise must provide a then method to access its current or eventual value or reason.
-//   * A promise’s then method accepts two arguments:
-//   * promise.then(onFulfilled, onReject)
-//   *
-//   * 2.2.1. Both onFulfilled and onReject are optional arguments:
-//   *   2.2.1.1. If onFulfilled is not a function, it must be ignored.
-//   *   2.2.1.2. If onReject is not a function, it must be ignored.
-//   * 2.2.2. If onFulfilled is a function:
-//   *   2.2.2.1. it must be called after promise is fulfilled, with promise’s value as its first argument.
-//   *   2.2.2.2. it must not be called before promise is fulfilled.
-//   *   2.2.2.3. it must not be called more than once.
-//   * 2.2.3. If onReject is a function,
-//   *   2.2.3.1. it must be called after promise is rejected, with promise’s reason as its first argument.
-//   *   2.2.3.2. it must not be called before promise is rejected.
-//   *   2.2.3.3. it must not be called more than once.
-//   * 2.2.4. onFulfilled or onReject must not be called until the execution context stack contains
-//   *        only platform code. 3.1.
-//   *        (3.1. Here “platform code” means engine, environment, and promise implementation code.
-//   *        In practice, this requirement ensures that onFulfilled and onReject execute asynchronously,
-//   *        after the event loop turn in which then is called, and with a fresh stack.
-//   *        This can be implemented with either a “macro-task” mechanism such as setTimeout or setImmediate,
-//   *        or with a “micro-task” mechanism such as MutationObserver or process.nextTick.
-//   *        Since the promise implementation is considered platform code, it may itself contain
-//   *        a task-scheduling queue or “trampoline” in which the handlers are called.)
-//   * 2.2.5. onFulfilled and onReject must be called as functions (i.e. with no this value). 3.2
-//   * 2.2.6. then may be called multiple times on the same promise.
-//   *   2.2.6.1. If/when promise is fulfilled, all respective onFulfilled callbacks must execute
-//   *            in the order of their originating calls to then.
-//   *   2.2.6.2. If/when promise is rejected, all respective onReject callbacks must execute
-//   *            in the order of their originating calls to then.
-//   * 2.2.7. then must return a promise 3.3.
-//   *        promise2 = promise1.then(onFulfilled, onReject);
-//   *        (3.3. Implementations may allow promise2 === promise1, provided the implementation
-//   *        meets all requirements. Each implementation should document whether
-//   *        it can produce promise2 === promise1 and under what conditions.)
-//   *
-//   *   2.2.7.1. If either onFulfilled or onReject returns a value x, run the
-//   *            Promise Resolution Procedure [[Resolve]](promise2, x).
-//   *   2.2.7.2. If either onFulfilled or onReject throws an exception e,
-//   *            promise2 must be rejected with e as the reason.
-//   *   2.2.7.3. If onFulfilled is not a function and promise1 is fulfilled,
-//   *            promise2 must be fulfilled with the same value.
-//   *   2.2.7.4. If onReject is not a function and promise1 is rejected,
-//   *            promise2 must be rejected with the same reason.
-//   */
-//
+  describe('always', function () {
+    it('handler should be called once promise is resolved', function (done) {
+      var handler = jasmine.createSpy();
+
+      d.promise.always(handler);
+
+      setTimeout(function () {
+        d.resolve();
+        expect(handler).toHaveBeenCalled();
+        expect(handler.calls.mostRecent().object).toBe(d.promise);
+        done();
+      }, 30);
+    });
+
+    it('handler should be called once promise is rejected', function (done) {
+      var handler = jasmine.createSpy();
+
+      d.promise.always(handler);
+
+      setTimeout(function () {
+        d.reject();
+        expect(handler).toHaveBeenCalled();
+        expect(handler.calls.mostRecent().object).toBe(d.promise);
+        done();
+      }, 30);
+    });
+
+    it('handler should be called with promise value as a first argument', function (done) {
+      var handler = jasmine.createSpy();
+      var value = {};
+
+      d.promise.always(handler);
+
+      setTimeout(function () {
+        d.resolve(value);
+        expect(handler.calls.argsFor(0)).toEqual([value]);
+        done();
+      }, 20);
+    });
+
+    it('handler should be called with promise reject reason as a first argument', function (done) {
+      var handler = jasmine.createSpy();
+      var reason = {};
+
+      d.promise.always(handler);
+
+      setTimeout(function () {
+        d.reject(reason);
+        expect(handler.calls.argsFor(0)).toEqual([reason]);
+        done();
+      }, 20);
+    });
+
+    it('should return the same promise', function () {
+      expect(d.promise.always()).toBe(d.promise);
+    });
+
+    it('handler should be called in specified context', function (done) {
+      var handler = jasmine.createSpy();
+      var obj = {};
+
+      d.promise
+        .always(handler, obj)
+        .always(handler, null);
+
+      setTimeout(function () {
+        d.resolve();
+        expect(handler.calls.all()[0].object).toBe(obj);
+        //expect(handler.calls.all()[1].object).toBe(null); // jasmine bug?
+        done();
+      }, 30);
+    });
+
+    it('should support multiple handlers', function (done) {
+      var handler1 = jasmine.createSpy();
+      var handler2 = jasmine.createSpy();
+      var handler3 = jasmine.createSpy();
+
+      d.promise
+        .always(handler1)
+        .always(handler2)
+        .always(handler3);
+
+      setTimeout(function () {
+        d.reject();
+        expect(handler1.calls.count()).toBe(1);
+        expect(handler2.calls.count()).toBe(1);
+        expect(handler3.calls.count()).toBe(1);
+        done();
+      }, 20);
+    });
+
+    it('should call handler synchronously if promise is already resolved', function () {
+      var handler1 = jasmine.createSpy();
+      var handler2 = jasmine.createSpy();
+      var handler3 = jasmine.createSpy();
+
+      d.promise.always(handler1);
+
+      d.reject();
+
+      d.promise
+        .always(handler2)
+        .always(handler3);
+
+      expect(handler1).toHaveBeenCalled();
+      expect(handler1.calls.count()).toBe(1);
+
+      expect(handler2).toHaveBeenCalled();
+      expect(handler2.calls.count()).toBe(1);
+
+      expect(handler3).toHaveBeenCalled();
+      expect(handler3.calls.count()).toBe(1);
+    });
+
+    it('should call handler synchronously if promise is already rejected', function () {
+      var handler1 = jasmine.createSpy();
+      var handler2 = jasmine.createSpy();
+      var handler3 = jasmine.createSpy();
+
+      d.promise.always(handler1);
+
+      d.reject();
+
+      d.promise
+        .always(handler2)
+        .always(handler3);
+
+      expect(handler1).toHaveBeenCalled();
+      expect(handler1.calls.count()).toBe(1);
+
+      expect(handler2).toHaveBeenCalled();
+      expect(handler2.calls.count()).toBe(1);
+
+      expect(handler3).toHaveBeenCalled();
+      expect(handler3.calls.count()).toBe(1);
+    });
+
+    it('should resolve passed deferred once promise is resolved', function () {
+      var d2 = new Deferred();
+
+      d.promise.always(d2);
+      d.resolve(data);
+
+      expect(d2.promise.isResolved()).toBe(true);
+      expect(d2.promise.value).toEqual(data);
+    });
+
+    it('should reject passed deferred once promise is rejected', function () {
+      var d2 = new Deferred();
+
+      d.promise.always(d2);
+      d.reject(data);
+
+      expect(d2.promise.isRejected()).toBe(true);
+      expect(d2.promise.value).toEqual(data);
+    });
+  });
+
+  /**
+   * 2.2. The then Method
+   *
+   * A promise must provide a then method to access its current or eventual value or reason.
+   * A promise’s then method accepts two arguments:
+   * promise.then(onFulfilled, onReject)
+   *
+   * 2.2.1. Both onFulfilled and onReject are optional arguments:
+   *   2.2.1.1. If onFulfilled is not a function, it must be ignored.
+   *   2.2.1.2. If onReject is not a function, it must be ignored.
+   * 2.2.2. If onFulfilled is a function:
+   *   2.2.2.1. it must be called after promise is fulfilled, with promise’s value as its first argument.
+   *   2.2.2.2. it must not be called before promise is fulfilled.
+   *   2.2.2.3. it must not be called more than once.
+   * 2.2.3. If onReject is a function,
+   *   2.2.3.1. it must be called after promise is rejected, with promise’s reason as its first argument.
+   *   2.2.3.2. it must not be called before promise is rejected.
+   *   2.2.3.3. it must not be called more than once.
+   * 2.2.4. onFulfilled or onReject must not be called until the execution context stack contains
+   *        only platform code. 3.1.
+   *        (3.1. Here “platform code” means engine, environment, and promise implementation code.
+   *        In practice, this requirement ensures that onFulfilled and onReject execute asynchronously,
+   *        after the event loop turn in which then is called, and with a fresh stack.
+   *        This can be implemented with either a “macro-task” mechanism such as setTimeout or setImmediate,
+   *        or with a “micro-task” mechanism such as MutationObserver or process.nextTick.
+   *        Since the promise implementation is considered platform code, it may itself contain
+   *        a task-scheduling queue or “trampoline” in which the handlers are called.)
+   * 2.2.5. onFulfilled and onReject must be called as functions (i.e. with no this value). 3.2
+   * 2.2.6. then may be called multiple times on the same promise.
+   *   2.2.6.1. If/when promise is fulfilled, all respective onFulfilled callbacks must execute
+   *            in the order of their originating calls to then.
+   *   2.2.6.2. If/when promise is rejected, all respective onReject callbacks must execute
+   *            in the order of their originating calls to then.
+   * 2.2.7. then must return a promise 3.3.
+   *        promise2 = promise1.then(onFulfilled, onReject);
+   *        (3.3. Implementations may allow promise2 === promise1, provided the implementation
+   *        meets all requirements. Each implementation should document whether
+   *        it can produce promise2 === promise1 and under what conditions.)
+   *
+   *   2.2.7.1. If either onFulfilled or onReject returns a value x, run the
+   *            Promise Resolution Procedure [[Resolve]](promise2, x).
+   *   2.2.7.2. If either onFulfilled or onReject throws an exception e,
+   *            promise2 must be rejected with e as the reason.
+   *   2.2.7.3. If onFulfilled is not a function and promise1 is fulfilled,
+   *            promise2 must be fulfilled with the same value.
+   *   2.2.7.4. If onReject is not a function and promise1 is rejected,
+   *            promise2 must be rejected with the same reason.
+   */
+
 //  describe('then', function () {
 //    // 2.2.2. If onFulfilled is a function:
 //    describe('onFulfilled is function', function () {
@@ -1136,4 +1159,5 @@ describe('Deferred', function () {
 //  });
 
   // todo ignore all but first arguments passed to resolve/reject
+  // todo done, fail and always - the same handler many times
 });
