@@ -44,7 +44,7 @@ Promise.prototype.always = function (arg, ctx) {
 };
 
 /**
- * Adds onResolve listener
+ * Adds onResolve listener and returns this promise
  * @TODO: test this === arg
  * @param arg {Function|Deferred} Listener or another deferred
  * @param [ctx] {Object} Listener context

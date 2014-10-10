@@ -45,7 +45,7 @@
   };
   
   /**
-   * Adds onResolve listener
+   * Adds onResolve listener and returns this promise
    * @TODO: test this === arg
    * @param arg {Function|Deferred} Listener or another deferred
    * @param [ctx] {Object} Listener context
@@ -304,20 +304,15 @@
       return this;
     }
   
-    var isDeferred = x instanceof Deferred;
     var isPromise = x instanceof Promise;
-    var isPromiseOrDeferred = isDeferred || isPromise;
+    var isPromiseOrDeferred = isPromise;
   
     var xType = typeof x;
   
     // 2.3.3.2. If retrieving the property x.then results in a thrown exception e, reject promise with e as the reason
     if (x !== null && (xType === 'object' || xType === func)) {
       try {
-        if (isDeferred) {
-          then = x.promise.then;
-        } else {
-          then = x.then;
-        }
+        then = x.then;
       } catch (e) {
         this.reject(e);
         return this;
@@ -331,22 +326,20 @@
   
     if (isPromise) {
       isPending = x._state === 0;
-    } else if (isDeferred) {
-      isPending = x.promise._state === 0;
     } else {
       isPending = false;
     }
   
     // detect if we need onResolve and onReject
     // !!! comment this
-    if (thenable && (!isPromiseOrDeferred || isPending)) {
+    if (thenable && (!isPromise || isPending)) {
       onResolve = function (argValue) {
         if (promise._state !== 0) {
           return false;
         }
   
-        if (isPromiseOrDeferred) {
-          value = isDeferred ? x.promise.value : x.value;
+        if (isPromise) {
+          value = x.value;
         }
   
         promise._state = 1;
@@ -354,9 +347,12 @@
   
         var callback;
         var callbacks = promise._doneCallbacks;
-        for (i = 0, l = callbacks.length; i < l; i++) {
-          callback = callbacks[i];
-          callback.fn.call(callback.ctx, promise.value);
+  
+        if (callbacks) {
+          for (i = 0, l = callbacks.length; i < l; i++) {
+            callback = callbacks[i];
+            callback.fn.call(callback.ctx, promise.value);
+          }
         }
   
         return true;
@@ -367,8 +363,8 @@
           return false;
         }
   
-        if (isPromiseOrDeferred) {
-          value = isDeferred ? x.promise.value : x.value;
+        if (isPromise) {
+          value = x.value;
         }
   
         self.reject(value || reason);
@@ -377,20 +373,19 @@
       };
     }
   
-    if (isPromiseOrDeferred) {
-      value = isDeferred ? x.promise.value : x.value;
-      var xState = isDeferred ? x.promise._state : x._state;
+    if (isPromise) {
+      var xState = x._state;
   
       // 2.3.2.3. If x is rejected, reject promise with the same reason.
       if (xState === 2) {
-        this.reject(value);
+        this.reject(x.value);
         return this;
       }
   
       // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
       if (xState === 1) {
         promise._state = 1;
-        promise.value = value;
+        promise.value = x.value;
   
         callbacks = promise._doneCallbacks;
         for (i = 0, l = callbacks.length; i < l; i++) {
@@ -404,11 +399,7 @@
       // 2.3.2.2. when x is fulfilled, fulfill promise with the same value.
       // 2.3.2.3. When x is rejected, reject promise with the same reason.
       try {
-        if (isDeferred) {
-          x.promise.then(onResolve, onReject);
-        } else {
-          x.then(onResolve, onReject);
-        }
+        x.then(onResolve, onReject);
       } catch (e) {
         if (this.promise._state === 0) {
           this.reject(e);
@@ -425,11 +416,7 @@
     // 2.3.3.3.2. If/when rejectPromise is called with a reason r, reject promise with r.
     if (thenable) {
       try {
-        if (isDeferred) {
-          x.promise.then(onResolve, onReject);
-        } else {
-          x.then(onResolve, onReject);
-        }
+        x.then(onResolve, onReject);
       } catch (e) {
         if (this.promise._state === 0) {
           this.reject(e);
@@ -446,9 +433,12 @@
     promise.value = x;
   
     callbacks = promise._doneCallbacks;
-    for (i = 0, l = callbacks.length; i < l; i++) {
-      callback = callbacks[i];
-      callback.fn.call(callback.ctx, promise.value);
+  
+    if (callbacks) {
+      for (i = 0, l = callbacks.length; i < l; i++) {
+        callback = callbacks[i];
+        callback.fn.call(callback.ctx, promise.value);
+      }
     }
   
     return this;

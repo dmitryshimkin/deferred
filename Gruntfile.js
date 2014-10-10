@@ -215,7 +215,7 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('test', 'Run tests with code coverage using jasmine and istanbul', [
-    'test-prod',
+    //'test-prod',
     'test-dev'
   ]);
 
