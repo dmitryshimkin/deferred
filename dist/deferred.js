@@ -200,9 +200,7 @@
         } else {
           // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
           //          Promise Resolution Procedure [[Resolve]](promise2, x).
-          if (x !== undefined) {
-            deferred2.resolve(x);
-          }
+          deferred2.resolve(x);
         }
       });
     } else if (this._state === 1) {
@@ -227,9 +225,7 @@
         } else {
           // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
           //          Promise Resolution Procedure [[Resolve]](promise2, x).
-          if (x !== undefined) {
-            deferred2.resolve(x);
-          }
+          deferred2.resolve(x);
         }
       });
     } else if (this._state === 2) {
