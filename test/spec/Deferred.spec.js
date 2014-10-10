@@ -96,8 +96,44 @@ describe('Deferred', function () {
       }, 20);
     });
 
-    xit('should call handlers in order they were added', function () {
+    it('should allow to call the same handler many times', function () {
       var d = new Deferred();
+      var handler = jasmine.createSpy();
+
+      d.promise
+        .done(handler)
+        .done(handler)
+        .done(handler);
+
+      d.resolve();
+
+      expect(handler.calls.count()).toBe(3);
+    });
+
+    it('should call handlers in order they were added', function () {
+      var d = new Deferred();
+      var log = [];
+
+      var handler1 = function () {
+        log.push(1);
+      };
+
+      var handler2 = function () {
+        log.push(2);
+      };
+
+      var handler3 = function () {
+        log.push(3);
+      };
+
+      d.promise
+        .done(handler1)
+        .done(handler2)
+        .done(handler3);
+
+      d.resolve();
+
+      expect(log.join('')).toBe('123');
     });
 
     it('should call handlers synchronously', function () {
@@ -223,8 +259,44 @@ describe('Deferred', function () {
       }, 20);
     });
 
-    xit('should call handlers in order they were added', function () {
+    it('should allow to call the same handler many times', function () {
       var d = new Deferred();
+      var handler = jasmine.createSpy();
+
+      d.promise
+        .fail(handler)
+        .fail(handler)
+        .fail(handler);
+
+      d.reject();
+
+      expect(handler.calls.count()).toBe(3);
+    });
+
+    it('should call handlers in order they were added', function () {
+      var d = new Deferred();
+      var log = [];
+
+      var handler1 = function () {
+        log.push(1);
+      };
+
+      var handler2 = function () {
+        log.push(2);
+      };
+
+      var handler3 = function () {
+        log.push(3);
+      };
+
+      d.promise
+        .fail(handler1)
+        .fail(handler2)
+        .fail(handler3);
+
+      d.reject();
+
+      expect(log.join('')).toBe('123');
     });
 
     it('should call handlers synchronously', function () {
@@ -376,6 +448,20 @@ describe('Deferred', function () {
         expect(handler3.calls.count()).toBe(1);
         done();
       }, 20);
+    });
+
+    it('should allow to call the same handler many times', function () {
+      var d = new Deferred();
+      var handler = jasmine.createSpy();
+
+      d.promise
+        .always(handler)
+        .always(handler)
+        .always(handler);
+
+      d.reject();
+
+      expect(handler.calls.count()).toBe(3);
     });
 
     it('should call handler synchronously if promise is already resolved', function () {
@@ -1011,7 +1097,7 @@ describe('Deferred', function () {
       // and second argument rejectPromise, where:
       describe('has method then', function () {
         // 2.3.3.3.1. If/when resolvePromise is called with a value y, run [[Resolve]](promise, y).
-        it('should be resolved when resolvePromise that passed to then method is called', function (done) {
+        it('should be resolved when `resolvePromise` is called', function (done) {
           var d = new Deferred();
           var handler = jasmine.createSpy();
           var value = {};
@@ -1033,11 +1119,10 @@ describe('Deferred', function () {
           d.resolve(x);
 
           expect(d.promise.isPending()).toBe(true);
-          // todo: test resolvePromise on resolved promise
         });
 
         // 2.3.3.3.2. If/when rejectPromise is called with a reason r, reject promise with r.
-        it('should be rejected when rejectPromise that passed to then method is called', function (done) {
+        it('should be rejected when `rejectPromise` is called', function (done) {
           var d = new Deferred();
           var handler = jasmine.createSpy();
           var reason = {};
@@ -1064,7 +1149,7 @@ describe('Deferred', function () {
         // 2.3.3.3.3. If both resolvePromise and rejectPromise are called, or multiple calls
         //            to the same argument are made, the first call takes precedence,
         //            and any further calls are ignored.
-        it('both called', function (done) {
+        it('should be resolved or rejected when both `resolvePromise` and `rejectPromise` are called according to first call', function (done) {
           var d = new Deferred();
 
           var doneHandler = jasmine.createSpy();
@@ -1096,10 +1181,30 @@ describe('Deferred', function () {
           expect(d.promise.isPending()).toBe(true);
         });
 
+        xit('next attempt to resolve promise should be ignored', function () {
+          //
+        });
+
+        xit('next attempt to reject promise should be ignored', function () {
+          //
+        });
+
+        it('method `then` should be called with `x` as context', function () {
+          var d = new Deferred();
+          var handler = jasmine.createSpy();
+
+          var x = {
+            then: handler
+          };
+
+          d.resolve(x);
+          expect(handler.calls.mostRecent().object).toBe(x);
+        });
+
         // 2.3.3.3.4. If calling then throws an exception e,
         describe('exception thrown', function () {
           //2.3.3.3.4.1. If resolvePromise or rejectPromise have been called, ignore it.
-          it('exception thrown after resolvePromise should be ignored', function () {
+          it('exception thrown after `resolvePromise` should be ignored', function () {
             var d = new Deferred();
             var handler = jasmine.createSpy();
 
@@ -1119,7 +1224,7 @@ describe('Deferred', function () {
           });
 
           //2.3.3.3.4.1   If resolvePromise or rejectPromise have been called, ignore it.
-          it('exception thrown after rejectPromise should be ignored', function () {
+          it('exception thrown after `rejectPromise` should be ignored', function () {
             var d = new Deferred();
             var handler = jasmine.createSpy();
 
@@ -1251,6 +1356,17 @@ describe('Deferred', function () {
 
       expect(d.promise.value).toBe('foo');
     });
+
+    it('should ignore the rest arguments passed to reject', function () {
+      var d = new Deferred();
+      var handler = jasmine.createSpy();
+
+      d.promise.fail(handler);
+      d.reject('foo', 'bar');
+
+      expect(d.promise.value).toBe('foo');
+      expect(handler.calls.argsFor(0)).toEqual(['foo']);
+    });
   });
 
   //
@@ -1282,9 +1398,5 @@ describe('Deferred', function () {
 
   // 2.3.2.1   If x is pending, promise must remain pending until x is fulfilled or rejected.
   // todo restrict double resolve when first resolve was using pending promise and second with value
-
-  // todo order
-
-  // todo ignore all but first arguments passed to resolve/reject
   // todo done, fail and always - the same handler many times
 });
