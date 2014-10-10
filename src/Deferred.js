@@ -64,8 +64,6 @@ Deferred.prototype.resolve = function (x) {
   }
 
   var isPromise = x instanceof Promise;
-  var onResolve;
-  var onReject;
 
   // Detect if we need onResolve and onReject
   if (isPromise) {
@@ -95,24 +93,19 @@ Deferred.prototype.resolve = function (x) {
 
     // 2.3.2.2. when x is fulfilled, fulfill promise with the same value.
     // 2.3.2.3. When x is rejected, reject promise with the same reason.
-    var deferred = this;
-
-    onResolve = function (argValue) {
+    var onResolve = function (argValue) {
       if (promise._state !== 0) {
         return false;
       }
 
-      if (isPromise) {
-        value = x.value;
-      }
-
+      // set value and state
       promise._state = 1;
-      promise.value = value || argValue;
+      promise.value = x.value || argValue;
 
-      var callback;
+      // notify subscribers
       var callbacks = promise._doneCallbacks;
-
       if (callbacks) {
+        var callback;
         for (i = 0, l = callbacks.length; i < l; i++) {
           callback = callbacks[i];
           callback.fn.call(callback.ctx, promise.value);
@@ -122,19 +115,33 @@ Deferred.prototype.resolve = function (x) {
       return true;
     };
 
-    onReject = function (reason) {
+    var onReject = function (reason) {
+      // ignore settled promises
       if (promise._state !== 0) {
         return false;
       }
-      if (isPromise) {
-        value = x.value;
+
+      // set reason and state
+      promise._state = 2;
+      promise.value = x.value || reason;
+
+      // notify subscribers
+      var callbacks = promise._failCallbacks;
+      if (callbacks) {
+        var callback;
+        for (var i = 0, l = callbacks.length; i < l; i++) {
+          callback = callbacks[i];
+          callback.fn.call(callback.ctx, promise.value);
+        }
       }
-      deferred.reject(value || reason);
+
       return true;
     };
 
     try {
-      x.then(onResolve, onReject);
+      x
+        .done(onResolve)
+        .fail(onReject);
     } catch (e) {
       if (this.promise._state === 0) {
         this.reject(e);

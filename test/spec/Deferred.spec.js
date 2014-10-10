@@ -1204,4 +1204,5 @@ describe('Deferred', function () {
   // todo its not obvious what to do if promise is resolved with another promise
 
   // todo pass deferreds to done/fail/always
+  // todo test correct state within handlers
 });
