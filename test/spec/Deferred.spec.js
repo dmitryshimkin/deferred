@@ -40,17 +40,30 @@ describe('Deferred', function () {
       }, 20);
     });
 
+    it('handler should be called with promise value as a first argument', function (done) {
+      var handler = jasmine.createSpy();
+      var value = {};
+
+      d.promise.done(handler);
+
+      setTimeout(function () {
+        d.resolve(value);
+        expect(handler.calls.argsFor(0)).toEqual([value]);
+        done();
+      }, 20);
+    });
+
     it('handler should be called in specified context', function (done) {
       var handler = jasmine.createSpy();
-      var obj = {};
+      var ctx = {};
 
       d.promise
-        .done(handler, obj)
+        .done(handler, ctx)
         .done(handler, null);
 
       setTimeout(function () {
         d.resolve();
-        expect(handler.calls.all()[0].object).toBe(obj);
+        expect(handler.calls.all()[0].object).toBe(ctx);
         //expect(handler.calls.all()[1].object).toBe(null); // jasmine bug?
         done();
       }, 30);
@@ -79,7 +92,7 @@ describe('Deferred', function () {
       }, 20);
     });
 
-    xit('should call handlers in order they added', function () {
+    xit('should call handlers in order they were added', function () {
 
     });
 
@@ -92,7 +105,7 @@ describe('Deferred', function () {
       expect(spy).toHaveBeenCalled();
     });
 
-    it('should call handler synchronously if promise is resolved', function () {
+    it('should call handler synchronously if promise is already resolved', function () {
       var handler1 = jasmine.createSpy();
       var handler2 = jasmine.createSpy();
       var handler3 = jasmine.createSpy();
@@ -128,110 +141,121 @@ describe('Deferred', function () {
 
   // fail
 
-//  describe('fail', function () {
-//    it('handler', function (done) {
-//      var spy = jasmine.createSpy('fail-spy');
-//
-//      d.promise.fail(spy);
-//
-//      setTimeout(function () {
-//        d.reject();
-//        expect(spy).toHaveBeenCalled();
-//        done();
-//      }, 30);
-//    });
-//
-//    it ('handler with context', function (done) {
-//      var ctx;
-//      var obj = {
-//        fn: function () {
-//          ctx = this;
-//        }
-//      };
-//
-//      d.promise.fail(obj.fn, obj);
-//
-//      setTimeout(function () {
-//        d.reject();
-//        expect(ctx).toBe(obj);
-//        done();
-//      }, 30);
-//    });
-//
-//    it('many handlers', function (done) {
-//      var handler1 = function () {
-//        __log.push(1);
-//      };
-//      var handler2 = function () {
-//        __log.push(2);
-//      };
-//      var handler3 = function () {
-//        __log.push(3);
-//      };
-//
-//      d.promise
-//        .fail(handler1)
-//        .fail(handler2)
-//        .fail(handler3);
-//
-//      setTimeout(function () {
-//        d.reject();
-//
-//        expect(__log.length).toBe(3);
-//        expect(__log[0]).toBe(1);
-//        expect(__log[1]).toBe(2);
-//        expect(__log[2]).toBe(3);
-//
-//        done();
-//      }, 30);
-//    });
-//
-//    it('sync call', function () {
-//      var spy = jasmine.createSpy('fail-spy');
-//
-//      d.promise.fail(spy);
-//      d.reject();
-//
-//      expect(spy).toHaveBeenCalled();
-//    });
-//
-//    it('rejected promise', function () {
-//      var d = new Deferred();
-//      var spy1 = jasmine.createSpy('fail1');
-//      var spy2 = jasmine.createSpy('fail2');
-//      var spy3 = jasmine.createSpy('fail3');
-//
-//      d.promise.fail(spy1);
-//
-//      d.reject();
-//
-//      d.promise
-//        .fail(spy2)
-//        .fail(spy3);
-//
-//      expect(spy1).toHaveBeenCalled();
-//      expect(spy1.calls.count()).toBe(1);
-//
-//      expect(spy2).toHaveBeenCalled();
-//      expect(spy2.calls.count()).toBe(1);
-//
-//      expect(spy3).toHaveBeenCalled();
-//      expect(spy3.calls.count()).toBe(1);
-//    });
-//
-//    it('another deferred', function () {
-//      var d2 = new Deferred();
-//
-//      d.promise.fail(d2);
-//      d.reject(data);
-//
-//      expect(d2.promise.isRejected()).toBe(true);
-//      expect(d2.promise.value).toEqual(data);
-//    });
-//  });
-//
-//  // always
-//
+  describe('fail', function () {
+    it('handler should be called once promise is rejected', function (done) {
+      var handler = jasmine.createSpy();
+
+      d.promise.fail(handler);
+
+      setTimeout(function () {
+        d.reject();
+        expect(handler).toHaveBeenCalled();
+        expect(handler.calls.mostRecent().object).toBe(d.promise);
+        done();
+      }, 20);
+    });
+
+    it('handler should be called with promise reject reason as a first argument', function (done) {
+      var handler = jasmine.createSpy();
+      var reason = {};
+
+      d.promise.fail(handler);
+
+      setTimeout(function () {
+        d.reject(reason);
+        expect(handler.calls.argsFor(0)).toEqual([reason]);
+        done();
+      }, 20);
+    });
+
+    it('handler should be called in specified context', function (done) {
+      var handler = jasmine.createSpy();
+      var obj = {};
+
+      d.promise
+        .fail(handler, obj)
+        .fail(handler, null);
+
+      setTimeout(function () {
+        d.reject();
+        expect(handler.calls.all()[0].object).toBe(obj);
+        //expect(handler.calls.all()[1].object).toBe(null); // jasmine bug?
+        done();
+      }, 30);
+    });
+
+    it('should return the same promise', function () {
+      expect(d.promise.fail()).toBe(d.promise);
+    });
+
+    it('should support multiple handlers', function (done) {
+      var handler1 = jasmine.createSpy();
+      var handler2 = jasmine.createSpy();
+      var handler3 = jasmine.createSpy();
+
+      d.promise
+        .fail(handler1)
+        .fail(handler2)
+        .fail(handler3);
+
+      setTimeout(function () {
+        d.reject();
+        expect(handler1.calls.count()).toBe(1);
+        expect(handler2.calls.count()).toBe(1);
+        expect(handler3.calls.count()).toBe(1);
+        done();
+      }, 20);
+    });
+
+    xit('should call handlers in order they were added', function () {
+
+    });
+
+    it('should call handlers synchronously', function () {
+      var spy = jasmine.createSpy();
+
+      d.promise.fail(spy);
+      d.reject();
+
+      expect(spy).toHaveBeenCalled();
+    });
+
+    it('should call handler synchronously if promise is already rejected', function () {
+      var handler1 = jasmine.createSpy();
+      var handler2 = jasmine.createSpy();
+      var handler3 = jasmine.createSpy();
+
+      d.promise.fail(handler1);
+
+      d.reject();
+
+      d.promise
+        .fail(handler2)
+        .fail(handler3);
+
+      expect(handler1).toHaveBeenCalled();
+      expect(handler1.calls.count()).toBe(1);
+
+      expect(handler2).toHaveBeenCalled();
+      expect(handler2.calls.count()).toBe(1);
+
+      expect(handler3).toHaveBeenCalled();
+      expect(handler3.calls.count()).toBe(1);
+    });
+
+    it('should resolve passed deferred once promise is rejected', function () {
+      var d2 = new Deferred();
+
+      d.promise.fail(d2);
+      d.reject(data);
+
+      expect(d2.promise.isRejected()).toBe(true);
+      expect(d2.promise.value).toEqual(data);
+    });
+  });
+
+  // always
+
 //  describe('always', function () {
 //    it('done', function (done) {
 //      var spy = jasmine.createSpy('done-spy');
@@ -1110,4 +1134,6 @@ describe('Deferred', function () {
 //      expect(spy2).toHaveBeenCalledWith('bar');
 //    });
 //  });
+
+  // todo ignore all but first arguments passed to resolve/reject
 });

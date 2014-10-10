@@ -28,9 +28,11 @@ Deferred.prototype.reject = function (reason) {
   var callbacks = promise._failCallbacks;
   var callback;
 
-  for (var i = 0, l = callbacks.length; i < l; i++) {
-    callback = callbacks[i];
-    callback.fn.call(callback.ctx, promise.value);
+  if (callbacks) {
+    for (var i = 0, l = callbacks.length; i < l; i++) {
+      callback = callbacks[i];
+      callback.fn.call(callback.ctx, promise.value);
+    }
   }
 
   return this;
@@ -149,9 +151,11 @@ Deferred.prototype.resolve = function (x) {
       promise.value = x.value;
 
       callbacks = promise._doneCallbacks;
-      for (i = 0, l = callbacks.length; i < l; i++) {
-        callback = callbacks[i];
-        callback.fn.call(callback.ctx, promise.value);
+      if (callbacks) {
+        for (i = 0, l = callbacks.length; i < l; i++) {
+          callback = callbacks[i];
+          callback.fn.call(callback.ctx, promise.value);
+        }
       }
 
       return this;
