@@ -170,6 +170,8 @@
   
   Promise.prototype.then = function (onResolve, onReject, argCtx) {
     var lastArg = arguments[arguments.length - 1];
+    var isResolved = this._state === 1;
+    var isRejected = this._state === 2;
     var deferred2 = new Deferred();
     var func = 'function';
     var ctx;
@@ -180,55 +182,77 @@
       ctx = argCtx;
     }
   
-    ctx = ctx !== undefined ? ctx : this;
+    if (ctx === void 0) {
+      ctx = this;
+    }
   
     if (typeof onResolve === func) {
-      this.done(function (value) {
+      var resolver = function (value) {
         var x;
         var error;
   
         try {
           x = onResolve.call(ctx, value);
-        } catch (e) {
-          error = e;
+        } catch (err) {
+          error = err;
         }
   
         // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
         //          promise2 must be rejected with e as the reason.
-        if (error !== undefined) {
+        if (error !== void 0) {
           deferred2.reject(error);
         } else {
           // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
           //          Promise Resolution Procedure [[Resolve]](promise2, x).
           deferred2.resolve(x);
         }
-      });
-    } else if (this._state === 1) {
+      };
+  
+      if (isResolved) {
+        resolver(this.value);
+        return deferred2.promise;
+      }
+  
+      if (this._state === 0) {
+        if (!this.hasOwnProperty('_doneCallbacks')) {
+          this._doneCallbacks = [];
+        }
+  
+        this._doneCallbacks.push({
+          fn: resolver,
+          ctx: null
+        });
+      }
+    } else if (isResolved) {
       deferred2.resolve(this.value);
+      return deferred2.promise;
     }
   
+    // Если передан onReject, создаем вреппер rejected
     if (typeof onReject === func) {
-      this.fail(function (reason) {
+      var rejecter = function (reason) {
         var x;
         var error;
   
         try {
           x = onReject.call(ctx, reason);
-        } catch (e) {
-          error = e;
+        } catch (err) {
+          error = err;
         }
   
         // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
         //          promise2 must be rejected with e as the reason.
-        if (error !== undefined) {
+        if (error !== void 0) {
           deferred2.reject(error);
         } else {
           // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
           //          Promise Resolution Procedure [[Resolve]](promise2, x).
           deferred2.resolve(x);
         }
-      });
-    } else if (this._state === 2) {
+      };
+  
+      this.fail(rejecter);
+    } else if (isRejected) {
       deferred2.reject(this.value);
     }
   
