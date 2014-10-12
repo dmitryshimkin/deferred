@@ -5,8 +5,9 @@
  *
  * States
  *  pending:  0
- *  resolved: 1
- *  rejected: 2
+ *  locked:   1
+ *  resolved: 2
+ *  rejected: 3
  *
  * @class
  */
@@ -58,7 +59,7 @@ Promise.prototype.done = function (arg, ctx) {
 
   ctx = ctx !== undefined ? ctx : this;
 
-  if (state === 1) {
+  if (state === 2) {
     if (isDeferred) {
       arg.resolve(this.value);
     } else {
@@ -101,7 +102,7 @@ Promise.prototype.fail = function (arg, ctx) {
 
   ctx = ctx !== undefined ? ctx : this;
 
-  if (state === 2) {
+  if (state === 3) {
     if (isDeferred) {
       arg.reject(this.value);
     } else {
@@ -136,7 +137,7 @@ Promise.prototype.fail = function (arg, ctx) {
  */
 
 Promise.prototype.isPending = function () {
-  return this._state === 0;
+  return this._state <= 1;
 };
 
 /**
@@ -146,7 +147,7 @@ Promise.prototype.isPending = function () {
  */
 
 Promise.prototype.isRejected = function () {
-  return this._state === 2;
+  return this._state === 3;
 };
 
 /**
@@ -156,7 +157,7 @@ Promise.prototype.isRejected = function () {
  */
 
 Promise.prototype.isResolved = function () {
-  return this._state === 1;
+  return this._state === 2;
 };
 
 /**
@@ -169,8 +170,8 @@ Promise.prototype.isResolved = function () {
 
 Promise.prototype.then = function (onResolve, onReject, argCtx) {
   var lastArg = arguments[arguments.length - 1];
-  var isResolved = this._state === 1;
-  var isRejected = this._state === 2;
+  var isResolved = this._state === 2;
+  var isRejected = this._state === 3;
   var deferred2 = new Deferred();
   var func = 'function';
   var ctx;

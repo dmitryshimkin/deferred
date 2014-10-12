@@ -1068,19 +1068,54 @@ describe('Deferred', function () {
 
     // 2.3.2. If x is a promise, adopt its state 3.4:
     describe('with promise', function () {
-      // 2.3.2.1. If x is pending, promise must remain pending until x is fulfilled or rejected.
-      it('promise should remain pending until passed promise is resolved or rejected', function () {
-        var d1 = new Deferred();
-        var d2 = new Deferred();
+      describe('pending', function () {
+        // 2.3.2.1. If x is pending, promise must remain pending until x is fulfilled or rejected.
+        it('promise should remain pending until passed promise is resolved', function () {
+          var d1 = new Deferred();
+          var d2 = new Deferred();
+          var value = {};
 
-        d1.resolve(d2.promise);
+          d1.resolve(d2.promise);
 
-        expect(d1.promise.isPending()).toBe(true);
+          expect(d1.promise.isPending()).toBe(true);
 
-        d1.resolve(2);
+          d2.resolve(value);
 
-        // todo
-        //expect(d1.promise.isPending()).toBe(true);
+          expect(d1.promise.isResolved()).toBe(true);
+          expect(d1.promise.value).toBe(value);
+        });
+
+        it('promise should remain pending until passed promise is rejected', function () {
+          var d1 = new Deferred();
+          var d2 = new Deferred();
+          var reason = {};
+
+          d1.resolve(d2.promise);
+
+          expect(d1.promise.isPending()).toBe(true);
+
+          d2.reject(reason);
+
+          expect(d1.promise.isRejected()).toBe(true);
+          expect(d1.promise.value).toBe(reason);
+        });
+
+        it('promise should be locked until passed promise is settled', function () {
+          var d1 = new Deferred();
+          var d2 = new Deferred();
+
+          d1.resolve(d2.promise);
+
+          d1.resolve(1);
+          d1.reject(2);
+
+          expect(d1.promise.isPending()).toBe(true);
+
+          d2.resolve(3);
+
+          expect(d1.promise.isResolved()).toBe(true);
+          expect(d1.promise.value).toBe(3);
+        });
       });
 
       // 2.3.2.2. If/when x is fulfilled, fulfill promise with the same value.
@@ -1281,6 +1316,8 @@ describe('Deferred', function () {
       expect(d.promise.isPending()).toBe(true);
       d.resolve();
       expect(d.promise.isPending()).toBe(false);
+
+      // todo test locked
     });
 
     it('isRejected', function () {

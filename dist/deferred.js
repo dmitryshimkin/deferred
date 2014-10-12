@@ -6,8 +6,9 @@
    *
    * States
    *  pending:  0
-   *  resolved: 1
-   *  rejected: 2
+   *  locked:   1
+   *  resolved: 2
+   *  rejected: 3
    *
    * @class
    */
@@ -59,7 +60,7 @@
   
     ctx = ctx !== undefined ? ctx : this;
   
-    if (state === 1) {
+    if (state === 2) {
       if (isDeferred) {
         arg.resolve(this.value);
       } else {
@@ -102,7 +103,7 @@
   
     ctx = ctx !== undefined ? ctx : this;
   
-    if (state === 2) {
+    if (state === 3) {
       if (isDeferred) {
         arg.reject(this.value);
       } else {
@@ -137,7 +138,7 @@
    */
   
   Promise.prototype.isPending = function () {
-    return this._state === 0;
+    return this._state <= 1;
   };
   
   /**
@@ -147,7 +148,7 @@
    */
   
   Promise.prototype.isRejected = function () {
-    return this._state === 2;
+    return this._state === 3;
   };
   
   /**
@@ -157,7 +158,7 @@
    */
   
   Promise.prototype.isResolved = function () {
-    return this._state === 1;
+    return this._state === 2;
   };
   
   /**
@@ -170,8 +171,8 @@
   
   Promise.prototype.then = function (onResolve, onReject, argCtx) {
     var lastArg = arguments[arguments.length - 1];
-    var isResolved = this._state === 1;
-    var isRejected = this._state === 2;
+    var isResolved = this._state === 2;
+    var isRejected = this._state === 3;
     var deferred2 = new Deferred();
     var func = 'function';
     var ctx;
@@ -281,7 +282,7 @@
       return this;
     }
   
-    promise._state = 2;
+    promise._state = 3;
     promise.value = reason;
   
     var callbacks = promise._failCallbacks;
@@ -325,23 +326,21 @@
     if (x instanceof Promise) {
       var xState = x._state;
   
-      // 2.3.2.3. If x is rejected, reject promise with the same reason.
-      if (xState === 2) {
-        this.reject(x.value);
-        return this;
-      }
-  
       // 2.3.2.2. If x is fulfilled, fulfill promise with the same value.
-      if (xState === 1) {
-        promise._state = 1;
+      // 2.3.2.3. If x is rejected, reject promise with the same reason.
+      if (xState > 1) {
+        promise._state = xState;
         promise.value = x.value;
   
-        callbacks = promise._doneCallbacks;
-        if (callbacks) {
-          for (i = 0, l = callbacks.length; i < l; i++) {
-            callback = callbacks[i];
-            callback.fn.call(callback.ctx, promise.value);
-          }
+        if (xState === 2) {
+          callbacks = promise._doneCallbacks;
+        } else {
+          callbacks = promise._failCallbacks;
+        }
+  
+        for (i = 0, l = callbacks.length; i < l; i++) {
+          callback = callbacks[i];
+          callback.fn.call(callback.ctx, promise.value);
         }
   
         return this;
@@ -350,12 +349,8 @@
       // 2.3.2.2. when x is fulfilled, fulfill promise with the same value.
       // 2.3.2.3. When x is rejected, reject promise with the same reason.
       var onResolve = function (argValue) {
-        if (promise._state !== 0) {
-          return false;
-        }
-  
         // set value and state
-        promise._state = 1;
+        promise._state = 2;
         promise.value = argValue;
   
         // notify subscribers
@@ -372,13 +367,8 @@
       };
   
       var onReject = function (reason) {
-        // ignore settled promises
-        if (promise._state !== 0) {
-          return false;
-        }
-  
         // set reason and state
-        promise._state = 2;
+        promise._state = 3;
         promise.value = reason;
   
         // notify subscribers
@@ -394,6 +384,9 @@
         return true;
       };
   
+      // Set locked state
+      promise._state = 1;
+  
       x
         .done(onResolve)
         .fail(onReject);
@@ -405,7 +398,7 @@
     }
   
     // Resolve with value
-    promise._state = 1;
+    promise._state = 2;
     promise.value = x;
   
     callbacks = promise._doneCallbacks;
