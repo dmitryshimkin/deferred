@@ -1275,7 +1275,7 @@ describe('Deferred', function () {
   // API
   //
 
-  describe('promise API', function () {
+  describe('API', function () {
     it('isPending', function () {
       var d = new Deferred();
       expect(d.promise.isPending()).toBe(true);
@@ -1295,6 +1295,23 @@ describe('Deferred', function () {
       expect(d.promise.isResolved()).toBe(false);
       d.resolve();
       expect(d.promise.isResolved()).toBe(true);
+    });
+
+    it('isDeferred', function () {
+      var d = new Deferred();
+      expect(Deferred.isDeferred(d)).toBe(true);
+      expect(Deferred.isDeferred(d.promise)).toBe(false);
+    });
+
+    it('isPromise', function () {
+      var d = new Deferred();
+      expect(Deferred.isPromise(d)).toBe(false);
+      expect(Deferred.isPromise(d.promise)).toBe(true);
+      expect(Deferred.isPromise({})).toBe(false);
+      expect(Deferred.isPromise(undefined)).toBe(false);
+      expect(Deferred.isPromise({
+        then: function () {}
+      })).toBe(false);
     });
   });
 

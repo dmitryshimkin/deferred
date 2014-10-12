@@ -45,7 +45,6 @@ Deferred.prototype.reject = function (reason) {
 
 Deferred.prototype.resolve = function (x) {
   var promise = this.promise;
-  var value;
   var callback;
   var callbacks;
   var i;
@@ -63,10 +62,8 @@ Deferred.prototype.resolve = function (x) {
     return this;
   }
 
-  var isPromise = x instanceof Promise;
-
-  // Detect if we need onResolve and onReject
-  if (isPromise) {
+  // Resolve with promise
+  if (x instanceof Promise) {
     var xState = x._state;
 
     // 2.3.2.3. If x is rejected, reject promise with the same reason.
@@ -138,15 +135,9 @@ Deferred.prototype.resolve = function (x) {
       return true;
     };
 
-    try {
-      x
-        .done(onResolve)
-        .fail(onReject);
-    } catch (e) {
-      if (this.promise._state === 0) {
-        this.reject(e);
-      }
-    }
+    x
+      .done(onResolve)
+      .fail(onReject);
 
     onResolve = null;
     onReject = null;
@@ -154,6 +145,7 @@ Deferred.prototype.resolve = function (x) {
     return this;
   }
 
+  // Resolve with value
   promise._state = 1;
   promise.value = x;
 
@@ -176,7 +168,7 @@ Deferred.prototype.resolve = function (x) {
  */
 
 Deferred.isPromise = function (arg) {
-  return arg instanceof Promise || arg instanceof Deferred;
+  return arg instanceof Promise;
 };
 
 Deferred.isDeferred = function (arg) {
