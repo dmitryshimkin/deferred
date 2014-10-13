@@ -57,7 +57,9 @@ Promise.prototype.done = function (arg, ctx) {
   var state = this._state;
   var isDeferred = arg instanceof Deferred;
 
-  ctx = ctx !== undefined ? ctx : this;
+  if (ctx === void 0) {
+    ctx = this;
+  }
 
   if (state === 2) {
     if (isDeferred) {
@@ -100,7 +102,9 @@ Promise.prototype.fail = function (arg, ctx) {
   var state = this._state;
   var isDeferred = arg instanceof Deferred;
 
-  ctx = ctx !== undefined ? ctx : this;
+  if (ctx === void 0) {
+    ctx = this;
+  }
 
   if (state === 3) {
     if (isDeferred) {
@@ -257,4 +261,49 @@ Promise.prototype.then = function (onResolve, onReject, argCtx) {
   }
 
   return deferred2.promise;
+};
+
+/**
+ * TBD
+ * @param onError {Function}
+ * @param [ctx] {Object|Null}
+ */
+
+Promise.prototype.error = function (onError, ctx) {
+  var state = this._state;
+  var promise = this;
+
+  if (ctx === void 0) {
+    ctx = promise;
+  }
+
+  // Ignore resolved promises
+  if (state === 2) {
+    return promise;
+  }
+
+  // Rejected promise
+  if (state === 3) {
+    if (promise.value instanceof Error) {
+      onError.call(ctx, this.value);
+    }
+    return this;
+  }
+
+  if (!promise.hasOwnProperty('_failCallbacks')) {
+    promise._failCallbacks = [];
+  }
+
+  var onReject = function () {
+    if (promise.value instanceof Error) {
+      onError.call(ctx, promise.value);
+    }
+  };
+
+  promise._failCallbacks.push({
+    fn: onReject,
+    ctx: ctx
+  });
+
+  return this;
 };

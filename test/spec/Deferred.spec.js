@@ -1307,6 +1307,126 @@ describe('Deferred', function () {
   });
 
   //
+  // Error handling
+  //
+
+  describe('error', function () {
+    it('should be called when promise is rejected due error in onFulfilled handler', function () {
+      var d = new Deferred();
+      var err = new Error();
+      var handler1 = jasmine.createSpy();
+      var handler2 = jasmine.createSpy();
+
+      var promise1 = d.promise.then(function () {
+        throw err;
+      });
+
+      var promise2 = promise1.error(handler1);
+
+      promise2.error(handler2);
+
+      d.resolve();
+
+      expect(handler1.calls.count()).toBe(1);
+      expect(handler1.calls.argsFor(0)[0]).toBe(err);
+      expect(handler2.calls.count()).toBe(1);
+      expect(handler2.calls.argsFor(0)[0]).toBe(err);
+      expect(promise2).toBe(promise1);
+    });
+
+    it('should be called if promise is rejected due error in onFulfilled handler', function () {
+      var d = new Deferred();
+      var err = new Error();
+      var handler1 = jasmine.createSpy();
+      var handler2 = jasmine.createSpy();
+
+      var promise1 = d.promise.then(function () {
+        throw err;
+      });
+
+      d.resolve();
+
+      var promise2 = promise1.error(handler1);
+
+      promise2.error(handler2);
+
+      expect(handler1.calls.count()).toBe(1);
+      expect(handler1.calls.argsFor(0)[0]).toBe(err);
+      expect(handler2.calls.count()).toBe(1);
+      expect(handler2.calls.argsFor(0)[0]).toBe(err);
+      expect(promise2).toBe(promise1);
+    });
+
+    it('should be ignored if promise is resolved', function () {
+      var d = new Deferred();
+      var handler1 = jasmine.createSpy();
+      var handler2 = jasmine.createSpy();
+
+      d.resolve();
+
+      var promise1 = d.promise;
+      var promise2 = promise1.error(handler1);
+
+      promise2.error(handler2);
+
+      expect(handler1).not.toHaveBeenCalled();
+      expect(handler2).not.toHaveBeenCalled();
+      expect(promise2).toBe(promise1);
+    });
+
+    it('should be ignored if promise is rejected with value', function () {
+      var d = new Deferred();
+      var handler1 = jasmine.createSpy();
+      var handler2 = jasmine.createSpy();
+
+      d.reject('foo');
+
+      var promise1 = d.promise;
+      var promise2 = promise1.error(handler1);
+
+      promise2.error(handler2);
+
+      expect(handler1).not.toHaveBeenCalled();
+      expect(handler2).not.toHaveBeenCalled();
+      expect(promise2).toBe(promise1);
+    });
+
+    it('should be ignored when promise is rejected with value', function () {
+      var d = new Deferred();
+      var handler1 = jasmine.createSpy();
+      var handler2 = jasmine.createSpy();
+
+      var promise1 = d.promise;
+      var promise2 = promise1.error(handler1);
+
+      promise2.error(handler2);
+
+      d.reject('foo');
+
+      expect(handler1).not.toHaveBeenCalled();
+      expect(handler2).not.toHaveBeenCalled();
+      expect(promise2).toBe(promise1);
+    });
+
+    it('should be called in passed context', function () {
+      var d = new Deferred();
+      var err = new Error();
+      var handler1 = jasmine.createSpy();
+      var ctx = {};
+
+      var promise1 = d.promise.then(function () {
+        throw err;
+      });
+
+      d.resolve();
+
+      promise1.error(handler1, ctx);
+
+      expect(handler1.calls.mostRecent().object).toBe(ctx);
+    });
+  });
+
+  //
   // API
   //
 
@@ -1357,5 +1477,5 @@ describe('Deferred', function () {
   // todo its not obvious what to do if promise is resolved with another promise
 
   // todo pass deferreds to done/fail/always
-  // todo test correct state within handlers
+  // todo test promise status inside handlers
 });
