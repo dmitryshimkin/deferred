@@ -344,6 +344,9 @@
       }
     }
   
+    promise._doneCallbacks = null;
+    promise._failCallbacks = null;
+  
     return this;
   };
   
@@ -392,6 +395,9 @@
           callback.fn.call(callback.ctx, promise.value);
         }
   
+        promise._doneCallbacks = null;
+        promise._failCallbacks = null;
+  
         return this;
       }
   
@@ -412,6 +418,9 @@
           }
         }
   
+        promise._doneCallbacks = null;
+        promise._failCallbacks = null;
+  
         return true;
       };
   
@@ -422,6 +431,7 @@
   
         // notify subscribers
         var callbacks = promise._failCallbacks;
+  
         if (callbacks) {
           var callback;
           for (var i = 0, l = callbacks.length; i < l; i++) {
@@ -429,6 +439,9 @@
             callback.fn.call(callback.ctx, promise.value);
           }
         }
+  
+        promise._doneCallbacks = null;
+        promise._failCallbacks = null;
   
         return true;
       };
@@ -458,6 +471,9 @@
         callback.fn.call(callback.ctx, promise.value);
       }
     }
+  
+    promise._doneCallbacks = null;
+    promise._failCallbacks = null;
   
     return this;
   };

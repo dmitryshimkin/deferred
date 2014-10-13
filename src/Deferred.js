@@ -35,6 +35,9 @@ Deferred.prototype.reject = function (reason) {
     }
   }
 
+  promise._doneCallbacks = null;
+  promise._failCallbacks = null;
+
   return this;
 };
 
@@ -83,6 +86,9 @@ Deferred.prototype.resolve = function (x) {
         callback.fn.call(callback.ctx, promise.value);
       }
 
+      promise._doneCallbacks = null;
+      promise._failCallbacks = null;
+
       return this;
     }
 
@@ -103,6 +109,9 @@ Deferred.prototype.resolve = function (x) {
         }
       }
 
+      promise._doneCallbacks = null;
+      promise._failCallbacks = null;
+
       return true;
     };
 
@@ -113,6 +122,7 @@ Deferred.prototype.resolve = function (x) {
 
       // notify subscribers
       var callbacks = promise._failCallbacks;
+
       if (callbacks) {
         var callback;
         for (var i = 0, l = callbacks.length; i < l; i++) {
@@ -120,6 +130,9 @@ Deferred.prototype.resolve = function (x) {
           callback.fn.call(callback.ctx, promise.value);
         }
       }
+
+      promise._doneCallbacks = null;
+      promise._failCallbacks = null;
 
       return true;
     };
@@ -149,6 +162,9 @@ Deferred.prototype.resolve = function (x) {
       callback.fn.call(callback.ctx, promise.value);
     }
   }
+
+  promise._doneCallbacks = null;
+  promise._failCallbacks = null;
 
   return this;
 };
