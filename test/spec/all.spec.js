@@ -1,93 +1,108 @@
 describe('Promise.all', function () {
   'use strict';
 
-  it('done', function () {
-    var d1 = new Deferred();
-    var d2 = new Deferred();
-    var d3 = new Deferred();
-    var spy = jasmine.createSpy('done');
-    var obj = {
-      foo: 'bar'
-    };
+  describe('all', function () {
+    it('should exist', function () {
+      expect(Deferred.all).toBeDefined();
+    });
 
-    var promise = Deferred.all([d1, d2.promise, d3]);
-
-    promise.done(spy);
-
-    expect(Deferred.isPromise(promise)).toBe(true);
-    expect(promise.isPending()).toBe(true);
-
-    d2.resolve('foo2', obj);
-    expect(promise.isPending()).toBe(true);
-
-    d3.resolve(obj, 'bar', obj);
-    expect(promise.isPending()).toBe(true);
-
-    d1.resolve('foo1');
-
-    expect(promise.isResolved()).toBe(true);
-    expect(spy).toHaveBeenCalledWith(['foo1', 'foo2', obj]);
+    it('should return promise', function () {
+      var promise = Deferred.all();
+      expect(Deferred.isPromise(promise)).toBe(true);
+    });
   });
 
-  it('fail', function () {
-    var d1 = new Deferred();
-    var d2 = new Deferred();
-    var d3 = new Deferred();
-    var spy = jasmine.createSpy('fail');
-    var obj = {
-      foo: 'bar'
-    };
-    var e = new TypeError();
-    var promise = Deferred.all([d1.promise, d2, d3]);
+  describe('returned promise', function () {
+    it('should be resolved if all passed promises are resolved', function () {
+      var d1 = new Deferred();
+      var d2 = new Deferred();
+      var d3 = new Deferred();
 
-    promise.fail(spy);
+      d1.resolve();
+      d2.resolve();
+      d3.resolve();
 
-    expect(Deferred.isPromise(promise)).toBe(true);
-    expect(promise.isPending()).toBe(true);
+      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+      expect(promise.isResolved()).toBe(true);
+    });
 
-    d3.resolve('foo2');
-    expect(promise.isPending()).toBe(true);
+    it('should be resolved when all passed promises are resolved', function () {
+      var d1 = new Deferred();
+      var d2 = new Deferred();
+      var d3 = new Deferred();
 
-    d1.reject(e);
+      d1.resolve();
 
-    expect(promise.isRejected()).toBe(true);
-    expect(spy).toHaveBeenCalledWith([e, undefined, 'foo2']);
-  });
+      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+      expect(promise.isPending()).toBe(true);
 
-  it('rejected argument', function () {
-    var d1 = new Deferred();
-    var d2 = new Deferred();
-    var d3 = new Deferred();
-    var spy = jasmine.createSpy('done');
+      d2.resolve();
+      expect(promise.isPending()).toBe(true);
 
-    d2.reject(null);
+      d3.resolve();
+      expect(promise.isResolved()).toBe(true);
+    });
 
-    var promise = Deferred.all([d1, d2.promise, d3]);
+    it('should be rejected if at least one of passed promises is rejected', function () {
+      var d1 = new Deferred();
+      var d2 = new Deferred();
+      var d3 = new Deferred();
 
-    promise.fail(spy);
+      d1.resolve();
+      d2.reject();
+      d3.resolve();
 
-    expect(promise.isRejected()).toBe(true);
-    expect(spy).toHaveBeenCalledWith([undefined, null, undefined]);
-  });
+      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+      expect(promise.isRejected()).toBe(true);
+    });
 
-  it('resolved arguments', function () {
-    var d1 = new Deferred();
-    var d2 = new Deferred();
-    var d3 = new Deferred();
-    var spy = jasmine.createSpy('done');
-    var obj = {
-      foo: 'bar'
-    };
+    it('should be rejected once one of passed promises is rejected', function () {
+      var d1 = new Deferred();
+      var d2 = new Deferred();
+      var d3 = new Deferred();
 
-    d2.resolve('2', 'foo');
-    d1.resolve('1');
-    d3.resolve('3', null);
+      d1.resolve();
 
-    var promise = Deferred.all([d1, d2.promise, d3]);
+      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+      expect(promise.isPending()).toBe(true);
 
-    promise.done(spy);
+      d2.reject();
+      expect(promise.isRejected()).toBe(true);
 
-    expect(promise.isResolved()).toBe(true);
-    expect(spy).toHaveBeenCalledWith(['1', '2', '3']);
+      d3.resolve();
+      expect(promise.isRejected()).toBe(true);
+    });
+
+    it('should be resolved with array of passed promises values', function () {
+      var d1 = new Deferred();
+      var d2 = new Deferred();
+      var d3 = new Deferred();
+      var value1 = {};
+
+      d2.resolve(value1);
+
+      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+
+      d3.resolve('foo');
+      d1.resolve();
+
+      expect(promise.value).toEqual([undefined, value1, 'foo']);
+    });
+
+    it('should be rejected with reason of passed rejected promise', function () {
+      var d1 = new Deferred();
+      var d2 = new Deferred();
+      var d3 = new Deferred();
+      var reason = {};
+
+      d2.resolve('foo');
+
+      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+
+      d3.reject(reason);
+      d1.resolve();
+
+      expect(promise.value).toBe(reason);
+    });
   });
 });
