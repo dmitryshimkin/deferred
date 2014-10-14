@@ -67,52 +67,74 @@ describe('Promise.race', function () {
       expect(promise.isPending()).toBe(true);
 
       d2.reject();
-      expect(promise.isRejected()).toBe(true);
+      expect(promise.isPending()).toBe(true);
 
       d3.reject();
       expect(promise.isRejected()).toBe(true);
     });
 
-    /*
-     it('should be resolved with array of passed promises values', function () {
+    it('should be resolved with value of first resolved promise', function () {
       var d1 = new Deferred();
       var d2 = new Deferred();
       var d3 = new Deferred();
-      var value1 = {};
+      var value = {};
 
-      d2.resolve(value1);
+      d2.resolve(value);
 
       var promise = Deferred.race([d1.promise, d2.promise, d3.promise]);
 
-      d3.resolve('foo');
-      d1.resolve();
-
-      expect(promise.value).toEqual([undefined, value1, 'foo']);
+      expect(promise.value).toBe(value);
     });
 
-    it('should be rejected with reason of passed rejected promise', function () {
+    it('should be rejected with array of reasons of rejected promises', function () {
       var d1 = new Deferred();
       var d2 = new Deferred();
       var d3 = new Deferred();
       var reason = {};
 
-      d2.resolve('foo');
+      d2.reject('foo');
 
       var promise = Deferred.race([d1.promise, d2.promise, d3.promise]);
 
       d3.reject(reason);
-      d1.resolve();
+      d1.reject();
 
-      expect(promise.value).toBe(reason);
+      expect(promise.value).toEqual([undefined, 'foo', reason]);
     });
 
-    it('should be resolved correctly if promise in arguments is resolved with another promise', function (done) {
+    it('should be resolved correctly if one of passed promise is resolved with another promise', function (done) {
+      var d1 = new Deferred();
+      var d2 = new Deferred();
+      var d3 = new Deferred();
+      var d4 = new Deferred();
+      var value = {};
+
+      d1.reject();
+
+      var promise = Deferred.race([d1.promise, d2.promise, d3.promise]);
+      expect(promise.isPending()).toBe(true);
+
+      d2.reject();
+      expect(promise.isPending()).toBe(true);
+
+      d3.resolve(d4.promise);
+      expect(promise.isPending()).toBe(true);
+
+      setTimeout(function () {
+        d4.resolve(value);
+        expect(promise.isResolved()).toBe(true);
+        expect(promise.value).toBe(value);
+        done();
+      }, 20);
+    });
+
+    it('should be rejected correctly if some promises in arguments are rejected with another promise', function (done) {
       var d1 = new Deferred();
       var d2 = new Deferred();
       var d3 = new Deferred();
       var d4 = new Deferred();
 
-      d1.resolve(1);
+      d1.reject(1);
 
       var promise = Deferred.race([d1.promise, d2.promise, d3.promise]);
       expect(promise.isPending()).toBe(true);
@@ -120,18 +142,15 @@ describe('Promise.race', function () {
       d2.resolve(d4.promise);
       expect(promise.isPending()).toBe(true);
 
-      d3.resolve(3);
+      d3.reject(3);
       expect(promise.isPending()).toBe(true);
 
       setTimeout(function () {
-        d4.resolve(2);
-        expect(promise.isResolved()).toBe(true);
+        d4.reject(2);
+        expect(promise.isRejected()).toBe(true);
         expect(promise.value).toEqual([1, 2, 3]);
         done();
       }, 20);
     });
-     */
   });
 });
-
-// todo test no arguments

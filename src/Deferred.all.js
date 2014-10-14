@@ -69,5 +69,6 @@ Deferred.all.indexOf = function (promises, promise) {
       return i;
     }
   }
+  /* istanbul ignore next */
   return -1;
 };

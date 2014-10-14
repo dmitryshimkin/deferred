@@ -49,8 +49,8 @@ module.exports = function (grunt) {
         src: 'dist/deferred.js',
         options: {
           specs: [
-            //'test/spec/Deferred.spec.js',
-            //'test/spec/Deferred.all.spec.js',
+            'test/spec/Deferred.spec.js',
+            'test/spec/Deferred.all.spec.js',
             'test/spec/Deferred.race.spec.js'
           ],
           template: require('grunt-template-jasmine-istanbul'),
