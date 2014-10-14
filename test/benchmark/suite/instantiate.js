@@ -16,16 +16,14 @@ module.exports = {
       return new Deferred();
     },
 
-    //    'Promise': function () {
-    //      var d = new Promise(function (resolve, reject) {});
-    //      return new Promise();
-    //    },
+//    'Promise': function () {
+//      var d = new Promise(function (resolve, reject) {});
+//      return new Promise();
+//    },
 
-    /*
     $: function () {
       return new $.Deferred();
     },
-    */
 
     Bluebird: function () {
       return new Bluebird(function (resolve, reject) {});
@@ -33,15 +31,12 @@ module.exports = {
 
     kew: function () {
       return new kew.defer();
-    }
+    },
 
-    /*
     Q: function () {
       return new Q.defer();
     },
-    */
 
-    /*
     vow: function () {
       return new vow.Deferred();
     },
@@ -53,6 +48,5 @@ module.exports = {
     RSVP: function () {
       return new RSVP.Promise(function (resolve, reject) {});
     }
-    */
   }
 };

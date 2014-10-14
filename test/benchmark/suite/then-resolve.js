@@ -12,11 +12,11 @@ var onResolve = function () {};
 module.exports = {
   name: ' *** then and resolve *** ',
   tests: {
-    //    'Deferred': function () {
-    //      var d = new Deferred();
-    //      d.promise.then(onResolve);
-    //      d.resolve();
-    //    },
+    'Deferred': function () {
+      var d = new Deferred();
+      d.promise.then(onResolve);
+      d.resolve();
+    },
 
     //    'Promise': function () {
     //      var d = new Promise(function (resolve, reject) {});
@@ -45,15 +45,15 @@ module.exports = {
       var d = new Rubaxa();
       d.then(onResolve);
       d.resolve();
-    }
+    },
 
-//      'RSVP': function () {
-//        var _resolve;
-//        var d = new RSVP.Promise(function (resolve, reject) {
-//          _resolve = resolve;
-//        });
-//        d.then(onResolve);
-//        _resolve();
-//      }
+    'RSVP': function () {
+      var _resolve;
+      var d = new RSVP.Promise(function (resolve, reject) {
+        _resolve = resolve;
+      });
+      d.then(onResolve);
+      _resolve();
+    }
   }
 };

@@ -32,9 +32,8 @@ module.exports = {
     kew: function () {
       var d = new kew.defer();
       d.promise.then(onResolve);
-    }
+    },
 
-    /*
     $: function () {
       var d = new $.Deferred();
       d.then(onResolve);
@@ -59,6 +58,5 @@ module.exports = {
       var d = new RSVP.Promise(function (resolve, reject) {});
       d.then(onResolve);
     }
-    */
   }
 };
