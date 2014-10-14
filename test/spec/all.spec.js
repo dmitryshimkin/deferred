@@ -132,5 +132,4 @@ describe('Promise.all', function () {
   });
 });
 
-// todo support sequence of arguments instead array
 // todo test no arguments
