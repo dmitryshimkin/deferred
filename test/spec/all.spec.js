@@ -104,5 +104,33 @@ describe('Promise.all', function () {
 
       expect(promise.value).toBe(reason);
     });
+
+    it('should be resolved correctly if promise in arguments is resolved with another promise', function (done) {
+      var d1 = new Deferred();
+      var d2 = new Deferred();
+      var d3 = new Deferred();
+      var d4 = new Deferred();
+
+      d1.resolve(1);
+
+      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+      expect(promise.isPending()).toBe(true);
+
+      d2.resolve(d4.promise);
+      expect(promise.isPending()).toBe(true);
+
+      d3.resolve(3);
+      expect(promise.isPending()).toBe(true);
+
+      setTimeout(function () {
+        d4.resolve(2);
+        expect(promise.isResolved()).toBe(true);
+        expect(promise.value).toEqual([1, 2, 3]);
+        done();
+      }, 20);
+    });
   });
 });
+
+// todo support sequence of arguments instead array
+// todo test no arguments

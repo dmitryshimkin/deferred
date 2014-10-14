@@ -8,50 +8,66 @@
  */
 
 Deferred.all = function (promises) {
-  var d = new Deferred();
-//  var promise;
-//  var index;
-//  var value;
-//  var remain = promises.length;
-//  var values = [];
-//  var uids = [];
-//
-//  values.length = promises.length;
-//
-//  var done = function (value) {
-//    var index = uids.indexOf(this.uid);
-//    values[index] = value;
-//    remain = remain - 1;
-//    if (remain === 0) {
-//      d.resolve(values);
-//    }
-//  };
-//
-//  var fail = function (reason) {
-//    var index = uids.indexOf(this.uid);
-//    values[index] = reason;
-//    d.reject(values);
-//  };
-//
-//  for (var i = 0, l = promises.length; i < l; i++) {
-//    promise = promises[i];
-//
-//    if (promise instanceof Deferred) {
-//      promise = promise.promise;
-//    }
-//
-//    uids.push(promise.uid);
-//
-//    if (promise._state === 2) {
-//      index = uids.indexOf(promise.uid);
-//      values[index] = promise.value;
-//      return d.reject(values).promise;
-//    }
-//
-//    promise
-//      .done(done)
-//      .fail(fail);
-//  }
+  var dfd = new Deferred();
 
-  return d.promise;
+  if (!promises) {
+    return dfd.promise;
+  }
+
+  var values = new Array(promises.length);
+  var pendingCount = 0;
+  var i;
+  var l;
+
+  for (i = 0, l = promises.length; i < l; i++) {
+    // If rejected argument found reject promise and return it
+    if (promises[i].isRejected()) {
+      dfd.reject(promises[i].value);
+      return dfd.promise;
+    }
+
+    // If resolved argument found add its value to array of values
+    if (promises[i].isResolved()) {
+      values[i] = promises[i].value;
+      continue;
+    }
+
+    // Increase number of pending arguments
+    pendingCount++;
+
+    // Once argument is rejected reject promise with the same reason
+    promises[i].fail(function (reason) {
+      dfd.reject(reason);
+    });
+
+    // When argument is resolved add its value to array of values
+    // and decrease number of remaining pending arguments
+    promises[i].done(function (value) {
+      var index = Deferred.all.indexOf(promises, this);
+      values[index] = value;
+      pendingCount--;
+
+      // Resolve promise if no pending arguments left
+      if (pendingCount === 0) {
+        dfd.resolve(values);
+      }
+    }, promises[i]);
+  }
+
+  if (!pendingCount) {
+    dfd.resolve(values);
+    return dfd.promise;
+  }
+
+  return dfd.promise;
+};
+
+Deferred.all.indexOf = function (promises, promise) {
+  var i = promises.length;
+  while (i--) {
+    if (promises[i] === promise) {
+      return i;
+    }
+  }
+  return -1;
 };
