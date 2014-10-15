@@ -76,10 +76,7 @@ Promise.prototype.done = function (arg, ctx) {
         arg.resolve.call(arg, value);
       });
     } else {
-      if (!this.hasOwnProperty('_doneCallbacks')) {
-        this._doneCallbacks = [];
-      }
-      this._doneCallbacks.push({
+      pushCallback(this, 1, {
         fn: arg,
         ctx: ctx
       });
@@ -121,10 +118,7 @@ Promise.prototype.fail = function (arg, ctx) {
         arg.reject(reason);
       });
     } else {
-      if (!this.hasOwnProperty('_failCallbacks')) {
-        this._failCallbacks = [];
-      }
-      this._failCallbacks.push({
+      pushCallback(this, 0, {
         fn: arg,
         ctx: ctx
       });
@@ -191,7 +185,7 @@ Promise.prototype.then = function (onResolve, onReject, argCtx) {
   }
 
   if (typeof onResolve === func) {
-    var resolver = function (value) {
+    this.done(function (value) {
       var x;
       var error;
 
@@ -210,23 +204,7 @@ Promise.prototype.then = function (onResolve, onReject, argCtx) {
         //          Promise Resolution Procedure [[Resolve]](promise2, x).
         deferred2.resolve(x);
       }
-    };
-
-    if (isResolved) {
-      resolver(this.value);
-      return deferred2.promise;
-    }
-
-    if (this._state === 0) {
-      if (!this.hasOwnProperty('_doneCallbacks')) {
-        this._doneCallbacks = [];
-      }
-
-      this._doneCallbacks.push({
-        fn: resolver,
-        ctx: null
-      });
-    }
+    });
   } else if (isResolved) {
     deferred2.resolve(this.value);
     return deferred2.promise;
@@ -234,7 +212,7 @@ Promise.prototype.then = function (onResolve, onReject, argCtx) {
 
   // Если передан onReject, создаем вреппер rejected
   if (typeof onReject === func) {
-    var rejecter = function (reason) {
+    this.fail(function (reason) {
       var x;
       var error;
 
@@ -253,9 +231,7 @@ Promise.prototype.then = function (onResolve, onReject, argCtx) {
         //          Promise Resolution Procedure [[Resolve]](promise2, x).
         deferred2.resolve(x);
       }
-    };
-
-    this.fail(rejecter);
+    });
   } else if (isRejected) {
     deferred2.reject(this.value);
   }
@@ -270,40 +246,20 @@ Promise.prototype.then = function (onResolve, onReject, argCtx) {
  */
 
 Promise.prototype.error = function (onError, ctx) {
-  var state = this._state;
   var promise = this;
 
-  if (ctx === void 0) {
-    ctx = promise;
-  }
-
-  // Ignore resolved promises
-  if (state === 2) {
-    return promise;
-  }
-
-  // Rejected promise
-  if (state === 3) {
-    if (promise.value instanceof Error) {
-      onError.call(ctx, this.value);
-    }
-    return this;
-  }
-
-  if (!promise.hasOwnProperty('_failCallbacks')) {
-    promise._failCallbacks = [];
-  }
-
-  var onReject = function () {
+  this.fail(function () {
     if (promise.value instanceof Error) {
       onError.call(ctx, promise.value);
     }
-  };
-
-  promise._failCallbacks.push({
-    fn: onReject,
-    ctx: ctx
-  });
+  }, ctx);
 
   return this;
 };
+
+function pushCallback (promise, key, obj) {
+  if (!promise.hasOwnProperty(key)) {
+    promise[key] = [];
+  }
+  promise[key].push(obj);
+}

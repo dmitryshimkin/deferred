@@ -23,7 +23,7 @@ Deferred.prototype.reject = function (reason) {
   this.promise._state = 3;
   this.promise.value = reason;
 
-  runCallbacks(this.promise._failCallbacks, reason);
+  runCallbacks(this.promise[0] /** fail callbacks */, reason);
   cleanUp(this.promise);
 
   return this;
@@ -76,15 +76,15 @@ Deferred.prototype.resolve = function (x) {
   promise._state = 2;
   promise.value = x;
 
-  runCallbacks(promise._doneCallbacks, promise.value);
+  runCallbacks(promise[1], promise.value);
   cleanUp(promise);
 
   return this;
 };
 
 function cleanUp (promise) {
-  promise._doneCallbacks = null;
-  promise._failCallbacks = null;
+  promise[0] = null;
+  promise[1] = null;
 }
 
 function runCallbacks (callbacks, value) {
