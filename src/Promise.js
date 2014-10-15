@@ -257,6 +257,10 @@ Promise.prototype.error = function (onError, ctx) {
   return this;
 };
 
+Promise.prototype.valueOf = function () {
+  return this;
+};
+
 function pushCallback (promise, key, obj) {
   if (!promise.hasOwnProperty(key)) {
     promise[key] = [];

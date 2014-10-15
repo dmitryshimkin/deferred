@@ -1518,6 +1518,13 @@ describe('Deferred', function () {
     });
   });
 
+  describe('valueOf', function () {
+    it('should return promise itself', function () {
+      var d = new Deferred();
+      expect(d.promise.valueOf()).toBe(d.promise);
+    });
+  });
+
   // 2.3.2.1   If x is pending, promise must remain pending until x is fulfilled or rejected.
   // todo restrict double resolve when first resolve was using pending promise and second with value
   // todo its not obvious what to do if promise is resolved with another promise
