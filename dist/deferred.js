@@ -381,9 +381,33 @@
   };
   
   /**
+   * TBD
+   * @param value {*}
+   * @returns {Promise}
+   */
+  
+  Deferred.resolve = function (value) {
+    var dfd = new Deferred();
+    dfd.resolve(value);
+    return dfd.promise;
+  };
+  
+  /**
+   * TBD
+   * @param reason {*}
+   * @returns {Promise}
+   */
+  
+  Deferred.reject = function (reason) {
+    var dfd = new Deferred();
+    dfd.reject(reason);
+    return dfd.promise;
+  };
+  
+  /**
    * Returns promise that will be resolved when all passed promises or deferreds are resolved
    * Promise will be rejected if at least on of passed promises or deferreds is rejected
-   * @param promises {Iterable}
+   * @param promises {Array}
    * @returns {Promise}
    */
   
