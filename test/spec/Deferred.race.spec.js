@@ -1,4 +1,4 @@
-describe('Promise.race', function () {
+describe('Deferred.race', function () {
   'use strict';
 
   describe('race', function () {

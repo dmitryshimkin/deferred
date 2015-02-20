@@ -1,4 +1,4 @@
-describe('Promise.all', function () {
+describe('Deferred.all', function () {
   'use strict';
 
   describe('all', function () {

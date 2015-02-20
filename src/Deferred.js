@@ -110,3 +110,7 @@ Deferred.isPromise = function (arg) {
 Deferred.isDeferred = function (arg) {
   return arg instanceof Deferred;
 };
+
+Deferred.isThenable = function (arg) {
+  return arg !== null && typeof arg === 'object' && typeof arg.then === 'function';
+};
