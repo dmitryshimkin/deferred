@@ -239,24 +239,6 @@ Promise.prototype.then = function (onResolve, onReject, argCtx) {
   return deferred2.promise;
 };
 
-/**
- * TBD
- * @param onError {Function}
- * @param [ctx] {Object|Null}
- */
-
-Promise.prototype.error = function (onError, ctx) {
-  var promise = this;
-
-  this.fail(function () {
-    if (promise.value instanceof Error) {
-      onError.call(ctx, promise.value);
-    }
-  }, ctx);
-
-  return this;
-};
-
 Promise.prototype.valueOf = function () {
   return this;
 };
