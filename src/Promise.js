@@ -239,6 +239,22 @@ Promise.prototype.then = function (onResolve, onReject, argCtx) {
   return deferred2.promise;
 };
 
+/**
+ * Alias for Promise#then(null, fn)
+ * @param onReject {Function}
+ * @param [ctx] {Object}
+ * @returns {Promise}
+ */
+
+Promise.prototype['catch'] = function (onReject, ctx) {
+  return this.then(null, onReject, ctx);
+};
+
+/**
+ * TBD
+ * @public
+ */
+
 Promise.prototype.valueOf = function () {
   return this;
 };

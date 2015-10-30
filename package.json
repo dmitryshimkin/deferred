@@ -1,7 +1,7 @@
 {
   "name": "Deferred",
   "preferGlobal": false,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Dmitry Shimkin <dmitryshimkin@gmail.com>",
   "description": "Promises/A+ with error handling and context support",
   "repository": {
