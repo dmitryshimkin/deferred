@@ -1,3 +1,14 @@
+'use strict';
+
+// 2.3.2.1   If x is pending, promise must remain pending until x is fulfilled or rejected.
+// todo restrict double resolve when first resolve was using pending promise and second with value
+// todo its not obvious what to do if promise is resolved with another promise
+
+// todo pass deferreds to done/fail/always
+// todo test promise status inside handlers
+
+var Deferred = require('../../dist/deferred');
+
 describe('Deferred', function () {
   'use strict';
 
@@ -5,13 +16,14 @@ describe('Deferred', function () {
     foo: 'bar'
   };
 
-  //
-  // Constructor
-  //
+  /**
+   * Constructor
+   * --------------------------------------------------------------------------
+   */
 
   describe('Constructor', function () {
     it('should exist', function () {
-      expect(window.Deferred).toBeDefined();
+      expect(typeof Deferred).toBe('function');
     });
 
     it('should return instance of Deferred', function () {
@@ -20,9 +32,10 @@ describe('Deferred', function () {
     });
   });
 
-  //
-  // Done
-  //
+  /**
+   * Done
+   * --------------------------------------------------------------------------
+   */
 
   describe('done', function () {
     describe('function as argument', function () {
@@ -216,9 +229,10 @@ describe('Deferred', function () {
     });
   });
 
-  //
-  // Fail
-  //
+  /**
+   * Fail
+   * --------------------------------------------------------------------------
+   */
 
   describe('fail', function () {
     describe('function as argument', function () {
@@ -412,9 +426,10 @@ describe('Deferred', function () {
     });
   });
 
-  //
-  // Always
-  //
+  /**
+   * Always
+   * --------------------------------------------------------------------------
+   */
 
   describe('always', function () {
     describe('function as argument', function () {
@@ -1003,6 +1018,31 @@ describe('Deferred', function () {
     });
   });
 
+  describe('catch', function () {
+    it('should call `then` method with null as a first parameter and given handler as a second parameter', function () {
+      var d = new Deferred();
+      var promise2 = {};
+      var onReject = function () {};
+
+      spyOn(d.promise, 'then').and.returnValue(promise2);
+
+      expect(d.promise.catch(onReject)).toBe(promise2);
+      expect(d.promise.then).toHaveBeenCalledWith(null, onReject, undefined);
+    });
+
+    it('should support context for the handler', function () {
+      var d = new Deferred();
+      var promise2 = {};
+      var onReject = function () {};
+      var ctx = {};
+
+      spyOn(d.promise, 'then');
+
+      d.promise.catch(onReject, ctx);
+      expect(d.promise.then).toHaveBeenCalledWith(null, onReject, ctx);
+    });
+  });
+
   /**
    * The Promise Resolution Procedure
    * http://promises-aplus.github.io/promises-spec/
@@ -1242,9 +1282,10 @@ describe('Deferred', function () {
     });
   });
 
-  //
-  // Reject
-  //
+  /**
+   * Reject
+   * --------------------------------------------------------------------------
+   */
 
   describe('reject', function () {
     it('should translate promise to rejected state', function () {
@@ -1306,9 +1347,10 @@ describe('Deferred', function () {
     });
   });
 
-  //
-  // API
-  //
+  /**
+   * API
+   * --------------------------------------------------------------------------
+   */
 
   describe('API', function () {
     it('isPending', function () {
@@ -1358,11 +1400,4 @@ describe('Deferred', function () {
       expect(d.promise.valueOf()).toBe(d.promise);
     });
   });
-
-  // 2.3.2.1   If x is pending, promise must remain pending until x is fulfilled or rejected.
-  // todo restrict double resolve when first resolve was using pending promise and second with value
-  // todo its not obvious what to do if promise is resolved with another promise
-
-  // todo pass deferreds to done/fail/always
-  // todo test promise status inside handlers
 });

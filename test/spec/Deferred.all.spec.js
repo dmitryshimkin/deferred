@@ -1,6 +1,10 @@
-describe('Deferred.all', function () {
-  'use strict';
+'use strict';
 
+// todo test no arguments
+
+var Deferred = require('../../dist/deferred');
+
+describe('Deferred.all', function () {
   describe('all', function () {
     it('should exist', function () {
       expect(Deferred.all).toBeDefined();
@@ -131,5 +135,3 @@ describe('Deferred.all', function () {
     });
   });
 });
-
-// todo test no arguments

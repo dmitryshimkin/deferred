@@ -1,6 +1,8 @@
-describe('Deferred.race', function () {
-  'use strict';
+'use strict';
 
+var Deferred = require('../../dist/deferred');
+
+describe('Deferred.race', function () {
   describe('race', function () {
     it('should exist', function () {
       expect(Deferred.race).toBeDefined();

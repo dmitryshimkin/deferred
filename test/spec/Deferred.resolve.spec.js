@@ -1,6 +1,8 @@
-describe('Deferred.resolve', function () {
-  'use strict';
+'use strict';
 
+var Deferred = require('../../dist/deferred');
+
+describe('Deferred.resolve', function () {
   describe('with value', function () {
     it('should return a promise resolved with given value', function (done) {
       var obj = {};

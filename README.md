@@ -1,6 +1,4 @@
-deferred
+Deferred
 ========
 
-The fastest Promises/A+ implementation with support of context for all handlers. 
-
-See /test/performance/ 
+The fastest Promises/A+ with synchronous calls and context support.
