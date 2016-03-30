@@ -2,6 +2,7 @@ node_modules/
 coverage/
 test/report
 
+npm-debug.log
 .DS_store
 .grunt
 .idea
