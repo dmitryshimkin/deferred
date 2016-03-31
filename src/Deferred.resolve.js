@@ -2,29 +2,29 @@
 
 /**
  * TBD
- * @param [arg] {*}
+ * @param [value] {*}
  * @returns {Promise}
  */
 
-Deferred.resolve = function (arg) {
-  if (Deferred.isPromise(arg)) {
-    return arg;
+Deferred.resolve = function (value) {
+  if (Deferred.isPromise(value)) {
+    return value;
   }
 
-  if (Deferred.isDeferred(arg)) {
-    return arg.promise;
+  if (Deferred.isDeferred(value)) {
+    return value.promise;
   }
 
   var dfd = new Deferred();
 
-  if (Deferred.isThenable(arg)) {
-    arg.then(function (value) {
-      dfd.resolve(value);
+  if (Deferred.isThenable(value)) {
+    value.then(function (val) {
+      dfd.resolve(val);
     }, function (reason) {
       dfd.reject(reason);
     });
   } else {
-    dfd.resolve(arg);
+    dfd.resolve(value);
   }
 
   return dfd.promise;
