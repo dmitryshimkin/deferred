@@ -5,16 +5,18 @@
  * @class
  */
 
-var Deferred = function () {
+function Deferred () {
   this.promise = new Promise();
-};
+}
 
 /**
- * Translates promise into rejected state
+ * Translates the promise into rejected state.
+ * @param {*} reason
+ * @returns {Deferred}
  * @public
  */
 
-Deferred.prototype.reject = function (reason) {
+Deferred.prototype.reject = function reject (reason) {
   // ignore non-pending promises
   if (this.promise._state !== 0) {
     return this;
@@ -30,11 +32,13 @@ Deferred.prototype.reject = function (reason) {
 };
 
 /**
- * Translates promise into resolved state
+ * Translates the promise into resolved state.
+ * @param {*} x
+ * @returns {Deferred}
  * @public
  */
 
-Deferred.prototype.resolve = function (x) {
+Deferred.prototype.resolve = function resolve (x) {
   var dfd = this;
   var promise = this.promise;
 
@@ -58,12 +62,12 @@ Deferred.prototype.resolve = function (x) {
     // 2.3.2.2. if/when x is fulfilled, fulfill promise with the same value.
     // 2.3.2.3. if/When x is rejected, reject promise with the same reason.
     x
-      .done(function (xValue) {
+      .done(function onValueResolve (xValue) {
         // unlock promise before resolving
         promise._state = 0;
         dfd.resolve(xValue);
       })
-      .fail(function (xReason) {
+      .fail(function onValueReject (xReason) {
         // unlock promise before resolving
         promise._state = 0;
         dfd.reject(xReason);
@@ -98,19 +102,36 @@ function runCallbacks (callbacks, value) {
 }
 
 /**
- * Checks whether
- * @param arg
- * @returns {boolean}
+ * Returns `true` if the given argument is an instance of Deferred, `false` if it is not.
+ * @param {*} arg
+ * @returns {Boolean}
+ * @public
  */
 
-Deferred.isPromise = function (arg) {
+Deferred.isPromise = function isPromise (arg) {
   return arg instanceof Promise;
 };
 
-Deferred.isDeferred = function (arg) {
+/**
+ * Returns true if the given argument is an instance of Promise, produced by Deferred,
+ * false if it is not.
+ * @param {*} arg
+ * @returns {Boolean}
+ * @public
+ */
+
+Deferred.isDeferred = function isDeferred (arg) {
   return arg instanceof Deferred;
 };
 
-Deferred.isThenable = function (arg) {
+/**
+ * Returns true if the given argument is a thenable object (has `then` method),
+ * false if it is not.
+ * @param {*} arg
+ * @returns {Boolean}
+ * @public
+ */
+
+Deferred.isThenable = function isThenable (arg) {
   return arg !== null && typeof arg === 'object' && typeof arg.then === 'function';
 };

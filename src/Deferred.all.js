@@ -1,13 +1,25 @@
 'use strict';
 
+function indexOf (promises, promise) {
+  var i = promises.length;
+  while (i--) {
+    if (promises[i] === promise) {
+      return i;
+    }
+  }
+  /* istanbul ignore next */
+  return -1;
+}
+
 /**
- * Returns promise that will be resolved when all passed promises or deferreds are resolved
- * Promise will be rejected if at least on of passed promises or deferreds is rejected
- * @param promises {Array}
+ * Returns a promise that resolves when all of the promises in the given array have resolved,
+ * or rejects with the reason of the first passed promise that rejects.
+ * @param   {Array} promises
  * @returns {Promise}
+ * @public
  */
 
-Deferred.all = function (promises) {
+Deferred.all = function all (promises) {
   var dfd = new Deferred();
 
   if (!promises) {
@@ -36,14 +48,14 @@ Deferred.all = function (promises) {
     pendingCount++;
 
     // Once argument is rejected reject promise with the same reason
-    promises[i].fail(function (reason) {
+    promises[i].fail(function onPromiseFail (reason) {
       dfd.reject(reason);
     });
 
     // When argument is resolved add its value to array of values
     // and decrease number of remaining pending arguments
-    promises[i].done(function (value) {
-      var index = Deferred.all.indexOf(promises, this);
+    promises[i].done(function onPromiseDone (value) {
+      var index = indexOf(promises, this);
       values[index] = value;
       pendingCount--;
 
@@ -60,15 +72,4 @@ Deferred.all = function (promises) {
   }
 
   return dfd.promise;
-};
-
-Deferred.all.indexOf = function (promises, promise) {
-  var i = promises.length;
-  while (i--) {
-    if (promises[i] === promise) {
-      return i;
-    }
-  }
-  /* istanbul ignore next */
-  return -1;
 };

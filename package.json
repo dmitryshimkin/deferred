@@ -18,7 +18,7 @@
     "coverage": "istanbul cover test/index.js",
     "minify": "gulp minify",
     "report": "gulp report",
-    "test": "node test/index.js"
+    "test": "gulp build && node test/index.js"
   },
   "devDependencies": {
     "gulp": "^3.9.1",

@@ -1,12 +1,14 @@
 'use strict';
 
 /**
- * TBD
- * @param promises {Iterable}
+ * Returns a promise that resolves or rejects as soon as one of the promises
+ * in the given array resolves or rejects, with the value or reason from that promise.
+ * @param   {Array} promises
  * @returns {Promise}
+ * @public
  */
 
-Deferred.race = function (promises) {
+Deferred.race = function race (promises) {
   var dfd = new Deferred();
 
   if (!promises) {
@@ -35,14 +37,14 @@ Deferred.race = function (promises) {
     pendingCount++;
 
     // Once argument is resolved reject promise with the same reason
-    promises[i].done(function (value) {
+    promises[i].done(function onPromiseDone (value) {
       dfd.resolve(value);
     });
 
     // When argument is rejected add its reason to array of reasons
     // and decrease number of remaining pending arguments
-    promises[i].fail(function (reason) {
-      var index = Deferred.all.indexOf(promises, this);
+    promises[i].fail(function onPromiseFail (reason) {
+      var index = indexOf(promises, this);
       reasons[index] = reason;
       pendingCount--;
 

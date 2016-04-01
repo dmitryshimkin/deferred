@@ -28,10 +28,10 @@
    * @class
    */
 
-  var Promise = function () {
+  function Promise () {
     this.value = void 0;
     this._state = 0;
-  };
+  }
 
   /**
    * @TBD
@@ -42,13 +42,13 @@
    * @public
    */
 
-  Promise.prototype.always = function (arg, ctx) {
+  Promise.prototype.always = function always (arg, ctx) {
     if (arg instanceof Deferred) {
       this
-        .done(function (value) {
+        .done(function onArgDone (value) {
           arg.resolve(value);
         })
-        .fail(function (reason) {
+        .fail(function onArgReject (reason) {
           arg.reject(reason);
         });
     } else {
@@ -69,7 +69,7 @@
    * @public
    */
 
-  Promise.prototype.done = function (arg, ctx) {
+  Promise.prototype.done = function done (arg, ctx) {
     var state = this._state;
     var isDeferred = arg instanceof Deferred;
 
@@ -88,7 +88,7 @@
 
     if (state === 0) {
       if (isDeferred) {
-        this.done(function (value) {
+        this.done(function onArgDone (value) {
           arg.resolve.call(arg, value);
         });
       } else {
@@ -111,7 +111,7 @@
    * @public
    */
 
-  Promise.prototype.fail = function (arg, ctx) {
+  Promise.prototype.fail = function fail (arg, ctx) {
     var state = this._state;
     var isDeferred = arg instanceof Deferred;
 
@@ -130,7 +130,7 @@
 
     if (state === 0) {
       if (isDeferred) {
-        this.fail(function (reason) {
+        this.fail(function onArgFail (reason) {
           arg.reject(reason);
         });
       } else {
@@ -150,7 +150,7 @@
    * @public
    */
 
-  Promise.prototype.isPending = function () {
+  Promise.prototype.isPending = function isPending () {
     return this._state <= 1;
   };
 
@@ -160,7 +160,7 @@
    * @public
    */
 
-  Promise.prototype.isRejected = function () {
+  Promise.prototype.isRejected = function isRejected () {
     return this._state === 3;
   };
 
@@ -170,7 +170,7 @@
    * @public
    */
 
-  Promise.prototype.isResolved = function () {
+  Promise.prototype.isResolved = function isResolved () {
     return this._state === 2;
   };
 
@@ -182,7 +182,7 @@
    * @public
    */
 
-  Promise.prototype.then = function (onResolve, onReject, argCtx) {
+  Promise.prototype.then = function then (onResolve, onReject, argCtx) {
     var lastArg = arguments[arguments.length - 1];
     var isResolved = this._state === 2;
     var isRejected = this._state === 3;
@@ -201,7 +201,7 @@
     }
 
     if (typeof onResolve === func) {
-      this.done(function (value) {
+      this.done(function onDone (value) {
         var x;
         var error;
 
@@ -228,7 +228,7 @@
 
     // Если передан onReject, создаем вреппер rejected
     if (typeof onReject === func) {
-      this.fail(function (reason) {
+      this.fail(function onFail (reason) {
         var x;
         var error;
 
@@ -262,7 +262,7 @@
    * @returns {Promise}
    */
 
-  Promise.prototype['catch'] = function (onReject, ctx) {
+  Promise.prototype['catch'] = function _catch (onReject, ctx) {
     return this.then(null, onReject, ctx);
   };
 
@@ -271,7 +271,7 @@
    * @public
    */
 
-  Promise.prototype.valueOf = function () {
+  Promise.prototype.valueOf = function valueOf () {
     return this;
   };
 
@@ -289,16 +289,18 @@
    * @class
    */
 
-  var Deferred = function () {
+  function Deferred () {
     this.promise = new Promise();
-  };
+  }
 
   /**
-   * Translates promise into rejected state
+   * Translates the promise into rejected state.
+   * @param {*} reason
+   * @returns {Deferred}
    * @public
    */
 
-  Deferred.prototype.reject = function (reason) {
+  Deferred.prototype.reject = function reject (reason) {
     // ignore non-pending promises
     if (this.promise._state !== 0) {
       return this;
@@ -314,11 +316,13 @@
   };
 
   /**
-   * Translates promise into resolved state
+   * Translates the promise into resolved state.
+   * @param {*} x
+   * @returns {Deferred}
    * @public
    */
 
-  Deferred.prototype.resolve = function (x) {
+  Deferred.prototype.resolve = function resolve (x) {
     var dfd = this;
     var promise = this.promise;
 
@@ -342,12 +346,12 @@
       // 2.3.2.2. if/when x is fulfilled, fulfill promise with the same value.
       // 2.3.2.3. if/When x is rejected, reject promise with the same reason.
       x
-        .done(function (xValue) {
+        .done(function onValueResolve (xValue) {
           // unlock promise before resolving
           promise._state = 0;
           dfd.resolve(xValue);
         })
-        .fail(function (xReason) {
+        .fail(function onValueReject (xReason) {
           // unlock promise before resolving
           promise._state = 0;
           dfd.reject(xReason);
@@ -382,33 +386,62 @@
   }
 
   /**
-   * Checks whether
-   * @param arg
-   * @returns {boolean}
+   * Returns `true` if the given argument is an instance of Deferred, `false` if it is not.
+   * @param {*} arg
+   * @returns {Boolean}
+   * @public
    */
 
-  Deferred.isPromise = function (arg) {
+  Deferred.isPromise = function isPromise (arg) {
     return arg instanceof Promise;
   };
 
-  Deferred.isDeferred = function (arg) {
+  /**
+   * Returns true if the given argument is an instance of Promise, produced by Deferred,
+   * false if it is not.
+   * @param {*} arg
+   * @returns {Boolean}
+   * @public
+   */
+
+  Deferred.isDeferred = function isDeferred (arg) {
     return arg instanceof Deferred;
   };
 
-  Deferred.isThenable = function (arg) {
+  /**
+   * Returns true if the given argument is a thenable object (has `then` method),
+   * false if it is not.
+   * @param {*} arg
+   * @returns {Boolean}
+   * @public
+   */
+
+  Deferred.isThenable = function isThenable (arg) {
     return arg !== null && typeof arg === 'object' && typeof arg.then === 'function';
   };
 
   'use strict';
 
+  function indexOf (promises, promise) {
+    var i = promises.length;
+    while (i--) {
+      if (promises[i] === promise) {
+        return i;
+      }
+    }
+    /* istanbul ignore next */
+    return -1;
+  }
+
   /**
-   * Returns promise that will be resolved when all passed promises or deferreds are resolved
-   * Promise will be rejected if at least on of passed promises or deferreds is rejected
-   * @param promises {Array}
+   * Returns a promise that resolves when all of the promises in the given array have resolved,
+   * or rejects with the reason of the first passed promise that rejects.
+   * @param   {Array} promises
    * @returns {Promise}
+   * @public
    */
 
-  Deferred.all = function (promises) {
+  Deferred.all = function all (promises) {
     var dfd = new Deferred();
 
     if (!promises) {
@@ -437,14 +470,14 @@
       pendingCount++;
 
       // Once argument is rejected reject promise with the same reason
-      promises[i].fail(function (reason) {
+      promises[i].fail(function onPromiseFail (reason) {
         dfd.reject(reason);
       });
 
       // When argument is resolved add its value to array of values
       // and decrease number of remaining pending arguments
-      promises[i].done(function (value) {
-        var index = Deferred.all.indexOf(promises, this);
+      promises[i].done(function onPromiseDone (value) {
+        var index = indexOf(promises, this);
         values[index] = value;
         pendingCount--;
 
@@ -463,26 +496,17 @@
     return dfd.promise;
   };
 
-  Deferred.all.indexOf = function (promises, promise) {
-    var i = promises.length;
-    while (i--) {
-      if (promises[i] === promise) {
-        return i;
-      }
-    }
-    /* istanbul ignore next */
-    return -1;
-  };
-
   'use strict';
 
   /**
-   * TBD
-   * @param promises {Iterable}
+   * Returns a promise that resolves or rejects as soon as one of the promises
+   * in the given array resolves or rejects, with the value or reason from that promise.
+   * @param   {Array} promises
    * @returns {Promise}
+   * @public
    */
 
-  Deferred.race = function (promises) {
+  Deferred.race = function race (promises) {
     var dfd = new Deferred();
 
     if (!promises) {
@@ -511,14 +535,14 @@
       pendingCount++;
 
       // Once argument is resolved reject promise with the same reason
-      promises[i].done(function (value) {
+      promises[i].done(function onPromiseDone (value) {
         dfd.resolve(value);
       });
 
       // When argument is rejected add its reason to array of reasons
       // and decrease number of remaining pending arguments
-      promises[i].fail(function (reason) {
-        var index = Deferred.all.indexOf(promises, this);
+      promises[i].fail(function onPromiseFail (reason) {
+        var index = indexOf(promises, this);
         reasons[index] = reason;
         pendingCount--;
 
@@ -540,12 +564,13 @@
   'use strict';
 
   /**
-   * TBD
-   * @param reason {*}
+   * Returns a Promise object that is rejected with the given reason.
+   * @param   {*} reason
    * @returns {Promise}
+   * @public
    */
 
-  Deferred.reject = function (reason) {
+  Deferred.reject = function reject (reason) {
     var dfd = new Deferred();
     dfd.reject(reason);
     return dfd.promise;
@@ -554,12 +579,13 @@
   'use strict';
 
   /**
-   * TBD
-   * @param [value] {*}
+   * Returns a Promise object that is resolved with the given value.
+   * @param   {*} [value]
    * @returns {Promise}
+   * @public
    */
 
-  Deferred.resolve = function (value) {
+  Deferred.resolve = function resolve (value) {
     if (Deferred.isPromise(value)) {
       return value;
     }
@@ -571,9 +597,9 @@
     var dfd = new Deferred();
 
     if (Deferred.isThenable(value)) {
-      value.then(function (val) {
+      value.then(function onValueResolve (val) {
         dfd.resolve(val);
-      }, function (reason) {
+      }, function onValueReject (reason) {
         dfd.reject(reason);
       });
     } else {

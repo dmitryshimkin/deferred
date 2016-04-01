@@ -1,12 +1,13 @@
 'use strict';
 
 /**
- * TBD
- * @param [value] {*}
+ * Returns a Promise object that is resolved with the given value.
+ * @param   {*} [value]
  * @returns {Promise}
+ * @public
  */
 
-Deferred.resolve = function (value) {
+Deferred.resolve = function resolve (value) {
   if (Deferred.isPromise(value)) {
     return value;
   }
@@ -18,9 +19,9 @@ Deferred.resolve = function (value) {
   var dfd = new Deferred();
 
   if (Deferred.isThenable(value)) {
-    value.then(function (val) {
+    value.then(function onValueResolve (val) {
       dfd.resolve(val);
-    }, function (reason) {
+    }, function onValueReject (reason) {
       dfd.reject(reason);
     });
   } else {

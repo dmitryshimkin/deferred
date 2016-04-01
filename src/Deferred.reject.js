@@ -1,12 +1,13 @@
 'use strict';
 
 /**
- * TBD
- * @param reason {*}
+ * Returns a Promise object that is rejected with the given reason.
+ * @param   {*} reason
  * @returns {Promise}
+ * @public
  */
 
-Deferred.reject = function (reason) {
+Deferred.reject = function reject (reason) {
   var dfd = new Deferred();
   dfd.reject(reason);
   return dfd.promise;

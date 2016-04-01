@@ -12,10 +12,10 @@
  * @class
  */
 
-var Promise = function () {
+function Promise () {
   this.value = void 0;
   this._state = 0;
-};
+}
 
 /**
  * @TBD
@@ -26,13 +26,13 @@ var Promise = function () {
  * @public
  */
 
-Promise.prototype.always = function (arg, ctx) {
+Promise.prototype.always = function always (arg, ctx) {
   if (arg instanceof Deferred) {
     this
-      .done(function (value) {
+      .done(function onArgDone (value) {
         arg.resolve(value);
       })
-      .fail(function (reason) {
+      .fail(function onArgReject (reason) {
         arg.reject(reason);
       });
   } else {
@@ -53,7 +53,7 @@ Promise.prototype.always = function (arg, ctx) {
  * @public
  */
 
-Promise.prototype.done = function (arg, ctx) {
+Promise.prototype.done = function done (arg, ctx) {
   var state = this._state;
   var isDeferred = arg instanceof Deferred;
 
@@ -72,7 +72,7 @@ Promise.prototype.done = function (arg, ctx) {
 
   if (state === 0) {
     if (isDeferred) {
-      this.done(function (value) {
+      this.done(function onArgDone (value) {
         arg.resolve.call(arg, value);
       });
     } else {
@@ -95,7 +95,7 @@ Promise.prototype.done = function (arg, ctx) {
  * @public
  */
 
-Promise.prototype.fail = function (arg, ctx) {
+Promise.prototype.fail = function fail (arg, ctx) {
   var state = this._state;
   var isDeferred = arg instanceof Deferred;
 
@@ -114,7 +114,7 @@ Promise.prototype.fail = function (arg, ctx) {
 
   if (state === 0) {
     if (isDeferred) {
-      this.fail(function (reason) {
+      this.fail(function onArgFail (reason) {
         arg.reject(reason);
       });
     } else {
@@ -134,7 +134,7 @@ Promise.prototype.fail = function (arg, ctx) {
  * @public
  */
 
-Promise.prototype.isPending = function () {
+Promise.prototype.isPending = function isPending () {
   return this._state <= 1;
 };
 
@@ -144,7 +144,7 @@ Promise.prototype.isPending = function () {
  * @public
  */
 
-Promise.prototype.isRejected = function () {
+Promise.prototype.isRejected = function isRejected () {
   return this._state === 3;
 };
 
@@ -154,7 +154,7 @@ Promise.prototype.isRejected = function () {
  * @public
  */
 
-Promise.prototype.isResolved = function () {
+Promise.prototype.isResolved = function isResolved () {
   return this._state === 2;
 };
 
@@ -166,7 +166,7 @@ Promise.prototype.isResolved = function () {
  * @public
  */
 
-Promise.prototype.then = function (onResolve, onReject, argCtx) {
+Promise.prototype.then = function then (onResolve, onReject, argCtx) {
   var lastArg = arguments[arguments.length - 1];
   var isResolved = this._state === 2;
   var isRejected = this._state === 3;
@@ -185,7 +185,7 @@ Promise.prototype.then = function (onResolve, onReject, argCtx) {
   }
 
   if (typeof onResolve === func) {
-    this.done(function (value) {
+    this.done(function onDone (value) {
       var x;
       var error;
 
@@ -212,7 +212,7 @@ Promise.prototype.then = function (onResolve, onReject, argCtx) {
 
   // Если передан onReject, создаем вреппер rejected
   if (typeof onReject === func) {
-    this.fail(function (reason) {
+    this.fail(function onFail (reason) {
       var x;
       var error;
 
@@ -246,7 +246,7 @@ Promise.prototype.then = function (onResolve, onReject, argCtx) {
  * @returns {Promise}
  */
 
-Promise.prototype['catch'] = function (onReject, ctx) {
+Promise.prototype['catch'] = function _catch (onReject, ctx) {
   return this.then(null, onReject, ctx);
 };
 
@@ -255,7 +255,7 @@ Promise.prototype['catch'] = function (onReject, ctx) {
  * @public
  */
 
-Promise.prototype.valueOf = function () {
+Promise.prototype.valueOf = function valueOf () {
   return this;
 };
 
