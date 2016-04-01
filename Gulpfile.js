@@ -7,7 +7,23 @@ var indent = require('gulp-indent');
 var rename = require('gulp-rename');
 var sizereport = require('gulp-sizereport');
 var uglify = require('gulp-uglify');
-var umd = require('gulp-umd');
+var wrap = require('gulp-wrap');
+
+var umd = [
+  ';(function(root, factory) {',
+  '  /* istanbul ignore next */',
+  '  if (typeof define === \'function\' && define.amd) {',
+  '    define([], factory);',
+  '  } else if (typeof exports === \'object\') {',
+  '    module.exports = factory();',
+  '  } else {',
+  '    root.Deferred = factory();',
+  '  }',
+  '}(this, function() {',
+  '<%= contents %>',
+  '  return Deferred;',
+  '}));'
+].join('\n');
 
 var pkg = require('./package.json');
 
@@ -42,7 +58,7 @@ gulp.task('build', function () {
   return gulp.src(JS_FILES)
     .pipe(concat('deferred.js'))
     .pipe(indent())
-    .pipe(umd())
+    .pipe(wrap(umd))
     .pipe(header(getBanner(), pkg))
     .pipe(gulp.dest('dist/'));
 });

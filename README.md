@@ -1,6 +1,7 @@
 # Deferred
 
-The fastest Promises/A+ implementation with synchronous calls and context support.
+The [fastest](#performance) Promises/A+ implementation
+with synchronous calls and context support.
 
 Based on Deferred pattern.
 
@@ -9,9 +10,9 @@ Based on Deferred pattern.
 - Cross-browser
 - Sync calls when it's possible
 - Support context for the handlers
-- Small size: 1.25 KB (min and gzipped)
+- Small size: 1.3 KB (min and gzipped)
 - No dependencies
-- High performance
+- Performance
 
 
 ## Browser support
@@ -19,12 +20,43 @@ Based on Deferred pattern.
 Any ES3 compliant browser.
 
 
+## Table of content
+
+- [Install](#install)
+- [Usage](#usage)
+- [API](#api)
+  - [Deferred](#deferred)
+    - [Create instance](#deferred-instance)
+    - [Static methods](#deferred-static)
+      - [.resolve()](#deferred-resolve)
+      - [.reject()](#deferred-reject)
+      - [.all()](#deferred-all)
+      - [.race()](#deferred-race)
+      - [.isDeferred()](#deferred-isdeferred)
+      - [.isPromise()](#deferred-ispromise)
+      - [.isThanable()](#deferred-isthenable)
+    - [Instance methods](#deferred-instance-methods)
+      - [.resolve()](#deferred-instance-resolve)
+      - [.reject()](#deferred-instance-resolve)
+    - [Instance properties](#deferred-instance-props)
+      - [.promise](#deferred-promise)
+  - [Promise](#promise-instance)
+    - [.then()](#promise-instance-then)
+    - [.catch()](#promise-instance-catch)
+    - [.done()](#promise-instance-done)
+    - [.fail()](#promise-instance-fail)
+    - [.always()](#promise-instance-always)
+- [Performance](#performance)
+- [License](#license)
+
+<a name="install">
 ## Install
 
 ```
 npm install deferred2
 ```
 
+<a name="usage">
 ## Usage
 
 As a script tag:
@@ -33,7 +65,7 @@ As a script tag:
 <script src="path/to/deferred.js"></script>
 <script>
   // window.Deferred is available here
-</script>  
+</script>
 ```
 
 As a CommonJS module:
@@ -57,16 +89,18 @@ As an ES2015 module:
 ```javascript
 import {Deferred} from 'deferred2'
 
-// Deferred is available here 
+// Deferred is available here
 ```
 
+<a name="api">
 ## API
 
+
+<a name="deferred">
 ### Deferred
 
-#### new Deferred()
-
-Create a new deferred instance:
+A new instance of Deferred can be created by calling Deferred as a constructor
+(e.g. with a `new` keyword):
 
 ```javascript
 import {Deferred} from 'deferred2'
@@ -74,14 +108,16 @@ import {Deferred} from 'deferred2'
 const dfd = new Deferred();
 ```
 
+<a name="deferred-static">
 ### Static methods
 
+<a name="deferred-resolve">
 #### Deferred.resolve()
 
-Returns a Promise object that is resolved with the given value. 
+Returns a Promise object that is resolved with the given value.
 
-If the value is a thenable (i.e. has a then method), 
-the returned promise will "follow" that thenable, adopting its eventual state; 
+If the value is a thenable (i.e. has a then method),
+the returned promise will "follow" that thenable, adopting its eventual state;
 otherwise the returned promise will be fulfilled with the value.
 
 ##### Params
@@ -132,7 +168,7 @@ const thenable = {
   then: function (onResolve, onReject) {
     setTimeout(function () {
       onResolve(2);
-    }, 1000);  
+    }, 1000);
   }
 };
 
@@ -143,6 +179,7 @@ Deferred.resolve(thenable)
 ```
 
 
+<a name="deferred-reject">
 #### Deferred.reject()
 
 Returns a Promise object that is rejected with the given reason.
@@ -169,9 +206,10 @@ Deferred.reject('Some error')
 ```
 
 
+<a name="deferred-all">
 #### Deferred.all()
 
-Returns a promise that resolves when all of the promises in the given array have resolved, 
+Returns a promise that resolves when all of the promises in the given array have resolved,
 or rejects with the reason of the first passed promise that rejects.
 
 ##### Params
@@ -196,7 +234,7 @@ Deferred.all([dfdA.promise, dfdB.promise, dfdC.promise])
     console.log(values);
   })
   .catch(function onReject (reason) {
-    console.log(reason); 
+    console.log(reason);
   });
 
 dfdA.resolve('foo');
@@ -205,9 +243,10 @@ dfdC.resolve('xyz'); // ["foo", "bar", "xyz"]
 ```
 
 
+<a name="deferred-race">
 #### Deferred.race()
 
-Returns a promise that resolves or rejects as soon as one of the promises 
+Returns a promise that resolves or rejects as soon as one of the promises
 in the given array resolves or rejects, with the value or reason from that promise.
 
 ##### Params
@@ -232,7 +271,7 @@ Deferred.race([dfdA.promise, dfdB.promise, dfdC.promise])
     console.log(value);
   })
   .catch(function onReject (reason) {
-    console.log(reason); 
+    console.log(reason);
   });
 
 setTimeout(() => {
@@ -245,6 +284,7 @@ setTimeout(() => {
 ```
 
 
+<a name="deferred-isdeferred">
 #### Deferred.isDeferred()
 
 Returns `true` if the given argument is an instance of Deferred, `false` if it is not.
@@ -271,9 +311,10 @@ Deferred.isDeferred('foo');                    // false
 ```
 
 
+<a name="deferred-ispromise">
 #### Deferred.isPromise()
 
-Returns `true` if the given argument is an instance of Promise, produced by Deferred, 
+Returns `true` if the given argument is an instance of Promise, produced by Deferred,
 `false` if it is not.
 
 ##### Params
@@ -299,9 +340,10 @@ Deferred.isPromise((new Promise(function (resolve, reject) {}))); // false
 ```
 
 
+<a name="deferred-isthenable">
 #### Deferred.isThenable()
 
-Returns `true` if the given argument is a thenable object (has `then` method), 
+Returns `true` if the given argument is a thenable object (has `then` method),
 `false` if it is not.
 
 ##### Params
@@ -327,14 +369,16 @@ Deferred.isThenable((new Promise(function (resolve, reject) {}))); // true
 ```
 
 
+<a name="deferred-instance">
 ### Deferred instance
 
+<a name="deferred-instance-resolve">
 #### .resolve()
 
 Resolves the promise with the given value.
 
-If the value is a thenable (i.e. has a then method), 
-the promise will "follow" that thenable, adopting its eventual state; 
+If the value is a thenable (i.e. has a then method),
+the promise will "follow" that thenable, adopting its eventual state;
 otherwise the returned promise will be fulfilled with the value.
 
 ##### Params
@@ -358,7 +402,7 @@ dfd.promise
   .then(function(val) {
     console.log(val);
   });
- 
+
 dfd.resolve(2); // 2
 ```
 
@@ -413,8 +457,8 @@ dfd.promise
 const thenable = {
   then: function (onResolve, onReject) {
     setTimeout(function () {
-      onResolve('foo'); // "foo" 
-    }, 1000);  
+      onResolve('foo'); // "foo"
+    }, 1000);
   }
 };
 
@@ -422,6 +466,7 @@ dfd.resolve(thenable);
 ```
 
 
+<a name="deferred-instance-reject">
 #### .reject()
 
 Rejects the promise with the given reason.
@@ -445,11 +490,12 @@ dfd.promise
   .catch(function(reason) {
     console.log(reason);
   });
- 
+
 dfd.reject('Error'); // "Error"
 ```
 
 
+<a name="deferred-instance-promise">
 #### .promise
 
 Promise instance associated with this deferred. See [Promise instance API](#Promise).
@@ -465,14 +511,30 @@ dfd.promise.then(onResolve, onReject);
 ```
 
 
+<a name="promise-instance">
 ### Promise instance
 
+Promise cannot be instantiated directly. Instead you need to create an instance of Deferred
+and get the associated promise from it:
+
+```javascript
+import {Deferred} from 'deferred2'
+
+const dfd = new Deferred();
+const promise = dfd.promise;
+
+promise.then(/*...*/)
+```
+
+### Promise instance methods
+
+<a name="promise-instance-then">
 #### .then()
 
-Appends fulfillment and rejection handlers to the promise, 
-and returns a new promise resolving to the return value of the called handler, 
-or to its original settled value if the promise was not handled 
-(i.e. if the relevant handler onFulfilled or onRejected is undefined). 
+Appends fulfillment and rejection handlers to the promise,
+and returns a new promise resolving to the return value of the called handler,
+or to its original settled value if the promise was not handled
+(i.e. if the relevant handler onFulfilled or onRejected is undefined).
 
 See [Promises/A+](https://promisesaplus.com/) for details.
 
@@ -501,7 +563,7 @@ dfd.promise
   }, function onReject (reason) {
     console.log(reason);
   });
-  
+
 dfd.resolve('foo'); // "foo"
 ```
 
@@ -561,16 +623,16 @@ class Component {
   constructor () {
     this.load()
       .then(
-        this.onLoad, 
-        this.onFail, 
+        this.onLoad,
+        this.onFail,
         this
       )
   }
-  
+
   onLoad () {
     console.log(this instanceof Component); // true
   }
-  
+
   onFail () {
     console.log(this instanceof Component); // true
   }
@@ -587,16 +649,17 @@ class Component {
     this.load()
     .then(this.onLoad, this);
   }
-  
+
   onLoad () {
     console.log(this instanceof Component); // true
   }
 }
 ```
 
+<a name="promise-instance-catch">
 #### .catch()
 
-Adds the given handler to be called when the promise is reject. 
+Adds the given handler to be called when the promise is reject.
 
 Creates a new promise and returns it.
 
@@ -612,13 +675,25 @@ Alias for `.then(null, onReject)`.
 ##### Examples
 
 ```javascript
+import {Deferred} from 'deferred2'
+
+const dfd = new Deferred();
+
+dfd.promise
+  .catch(function onReject (reason) {
+    console.log(reason);
+  });
+
+dfd.reject('Error'); // "Error"
 ```
 
+
+<a name="promise-instance-done">
 #### .done()
 
 Adds the given handler to be called when the promise is resolved.
 
-The main difference from `.then` method is that `.done` only adds a handler and doesn't create 
+The main difference from `.then` method is that `.done` only adds a handler and doesn't create
 a new promise. Instead it returns the current promise for the chaining.
 
 ##### Params
@@ -628,7 +703,7 @@ a new promise. Instead it returns the current promise for the chaining.
 | onResolve  | `Function`  | A function, which is called when the promise is resolved. |
 | ctx        | `Object`    | The context for the handler. Optional.                    |
 
-Returns: `Promise` – the same promise for the chaining.  
+Returns: `Promise` – the same promise for the chaining.
 
 ##### Examples
 
@@ -668,11 +743,12 @@ class Component {
 ```
 
 
+<a name="promise-instance-fail">
 #### .fail()
 
 Adds the given handler to be called when the promise is rejected.
 
-The main difference from `.catch` method is that `.fail` only adds a handler and doesn't create 
+The main difference from `.catch` method is that `.fail` only adds a handler and doesn't create
 a new promise. Instead it returns the current promise for the chaining.
 
 ##### Params
@@ -722,6 +798,7 @@ class Component {
 ```
 
 
+<a name="promise-instance-always">
 #### .always()
 
 Adds the given handler to be called when the promise is either resolved or rejected.
@@ -757,10 +834,10 @@ dfdA.resolve('foo'); // "foo"
 dfdB.reject('bar');  // "bar"
 ```
 
-The `always` method is useful when you need to run some code regardless to the result of 
-the async call. 
+The `always` method is useful when you need to run some code regardless to the result of
+the async call.
 
-Consider you want to load some data and while the data is loading you want to display 
+Consider you want to load some data and while the data is loading you want to display
 a progress indicator. In this case you need to show the progress indicator before the request for the data
 and hide when the request is completed regardless to whether it was successful or not:
 
@@ -773,11 +850,46 @@ loadData()
   .always(hideSpinner);
 ```
 
-## Note
-
-Most descriptions here are taken from 
+NOTE: Most descriptions here are taken from
 [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
 
+
+<a name="performance">
+## Performance
+
+In the benchmark suite I create an instance of the Deferred.
+Then I create a new promise by calling `.then` method on the initial one.
+And then I resolve the deferred with plain value.
+
+Since native promises don't provide a deferred implementation,
+the suite for the ES6 Promise is slightly different.
+
+The code of the benchmark suite can be found in [benchmark/suite](./benchmark/suite) directory.
+
+Start benchmark:
+
+```
+npm run benchmark
+```
+
+If you get `out of memory` error, try to run the suites separately one by one by commenting out
+all the suites and keeping uncommented only one of them.
+
+On Macbook Pro 2015 with `NodeJS v4.0.0` I got the following result:
+
+| Library                                                     | Ops/sec   |
+|:------------------------------------------------------------|----------:|
+| Deferred                                                    | 5,236,382 |
+| [Bluebird](http://bluebirdjs.com/)                          |   913,827 |
+| [ES6 promise](https://github.com/stefanpenner/es6-promise)  |   724,337 |
+| [RSVP](https://github.com/tildeio/rsvp.js/)                 |   590,330 |
+| [vow](https://github.com/dfilatov/vow)                      |   365,653 |
+| [kew](https://github.com/Medium/kew)                        |   171,724 |
+| [Q](https://github.com/kriskowal/q)                         |    57,255 |
+| [jQuery](https://api.jquery.com/category/deferred-object/)  |    41,247 |
+
+
+<a name="license">
 ## License
 
 MIT

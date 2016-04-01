@@ -1,11 +1,12 @@
 /**
  * Deferred
- * Version: 1.0.1
+ * Version: 1.1.0
  * Author: Dmitry Shimkin <dmitryshimkin@gmail.com>
  * License: MIT
  * https://github.com/dmitryshimkin/deferred
  */
 ;(function(root, factory) {
+  /* istanbul ignore next */
   if (typeof define === 'function' && define.amd) {
     define([], factory);
   } else if (typeof exports === 'object') {
@@ -73,10 +74,6 @@
     var state = this._state;
     var isDeferred = arg instanceof Deferred;
 
-    if (ctx === void 0) {
-      ctx = this;
-    }
-
     if (state === 2) {
       if (isDeferred) {
         arg.resolve(this.value);
@@ -88,11 +85,11 @@
 
     if (state === 0) {
       if (isDeferred) {
-        this.done(function onArgDone (value) {
+        this.done(function onDone (value) {
           arg.resolve.call(arg, value);
         });
       } else {
-        pushCallback(this, 1, {
+        addCallback(this, '_doneCallbacks', {
           fn: arg,
           ctx: ctx
         });
@@ -115,10 +112,6 @@
     var state = this._state;
     var isDeferred = arg instanceof Deferred;
 
-    if (ctx === void 0) {
-      ctx = this;
-    }
-
     if (state === 3) {
       if (isDeferred) {
         arg.reject(this.value);
@@ -130,11 +123,11 @@
 
     if (state === 0) {
       if (isDeferred) {
-        this.fail(function onArgFail (reason) {
+        this.fail(function onFail (reason) {
           arg.reject(reason);
         });
       } else {
-        pushCallback(this, 0, {
+        addCallback(this, '_failCallbacks', {
           fn: arg,
           ctx: ctx
         });
@@ -178,85 +171,99 @@
    * Appends fulfillment and rejection handlers to the promise,
    * and returns a new promise resolving to the return value of the called handler,
    * or to its original settled value if the promise was not handled
-   * (i.e. if the relevant handler onFulfilled or onRejected is undefined).
-   * @param {Function} onResolve
-   * @param {Function} onReject
-   * @param {Object} [argCtx]
+   * (i.e. if the relevant handler onFulfilled or onRejected is void 0).
+   * @param   {Function}  onResolve
+   * @param   {Function}  onReject
+   * @param   {Object}    [argCtx]
+   * @returns {Function}
    * @public
    */
 
   Promise.prototype.then = function then (onResolve, onReject, argCtx) {
-    var lastArg = arguments[arguments.length - 1];
-    var isResolved = this._state === 2;
-    var isRejected = this._state === 3;
-    var deferred2 = new Deferred();
-    var func = 'function';
-    var ctx;
-
-    if (typeof lastArg !== func) {
-      ctx = lastArg;
-    } else {
-      ctx = argCtx;
+    var argsCount = arguments.length;
+    if (argsCount === 2) {
+      if (typeof onReject === 'object') {
+        argCtx = onReject;
+        onReject = null;
+      } else {
+        argCtx = this;
+      }
     }
-
-    if (ctx === void 0) {
-      ctx = this;
-    }
-
-    if (typeof onResolve === func) {
-      this.done(function onDone (value) {
-        var x;
-        var error;
-
-        try {
-          x = onResolve.call(ctx, value);
-        } catch (err) {
-          error = err;
-        }
-
-        // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
-        //          promise2 must be rejected with e as the reason.
-        if (error !== void 0) {
-          deferred2.reject(error);
-        } else {
-          // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
-          //          Promise Resolution Procedure [[Resolve]](promise2, x).
-          deferred2.resolve(x);
-        }
-      });
-    } else if (isResolved) {
-      deferred2.resolve(this.value);
-      return deferred2.promise;
-    }
-
-    // Если передан onReject, создаем вреппер rejected
-    if (typeof onReject === func) {
-      this.fail(function onFail (reason) {
-        var x;
-        var error;
-
-        try {
-          x = onReject.call(ctx, reason);
-        } catch (err) {
-          error = err;
-        }
-
-        // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
-        //          promise2 must be rejected with e as the reason.
-        if (error !== void 0) {
-          deferred2.reject(error);
-        } else {
-          // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
-          //          Promise Resolution Procedure [[Resolve]](promise2, x).
-          deferred2.resolve(x);
-        }
-      });
-    } else if (isRejected) {
-      deferred2.reject(this.value);
-    }
-
-    return deferred2.promise;
+    return _then(this, onResolve, onReject, argCtx);
   };
+
+  /**
+   * Method `.then` with normalized arguments
+   * @param  {Promise}   parentPromise
+   * @param  {Function}  onResolve
+   * @param  {Function}  onReject
+   * @param  {Object}    ctx
+   * @private
+   */
+  function _then (parentPromise, onResolve, onReject, ctx) {
+    var childDeferred = new Deferred();
+
+    if (parentPromise.isResolved() && typeof onResolve !== 'function') {
+      childDeferred.resolve(parentPromise.value);
+      return childDeferred.promise;
+    }
+
+    if (parentPromise.isRejected() && typeof onReject !== 'function') {
+      childDeferred.reject(parentPromise.value);
+      return childDeferred.promise;
+    }
+
+    var child = new Child(childDeferred, onResolve, onReject, ctx);
+
+    if (parentPromise.isPending()) {
+       addChild(parentPromise, child);
+    } else {
+       processChild(parentPromise, child);
+    }
+
+    return childDeferred.promise;
+  }
+
+  function Child (dfd, onResolve, onReject, ctx) {
+    this.deferred = dfd;
+    this.onResolve = onResolve;
+    this.onReject = onReject;
+    this.ctx = ctx;
+  }
+
+  function addChild (parentPromise, child) {
+    if (!parentPromise._children) {
+      parentPromise._children = [child];
+    } else {
+      parentPromise._children.push(child);
+    }
+  }
+
+  function processChild (parentPromise, child) {
+    var x;
+    var error;
+
+    var value = parentPromise.value;
+
+    var isResolved = parentPromise._state === 2;
+    var fn = isResolved ? child.onResolve : child.onReject;
+
+    try {
+      x = fn.call(child.ctx, value);
+    } catch (err) {
+      error = err;
+    }
+
+    if (error !== void 0) {
+      // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
+      //          promise2 must be rejected with e as the reason.
+      child.deferred.reject(error);
+    } else {
+      // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
+      //          Promise Resolution Procedure [[Resolve]](promise2, x).
+      child.deferred.resolve(x);
+    }
+  }
 
   /**
    * Alias for Promise#then(null, fn)
@@ -269,11 +276,19 @@
     return this.then(null, onReject, ctx);
   };
 
-  function pushCallback (promise, key, obj) {
-    if (!promise.hasOwnProperty(key)) {
-      promise[key] = [];
+  /**
+   * @param {Promise} promise
+   * @param {String}  key
+   * @param {Object}  obj
+   * @private
+   */
+
+  function addCallback (promise, key, obj) {
+    if (!promise[key]) {
+      promise[key] = [obj];
+    } else {
+      promise[key].push(obj);
     }
-    promise[key].push(obj);
   }
 
   'use strict';
@@ -300,13 +315,7 @@
       return this;
     }
 
-    this.promise._state = 3;
-    this.promise.value = reason;
-
-    runCallbacks(this.promise[0] /** fail callbacks */, reason);
-    cleanUp(this.promise);
-
-    return this;
+    return rejectWithReason(this, reason);
   };
 
   /**
@@ -322,57 +331,110 @@
 
     // ignore non-pending promises
     if (promise._state !== 0) {
-      return this;
+      return dfd;
     }
 
     // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
     if (x === this || x === promise) {
-      var e = new TypeError('Promise and argument refer to the same object');
-      this.reject(e);
-      return this;
+      return rejectWithSameArgError(dfd);
     }
 
     // Resolve with promise
     if (x instanceof Promise) {
-      // lock promise
-      promise._state = 1;
-
-      // 2.3.2.2. if/when x is fulfilled, fulfill promise with the same value.
-      // 2.3.2.3. if/When x is rejected, reject promise with the same reason.
-      x
-        .done(function onValueResolve (xValue) {
-          // unlock promise before resolving
-          promise._state = 0;
-          dfd.resolve(xValue);
-        })
-        .fail(function onValueReject (xReason) {
-          // unlock promise before resolving
-          promise._state = 0;
-          dfd.reject(xReason);
-        });
-
-      return this;
+      return resolveWithPromise(dfd, x);
     }
 
-    // Resolve with value
-    promise._state = 2;
-    promise.value = x;
-
-    runCallbacks(promise[1], promise.value);
-    cleanUp(promise);
-
-    return this;
+    return resolveWithValue(dfd, x);
   };
 
-  function cleanUp (promise) {
-    promise[0] = null;
-    promise[1] = null;
+  /**
+   * @private
+   */
+
+  function rejectWithReason (dfd, reason) {
+    var promise = dfd.promise;
+
+    promise._state = 3;
+    promise.value = reason;
+
+    runCallbacks(promise._failCallbacks, reason);
+    processChildren(dfd);
+    cleanUpPromise(promise);
+
+    return dfd;
   }
+
+  /**
+   * @private
+   */
+
+  function rejectWithSameArgError (dfd) {
+    var err = new TypeError('Promise and argument refer to the same object');
+    dfd.reject(err);
+    return dfd;
+  }
+
+  /**
+   * @private
+   */
+
+  function resolveWithPromise (dfd, promise) {
+    // lock promise
+    lockPromise(dfd.promise);
+
+    // 2.3.2.2. if/when x is fulfilled, fulfill promise with the same value.
+    // 2.3.2.3. if/When x is rejected, reject promise with the same reason.
+    promise
+      .done(function onValueResolve (xValue) {
+        // unlock promise before resolving
+        dfd.promise._state = 0;
+        resolveWithValue(dfd, xValue);
+      })
+      .fail(function onValueReject (xReason) {
+        // unlock promise before resolving
+        dfd.promise._state = 0;
+        rejectWithReason(dfd, xReason);
+      });
+
+    return dfd;
+  }
+
+  /**
+   * @private
+   */
+
+  function resolveWithValue (dfd, value) {
+    dfd.promise._state = 2;
+    dfd.promise.value = value;
+
+    runCallbacks(dfd.promise._doneCallbacks, value);
+    processChildren(dfd);
+    cleanUpPromise(dfd.promise);
+
+    return dfd;
+  }
+
+  /**
+   * @private
+   */
+
+  function processChildren (dfd) {
+    var children = dfd.promise._children;
+    if (children) {
+      for (var i = 0; i < children.length; i++) {
+        processChild(dfd.promise, children[i]);
+      }
+    }
+  }
+
+  /**
+   * @private
+   */
 
   function runCallbacks (callbacks, value) {
     var callback;
     if (callbacks) {
-      for (var i = 0, l = callbacks.length; i < l; i++) {
+      for (var i = 0; i < callbacks.length; i++) {
         callback = callbacks[i];
         callback.fn.call(callback.ctx, value);
       }
@@ -413,6 +475,24 @@
   Deferred.isThenable = function isThenable (arg) {
     return arg !== null && typeof arg === 'object' && typeof arg.then === 'function';
   };
+
+  /**
+   * @private
+   */
+
+  function cleanUpPromise (promise) {
+    promise._doneCallbacks = null;
+    promise._failCallbacks = null;
+  }
+
+  /**
+   * @param {Promise} promise
+   * @private
+   */
+
+  function lockPromise (promise) {
+    promise._state = 1;
+  }
 
   'use strict';
 
@@ -574,34 +654,34 @@
 
   /**
    * Returns a Promise object that is resolved with the given value.
-   * @param   {*} [value]
+   * @param   {*} [x]
    * @returns {Promise}
    * @public
    */
 
-  Deferred.resolve = function resolve (value) {
-    if (Deferred.isPromise(value)) {
-      return value;
+  Deferred.resolve = function resolve (x) {
+    if (Deferred.isPromise(x)) {
+      return x;
     }
 
-    if (Deferred.isDeferred(value)) {
-      return value.promise;
+    if (Deferred.isDeferred(x)) {
+      return x.promise;
     }
 
     var dfd = new Deferred();
 
-    if (Deferred.isThenable(value)) {
-      value.then(function onValueResolve (val) {
+    if (Deferred.isThenable(x)) {
+      x.then(function onArgResolve (val) {
         dfd.resolve(val);
       }, function onValueReject (reason) {
         dfd.reject(reason);
       });
     } else {
-      dfd.resolve(value);
+      dfd.resolve(x);
     }
 
     return dfd.promise;
   };
 
-return Deferred;
+  return Deferred;
 }));

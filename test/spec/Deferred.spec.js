@@ -9,6 +9,21 @@
 
 var Deferred = require('../../dist/deferred');
 
+function getGlobal () {
+  if (typeof global === 'object') {
+    return global;
+  } else if (typeof window === 'object') {
+    return window;
+  } else {
+    return undefined;
+  }
+}
+
+function isCalledAsFunction (spy) {
+  var thisValue = spy.calls.mostRecent().object;
+  return thisValue === void 0 || thisValue === getGlobal();
+}
+
 describe('Deferred', function () {
   'use strict';
 
@@ -27,8 +42,8 @@ describe('Deferred', function () {
     });
 
     it('should return instance of Deferred', function () {
-      var d = new Deferred();
-      expect(d instanceof Deferred).toBe(true);
+      var dfd = new Deferred();
+      expect(dfd instanceof Deferred).toBe(true);
     });
   });
 
@@ -40,44 +55,56 @@ describe('Deferred', function () {
   describe('done', function () {
     describe('function as argument', function () {
       it('handler should be called once promise is resolved', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
 
-        d.promise.done(handler);
+        dfd.promise.done(handler);
 
         setTimeout(function () {
-          d.resolve();
+          dfd.resolve();
           expect(handler).toHaveBeenCalled();
-          expect(handler.calls.mostRecent().object).toBe(d.promise);
+          done();
+        }, 20);
+      });
+
+      it('handler should be called as functions (i.e. with no this value)', function (done) {
+        var dfd = new Deferred();
+        var handler = jasmine.createSpy();
+
+        dfd.promise.done(handler);
+
+        setTimeout(function () {
+          dfd.resolve();
+          expect(isCalledAsFunction(handler)).toBe(true);
           done();
         }, 20);
       });
 
       it('handler should be called with promise value as a first argument', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
         var value = {};
 
-        d.promise.done(handler);
+        dfd.promise.done(handler);
 
         setTimeout(function () {
-          d.resolve(value);
+          dfd.resolve(value);
           expect(handler.calls.argsFor(0)).toEqual([value]);
           done();
         }, 20);
       });
 
       it('handler should be called in specified context', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
         var ctx = {};
 
-        d.promise
+        dfd.promise
           .done(handler, ctx)
           .done(handler, null);
 
         setTimeout(function () {
-          d.resolve();
+          dfd.resolve();
           expect(handler.calls.all()[0].object).toBe(ctx);
           //expect(handler.calls.all()[1].object).toBe(null); // jasmine bug?
           done();
@@ -85,24 +112,24 @@ describe('Deferred', function () {
       });
 
       it('should return the same promise', function () {
-        var d = new Deferred();
-        expect(d.promise.done()).toBe(d.promise);
+        var dfd = new Deferred();
+        expect(dfd.promise.done()).toBe(dfd.promise);
       });
 
       it('should support multiple handlers', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
 
         var handler1 = jasmine.createSpy();
         var handler2 = jasmine.createSpy();
         var handler3 = jasmine.createSpy();
 
-        d.promise
+        dfd.promise
           .done(handler1)
           .done(handler2)
           .done(handler3);
 
         setTimeout(function () {
-          d.resolve();
+          dfd.resolve();
           expect(handler1.calls.count()).toBe(1);
           expect(handler2.calls.count()).toBe(1);
           expect(handler3.calls.count()).toBe(1);
@@ -111,21 +138,21 @@ describe('Deferred', function () {
       });
 
       it('should allow to call the same handler many times', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
 
-        d.promise
+        dfd.promise
           .done(handler)
           .done(handler)
           .done(handler);
 
-        d.resolve();
+        dfd.resolve();
 
         expect(handler.calls.count()).toBe(3);
       });
 
       it('should call handlers in order they were added', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var log = [];
 
         var handler1 = function () {
@@ -140,38 +167,38 @@ describe('Deferred', function () {
           log.push(3);
         };
 
-        d.promise
+        dfd.promise
           .done(handler1)
           .done(handler2)
           .done(handler3);
 
-        d.resolve();
+        dfd.resolve();
 
         expect(log.join('')).toBe('123');
       });
 
       it('should call handlers synchronously', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var spy = jasmine.createSpy();
 
-        d.promise.done(spy);
-        d.resolve();
+        dfd.promise.done(spy);
+        dfd.resolve();
 
         expect(spy).toHaveBeenCalled();
       });
 
       it('should call handler synchronously if promise is already resolved', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
 
         var handler1 = jasmine.createSpy();
         var handler2 = jasmine.createSpy();
         var handler3 = jasmine.createSpy();
 
-        d.promise.done(handler1);
+        dfd.promise.done(handler1);
 
-        d.resolve();
+        dfd.resolve();
 
-        d.promise
+        dfd.promise
           .done(handler2)
           .done(handler3);
 
@@ -237,44 +264,56 @@ describe('Deferred', function () {
   describe('fail', function () {
     describe('function as argument', function () {
       it('handler should be called once promise is rejected', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
 
-        d.promise.fail(handler);
+        dfd.promise.fail(handler);
 
         setTimeout(function () {
-          d.reject();
+          dfd.reject();
           expect(handler).toHaveBeenCalled();
-          expect(handler.calls.mostRecent().object).toBe(d.promise);
+          done();
+        }, 20);
+      });
+
+      it('handler should be called as functions (i.e. with no this value)', function (done) {
+        var dfd = new Deferred();
+        var handler = jasmine.createSpy();
+
+        dfd.promise.fail(handler);
+
+        setTimeout(function () {
+          dfd.reject();
+          expect(isCalledAsFunction(handler)).toBe(true);
           done();
         }, 20);
       });
 
       it('handler should be called with promise reject reason as a first argument', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
         var reason = {};
 
-        d.promise.fail(handler);
+        dfd.promise.fail(handler);
 
         setTimeout(function () {
-          d.reject(reason);
+          dfd.reject(reason);
           expect(handler.calls.argsFor(0)).toEqual([reason]);
           done();
         }, 20);
       });
 
       it('handler should be called in specified context', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
         var obj = {};
 
-        d.promise
+        dfd.promise
           .fail(handler, obj)
           .fail(handler, null);
 
         setTimeout(function () {
-          d.reject();
+          dfd.reject();
           expect(handler.calls.all()[0].object).toBe(obj);
           //expect(handler.calls.all()[1].object).toBe(null); // jasmine bug?
           done();
@@ -282,24 +321,24 @@ describe('Deferred', function () {
       });
 
       it('should return the same promise', function () {
-        var d = new Deferred();
-        expect(d.promise.fail()).toBe(d.promise);
+        var dfd = new Deferred();
+        expect(dfd.promise.fail()).toBe(dfd.promise);
       });
 
       it('should support multiple handlers', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
 
         var handler1 = jasmine.createSpy();
         var handler2 = jasmine.createSpy();
         var handler3 = jasmine.createSpy();
 
-        d.promise
+        dfd.promise
           .fail(handler1)
           .fail(handler2)
           .fail(handler3);
 
         setTimeout(function () {
-          d.reject();
+          dfd.reject();
           expect(handler1.calls.count()).toBe(1);
           expect(handler2.calls.count()).toBe(1);
           expect(handler3.calls.count()).toBe(1);
@@ -308,21 +347,21 @@ describe('Deferred', function () {
       });
 
       it('should allow to call the same handler many times', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
 
-        d.promise
+        dfd.promise
           .fail(handler)
           .fail(handler)
           .fail(handler);
 
-        d.reject();
+        dfd.reject();
 
         expect(handler.calls.count()).toBe(3);
       });
 
       it('should call handlers in order they were added', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var log = [];
 
         var handler1 = function () {
@@ -337,38 +376,38 @@ describe('Deferred', function () {
           log.push(3);
         };
 
-        d.promise
+        dfd.promise
           .fail(handler1)
           .fail(handler2)
           .fail(handler3);
 
-        d.reject();
+        dfd.reject();
 
         expect(log.join('')).toBe('123');
       });
 
       it('should call handlers synchronously', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var spy = jasmine.createSpy();
 
-        d.promise.fail(spy);
-        d.reject();
+        dfd.promise.fail(spy);
+        dfd.reject();
 
         expect(spy).toHaveBeenCalled();
       });
 
       it('should call handler synchronously if promise is already rejected', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
 
         var handler1 = jasmine.createSpy();
         var handler2 = jasmine.createSpy();
         var handler3 = jasmine.createSpy();
 
-        d.promise.fail(handler1);
+        dfd.promise.fail(handler1);
 
-        d.reject();
+        dfd.reject();
 
-        d.promise
+        dfd.promise
           .fail(handler2)
           .fail(handler3);
 
@@ -434,77 +473,88 @@ describe('Deferred', function () {
   describe('always', function () {
     describe('function as argument', function () {
       it('handler should be called once promise is resolved', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
 
-        d.promise.always(handler);
+        dfd.promise.always(handler);
 
         setTimeout(function () {
-          d.resolve();
+          dfd.resolve();
           expect(handler).toHaveBeenCalled();
-          expect(handler.calls.mostRecent().object).toBe(d.promise);
           done();
         }, 30);
       });
 
       it('handler should be called once promise is rejected', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
 
-        d.promise.always(handler);
+        dfd.promise.always(handler);
 
         setTimeout(function () {
-          d.reject();
+          dfd.reject();
           expect(handler).toHaveBeenCalled();
-          expect(handler.calls.mostRecent().object).toBe(d.promise);
+          done();
+        }, 30);
+      });
+
+      it('handler should be called as functions (i.e. with no this value)', function (done) {
+        var dfd = new Deferred();
+        var handler = jasmine.createSpy();
+
+        dfd.promise.always(handler);
+
+        setTimeout(function () {
+          dfd.resolve();
+          expect(isCalledAsFunction(handler)).toBe(true);
           done();
         }, 30);
       });
 
       it('handler should be called with promise value as a first argument', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
         var value = {};
 
-        d.promise.always(handler);
+        dfd.promise.always(handler);
 
         setTimeout(function () {
-          d.resolve(value);
+          dfd.resolve(value);
           expect(handler.calls.argsFor(0)).toEqual([value]);
           done();
         }, 20);
       });
 
       it('handler should be called with promise reject reason as a first argument', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
         var reason = {};
 
-        d.promise.always(handler);
+        dfd.promise.always(handler);
 
         setTimeout(function () {
-          d.reject(reason);
+          dfd.reject(reason);
           expect(handler.calls.argsFor(0)).toEqual([reason]);
           done();
         }, 20);
       });
 
       it('should return the same promise', function () {
-        var d = new Deferred();
-        expect(d.promise.always()).toBe(d.promise);
+        var dfd = new Deferred();
+        expect(dfd.promise.always()).toBe(dfd.promise);
       });
 
       it('handler should be called in specified context', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
         var obj = {};
 
-        d.promise
+        dfd.promise
           .always(handler, obj)
           .always(handler, null);
 
         setTimeout(function () {
-          d.resolve();
+          dfd.resolve();
           expect(handler.calls.all()[0].object).toBe(obj);
           //expect(handler.calls.all()[1].object).toBe(null); // jasmine bug?
           done();
@@ -512,19 +562,19 @@ describe('Deferred', function () {
       });
 
       it('should support multiple handlers', function (done) {
-        var d = new Deferred();
+        var dfd = new Deferred();
 
         var handler1 = jasmine.createSpy();
         var handler2 = jasmine.createSpy();
         var handler3 = jasmine.createSpy();
 
-        d.promise
+        dfd.promise
           .always(handler1)
           .always(handler2)
           .always(handler3);
 
         setTimeout(function () {
-          d.reject();
+          dfd.reject();
           expect(handler1.calls.count()).toBe(1);
           expect(handler2.calls.count()).toBe(1);
           expect(handler3.calls.count()).toBe(1);
@@ -533,31 +583,31 @@ describe('Deferred', function () {
       });
 
       it('should allow to call the same handler many times', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
 
-        d.promise
+        dfd.promise
           .always(handler)
           .always(handler)
           .always(handler);
 
-        d.reject();
+        dfd.reject();
 
         expect(handler.calls.count()).toBe(3);
       });
 
       it('should call handler synchronously if promise is already resolved', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
 
         var handler1 = jasmine.createSpy();
         var handler2 = jasmine.createSpy();
         var handler3 = jasmine.createSpy();
 
-        d.promise.always(handler1);
+        dfd.promise.always(handler1);
 
-        d.reject();
+        dfd.reject();
 
-        d.promise
+        dfd.promise
           .always(handler2)
           .always(handler3);
 
@@ -572,17 +622,17 @@ describe('Deferred', function () {
       });
 
       it('should call handler synchronously if promise is already rejected', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
 
         var handler1 = jasmine.createSpy();
         var handler2 = jasmine.createSpy();
         var handler3 = jasmine.createSpy();
 
-        d.promise.always(handler1);
+        dfd.promise.always(handler1);
 
-        d.reject();
+        dfd.reject();
 
-        d.promise
+        dfd.promise
           .always(handler2)
           .always(handler3);
 
@@ -706,11 +756,11 @@ describe('Deferred', function () {
       // 2.2.2.1. it must be called after promise is fulfilled, with promise’s value as its first argument.
       // 2.2.1.2. If onReject is not a function, it must be ignored.
       it('should be called synchronously once promise is resolved', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var onFulfill = jasmine.createSpy();
 
-        d.promise.then(onFulfill);
-        d.resolve(data);
+        dfd.promise.then(onFulfill);
+        dfd.resolve(data);
 
         expect(onFulfill.calls.count()).toBe(1);
         expect(onFulfill.calls.argsFor(0)).toEqual([data]);
@@ -718,11 +768,11 @@ describe('Deferred', function () {
 
       // 2.2.2.3. it must not be called more than once.
       it('should not be called more than once', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var onFulfill = jasmine.createSpy();
 
-        d.promise.then(onFulfill);
-        d.resolve('foo').resolve(true);
+        dfd.promise.then(onFulfill);
+        dfd.resolve('foo').resolve(true);
 
         expect(onFulfill.calls.count()).toBe(1);
         expect(onFulfill.calls.argsFor(0)).toEqual(['foo']);
@@ -734,23 +784,23 @@ describe('Deferred', function () {
       // 2.2.5. Spec: onFulfilled and onReject must be called as functions (i.e. with no this value).
       // NOTE: This is a shit. Context must be a promise or custom one
       describe('context', function () {
-        it('should be a promise if no context specified', function () {
-          var d = new Deferred();
+        it('should be undefined if no context specified', function () {
+          var dfd = new Deferred();
           var onFullfill = jasmine.createSpy();
 
-          d.promise.then(onFullfill);
-          d.resolve();
+          dfd.promise.then(onFullfill);
+          dfd.resolve();
 
-          expect(onFullfill.calls.mostRecent().object).toBe(d.promise);
+          expect(isCalledAsFunction(onFullfill)).toBe(true);
         });
 
         it('should be custom if it\'s specified', function () {
-          var d = new Deferred();
+          var dfd = new Deferred();
           var onFullfill = jasmine.createSpy();
           var ctx = {};
 
-          d.promise.then(onFullfill, ctx);
-          d.resolve();
+          dfd.promise.then(onFullfill, ctx);
+          dfd.resolve();
 
           expect(onFullfill.calls.mostRecent().object).toBe(ctx);
         });
@@ -760,25 +810,27 @@ describe('Deferred', function () {
       // 2.2.6.1. If/when promise is fulfilled, all respective onFulfilled callbacks must execute
       //          in the order of their originating calls to then.
       it('all onFullfilled handlers should be called in order they were added', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var log = [];
 
-        var onFulfill1 = function () {
+        function onFulfill1 () {
           log.push(1);
-        };
-        var onFulfill2 = function () {
+        }
+
+        function onFulfill2 () {
           log.push(2);
-        };
-        var onFulfill3 = function () {
+        }
+
+        function onFulfill3 () {
           log.push(3);
-        };
+        }
 
-        d.promise.then(onFulfill1);
-        d.promise.then(onFulfill2);
+        dfd.promise.then(onFulfill1);
+        dfd.promise.then(onFulfill2);
 
-        d.resolve('foo');
+        dfd.resolve('foo');
 
-        d.promise.then(onFulfill3);
+        dfd.promise.then(onFulfill3);
 
         expect(log.length).toBe(3);
         expect(log.join('')).toBe('123');
@@ -790,21 +842,21 @@ describe('Deferred', function () {
       // 2.2.3.1. it must be called after promise is rejected, with promise’s reason as its first argument.
       it('should be called synchronously once promise is rejected', function () {
         var onReject = jasmine.createSpy();
-        var d = new Deferred();
+        var dfd = new Deferred();
 
-        d.promise.then(function () {}, onReject);
-        d.reject(null);
+        dfd.promise.then(function () {}, onReject);
+        dfd.reject(null);
 
         expect(onReject.calls.count()).toBe(1);
       });
 
       // 2.2.3.3. it must not be called more than once.
       it('should not be called more than once', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var onReject = jasmine.createSpy();
 
-        d.promise.then(function () {}, onReject);
-        d.reject('foo').reject(true);
+        dfd.promise.then(function () {}, onReject);
+        dfd.reject('foo').reject(true);
 
         expect(onReject.calls.count()).toBe(1);
         expect(onReject.calls.argsFor(0)).toEqual(['foo']);
@@ -812,11 +864,11 @@ describe('Deferred', function () {
 
       // 2.2.1.1. If onFulfilled is not a function, it must be ignored.
       it('if first argument (onFullfilled) is not a function, it must be ignored', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var onReject = jasmine.createSpy();
 
-        d.promise.then(null, onReject);
-        d.reject();
+        dfd.promise.then(null, onReject);
+        dfd.reject();
 
         expect(onReject.calls.count()).toBe(1);
       });
@@ -828,22 +880,22 @@ describe('Deferred', function () {
       // NOTE: This is a piece of shit. Context must be a promise itself of custom one
       describe('context', function () {
         it('should be a promise if no context specified', function () {
-          var d = new Deferred();
+          var dfd = new Deferred();
           var onReject = jasmine.createSpy();
 
-          d.promise.then(null, onReject);
-          d.reject();
+          dfd.promise.then(null, onReject);
+          dfd.reject();
 
-          expect(onReject.calls.mostRecent().object).toBe(d.promise);
+          expect(onReject.calls.mostRecent().object).toBe(dfd.promise);
         });
 
         it('should be custom if it\'s specified', function () {
-          var d = new Deferred();
+          var dfd = new Deferred();
           var onReject = jasmine.createSpy();
           var ctx = {};
 
-          d.promise.then(null, onReject, ctx);
-          d.reject();
+          dfd.promise.then(null, onReject, ctx);
+          dfd.reject();
 
           expect(onReject.calls.mostRecent().object).toBe(ctx);
         });
@@ -853,7 +905,7 @@ describe('Deferred', function () {
       // 2.2.6.1. If/when promise is fulfilled, all respective onFulfilled callbacks must execute
       //          in the order of their originating calls to then.
       it('all onRejected handlers should be called in order they were added', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var log = [];
 
         var onReject1 = function () {
@@ -866,12 +918,12 @@ describe('Deferred', function () {
           log.push(3);
         };
 
-        d.promise.then(null, onReject1);
-        d.promise.then(null, onReject2);
+        dfd.promise.then(null, onReject1);
+        dfd.promise.then(null, onReject2);
 
-        d.reject('foo');
+        dfd.reject('foo');
 
-        d.promise.then(null, onReject3);
+        dfd.promise.then(null, onReject3);
 
         expect(log.length).toBe(3);
         expect(log.join('')).toBe('123');
@@ -881,12 +933,12 @@ describe('Deferred', function () {
     // 2.2.7. then must return a promise 3.3.
     describe('return', function () {
       it('should return a new promise', function () {
-        var d = new Deferred();
-        var promise2 = d.promise.then();
+        var dfd = new Deferred();
+        var promise2 = dfd.promise.then();
 
         expect(Deferred.isPromise(promise2)).toBe(true);
         expect(Deferred.isDeferred(promise2)).toBe(false);
-        expect(promise2).not.toBe(d.promise);
+        expect(promise2).not.toBe(dfd.promise);
       });
 
       describe('resolve', function () {
@@ -894,20 +946,20 @@ describe('Deferred', function () {
         //          Promise Resolution Procedure [[Resolve]](promise2, x).
         describe('on onFulfilled/onReject call', function () {
           it('returned promise2 should be resolved once onFullfilled handler returns a value', function () {
-            var d = new Deferred();
+            var dfd = new Deferred();
             var x = {};
             var onFulfill = function () {
               return x;
             };
 
-            var promise2 = d.promise.then(onFulfill);
+            var promise2 = dfd.promise.then(onFulfill);
             var handler = jasmine.createSpy();
 
             promise2.done(handler);
 
             expect(promise2.isPending()).toBe(true);
 
-            d.resolve('foo');
+            dfd.resolve('foo');
 
             expect(promise2.isResolved()).toBe(true);
             expect(handler.calls.count()).toBe(1);
@@ -915,20 +967,20 @@ describe('Deferred', function () {
           });
 
           it('returned promise2 should be resolved once onRejected handler returns a value', function () {
-            var d = new Deferred();
+            var dfd = new Deferred();
             var x = {};
             var onReject = function () {
               return x;
             };
 
-            var promise2 = d.promise.then(null, onReject);
+            var promise2 = dfd.promise.then(null, onReject);
             var handler = jasmine.createSpy();
 
             promise2.done(handler);
 
             expect(promise2.isPending()).toBe(true);
 
-            d.reject('foo');
+            dfd.reject('foo');
 
             expect(promise2.isResolved()).toBe(true);
             expect(handler.calls.count()).toBe(1);
@@ -939,13 +991,13 @@ describe('Deferred', function () {
         // 2.2.7.3. If onFulfilled is not a function and promise1 is fulfilled,
         //          promise2 must be fulfilled with the same value.
         it('returned promise2 should be resolved if promise1 is already resolved and no onFulfilled passed to then', function () {
-          var d = new Deferred();
+          var dfd = new Deferred();
           var value = {};
           var handler = jasmine.createSpy();
 
-          d.resolve(value);
+          dfd.resolve(value);
 
-          var promise2 = d.promise.then(null, function () {});
+          var promise2 = dfd.promise.then(null, function () {});
 
           promise2.done(handler);
 
@@ -959,11 +1011,11 @@ describe('Deferred', function () {
         //          promise2 must be rejected with e as the reason.
         describe('on exception', function () {
           it('promise2 should be rejected once onFulfill handler throws an exception', function () {
-            var d = new Deferred();
+            var dfd = new Deferred();
             var e = new TypeError('error');
             var handler = jasmine.createSpy('');
 
-            var promise2 = d.promise.then(function () {
+            var promise2 = dfd.promise.then(function () {
               throw e;
             });
 
@@ -971,18 +1023,18 @@ describe('Deferred', function () {
 
             expect(promise2.isPending()).toBe(true);
 
-            d.resolve();
+            dfd.resolve();
 
             expect(handler.calls.count()).toBe(1);
             expect(handler.calls.argsFor(0)[0]).toBe(e);
           });
 
           it('promise2 should be rejected once onRejected handler throws an exception', function () {
-            var d = new Deferred();
+            var dfd = new Deferred();
             var e = new TypeError('error');
             var handler = jasmine.createSpy();
 
-            var promise2 = d.promise.then(null, function () {
+            var promise2 = dfd.promise.then(null, function () {
               throw e;
             });
 
@@ -990,7 +1042,7 @@ describe('Deferred', function () {
 
             expect(promise2.isPending()).toBe(true);
 
-            d.reject();
+            dfd.reject();
 
             expect(handler.calls.count()).toBe(1);
             expect(handler.calls.argsFor(0)[0]).toBe(e);
@@ -1000,19 +1052,19 @@ describe('Deferred', function () {
         // 2.2.7.4. If onReject is not a function and promise1 is rejected,
         //          promise2 must be rejected with the same reason.
         it('returned promise2 should be rejected if promise1 is already rejected and no onRejected passed to then', function () {
-          var d = new Deferred();
-          var handler = jasmine.createSpy();
+          var dfd = new Deferred();
+          var onFail = jasmine.createSpy();
           var reason = {};
 
-          d.reject(reason);
+          dfd.reject(reason);
 
-          var promise2 = d.promise.then(function () {}, 'bar');
+          var promise2 = dfd.promise.then(function () {}, 'bar');
 
-          promise2.fail(handler);
+          promise2.fail(onFail);
 
           expect(promise2.isRejected()).toBe(true);
-          expect(handler.calls.count()).toBe(1);
-          expect(handler.calls.argsFor(0)[0]).toBe(reason);
+          expect(onFail.calls.count()).toBe(1);
+          expect(onFail.calls.argsFor(0)[0]).toBe(reason);
         });
       });
     });
@@ -1020,26 +1072,26 @@ describe('Deferred', function () {
 
   describe('catch', function () {
     it('should call `then` method with null as a first parameter and given handler as a second parameter', function () {
-      var d = new Deferred();
+      var dfd = new Deferred();
       var promise2 = {};
       var onReject = function () {};
 
-      spyOn(d.promise, 'then').and.returnValue(promise2);
+      spyOn(dfd.promise, 'then').and.returnValue(promise2);
 
-      expect(d.promise.catch(onReject)).toBe(promise2);
-      expect(d.promise.then).toHaveBeenCalledWith(null, onReject, undefined);
+      expect(dfd.promise.catch(onReject)).toBe(promise2);
+      expect(dfd.promise.then).toHaveBeenCalledWith(null, onReject, undefined);
     });
 
     it('should support context for the handler', function () {
-      var d = new Deferred();
+      var dfd = new Deferred();
       var promise2 = {};
       var onReject = function () {};
       var ctx = {};
 
-      spyOn(d.promise, 'then');
+      spyOn(dfd.promise, 'then');
 
-      d.promise.catch(onReject, ctx);
-      expect(d.promise.then).toHaveBeenCalledWith(null, onReject, ctx);
+      dfd.promise.catch(onReject, ctx);
+      expect(dfd.promise.then).toHaveBeenCalledWith(null, onReject, ctx);
     });
   });
 
@@ -1248,35 +1300,35 @@ describe('Deferred', function () {
     describe('with value', function () {
       // 2.3.4. If x is not an object or function, fulfill promise with x.
       it('should be resolved with passed value', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
 
-        d.resolve('foo');
+        dfd.resolve('foo');
 
-        expect(d.promise.isResolved()).toBe(true);
-        expect(d.promise.value).toBe('foo');
+        expect(dfd.promise.isResolved()).toBe(true);
+        expect(dfd.promise.value).toBe('foo');
       });
 
       it('should use `thenable` objects as usual value', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var value = {
           then: function () {}
         };
 
-        d.resolve(value);
+        dfd.resolve(value);
 
-        expect(d.promise.isResolved()).toBe(true);
-        expect(d.promise.value).toBe(value);
+        expect(dfd.promise.isResolved()).toBe(true);
+        expect(dfd.promise.value).toBe(value);
       });
 
       it('the rest arguments should be ignored', function () {
-        var d = new Deferred();
+        var dfd = new Deferred();
         var handler = jasmine.createSpy();
 
-        d.promise.done(handler);
-        d.resolve('foo', 'bar');
+        dfd.promise.done(handler);
+        dfd.resolve('foo', 'bar');
 
-        expect(d.promise.isResolved()).toBe(true);
-        expect(d.promise.value).toBe('foo');
+        expect(dfd.promise.isResolved()).toBe(true);
+        expect(dfd.promise.value).toBe('foo');
         expect(handler.calls.argsFor(0)).toEqual(['foo']);
       });
     });
@@ -1289,60 +1341,60 @@ describe('Deferred', function () {
 
   describe('reject', function () {
     it('should translate promise to rejected state', function () {
-      var d = new Deferred();
-      expect(d.promise.isPending()).toBe(true);
-      d.reject();
-      expect(d.promise.isRejected()).toBe(true);
+      var dfd = new Deferred();
+      expect(dfd.promise.isPending()).toBe(true);
+      dfd.reject();
+      expect(dfd.promise.isRejected()).toBe(true);
     });
 
     it('should be ignored if promise is already rejected', function () {
-      var d = new Deferred();
+      var dfd = new Deferred();
 
       var handler1 = jasmine.createSpy();
       var handler2 = jasmine.createSpy();
 
-      d.promise.fail(handler1);
-      d.reject('foo');
-      d.promise.fail(handler2);
-      d.reject('bar');
+      dfd.promise.fail(handler1);
+      dfd.reject('foo');
+      dfd.promise.fail(handler2);
+      dfd.reject('bar');
 
       expect(handler1.calls.count()).toBe(1);
       expect(handler1.calls.argsFor(0)[0]).toBe('foo');
       expect(handler2.calls.count()).toBe(1);
       expect(handler2.calls.argsFor(0)[0]).toBe('foo');
-      expect(d.promise.value).toBe('foo');
+      expect(dfd.promise.value).toBe('foo');
     });
 
     it('should be ignored if promise is already resolved', function () {
-      var d = new Deferred();
+      var dfd = new Deferred();
       var handler = jasmine.createSpy();
 
-      d.resolve('foo');
-      d.promise.fail(handler);
-      d.reject('bar');
+      dfd.resolve('foo');
+      dfd.promise.fail(handler);
+      dfd.reject('bar');
 
-      expect(d.promise.isResolved()).toBe(true);
+      expect(dfd.promise.isResolved()).toBe(true);
       expect(handler.calls.count()).toBe(0);
-      expect(d.promise.value).toBe('foo');
+      expect(dfd.promise.value).toBe('foo');
     });
 
     it('should set reject reason as promise value', function () {
-      var d = new Deferred();
+      var dfd = new Deferred();
 
-      d.reject('foo');
-      d.reject('another reason');
+      dfd.reject('foo');
+      dfd.reject('another reason');
 
-      expect(d.promise.value).toBe('foo');
+      expect(dfd.promise.value).toBe('foo');
     });
 
     it('should ignore the rest arguments passed to reject', function () {
-      var d = new Deferred();
+      var dfd = new Deferred();
       var handler = jasmine.createSpy();
 
-      d.promise.fail(handler);
-      d.reject('foo', 'bar');
+      dfd.promise.fail(handler);
+      dfd.reject('foo', 'bar');
 
-      expect(d.promise.value).toBe('foo');
+      expect(dfd.promise.value).toBe('foo');
       expect(handler.calls.argsFor(0)).toEqual(['foo']);
     });
   });
@@ -1354,38 +1406,38 @@ describe('Deferred', function () {
 
   describe('API', function () {
     it('isPending', function () {
-      var d = new Deferred();
-      expect(d.promise.isPending()).toBe(true);
-      d.resolve();
-      expect(d.promise.isPending()).toBe(false);
+      var dfd = new Deferred();
+      expect(dfd.promise.isPending()).toBe(true);
+      dfd.resolve();
+      expect(dfd.promise.isPending()).toBe(false);
 
       // todo test locked
     });
 
     it('isRejected', function () {
-      var d = new Deferred();
-      expect(d.promise.isRejected()).toBe(false);
-      d.reject();
-      expect(d.promise.isRejected()).toBe(true);
+      var dfd = new Deferred();
+      expect(dfd.promise.isRejected()).toBe(false);
+      dfd.reject();
+      expect(dfd.promise.isRejected()).toBe(true);
     });
 
     it('isResolved', function () {
-      var d = new Deferred();
-      expect(d.promise.isResolved()).toBe(false);
-      d.resolve();
-      expect(d.promise.isResolved()).toBe(true);
+      var dfd = new Deferred();
+      expect(dfd.promise.isResolved()).toBe(false);
+      dfd.resolve();
+      expect(dfd.promise.isResolved()).toBe(true);
     });
 
     it('isDeferred', function () {
-      var d = new Deferred();
-      expect(Deferred.isDeferred(d)).toBe(true);
-      expect(Deferred.isDeferred(d.promise)).toBe(false);
+      var dfd = new Deferred();
+      expect(Deferred.isDeferred(dfd)).toBe(true);
+      expect(Deferred.isDeferred(dfd.promise)).toBe(false);
     });
 
     it('isPromise', function () {
-      var d = new Deferred();
-      expect(Deferred.isPromise(d)).toBe(false);
-      expect(Deferred.isPromise(d.promise)).toBe(true);
+      var dfd = new Deferred();
+      expect(Deferred.isPromise(dfd)).toBe(false);
+      expect(Deferred.isPromise(dfd.promise)).toBe(true);
       expect(Deferred.isPromise({})).toBe(false);
       expect(Deferred.isPromise(undefined)).toBe(false);
       expect(Deferred.isPromise({
@@ -1396,8 +1448,8 @@ describe('Deferred', function () {
 
   describe('valueOf', function () {
     it('should return promise itself', function () {
-      var d = new Deferred();
-      expect(d.promise.valueOf()).toBe(d.promise);
+      var dfd = new Deferred();
+      expect(dfd.promise.valueOf()).toBe(dfd.promise);
     });
   });
 });

@@ -57,10 +57,6 @@ Promise.prototype.done = function done (arg, ctx) {
   var state = this._state;
   var isDeferred = arg instanceof Deferred;
 
-  if (ctx === void 0) {
-    ctx = this;
-  }
-
   if (state === 2) {
     if (isDeferred) {
       arg.resolve(this.value);
@@ -72,11 +68,11 @@ Promise.prototype.done = function done (arg, ctx) {
 
   if (state === 0) {
     if (isDeferred) {
-      this.done(function onArgDone (value) {
+      this.done(function onDone (value) {
         arg.resolve.call(arg, value);
       });
     } else {
-      pushCallback(this, 1, {
+      addCallback(this, '_doneCallbacks', {
         fn: arg,
         ctx: ctx
       });
@@ -99,10 +95,6 @@ Promise.prototype.fail = function fail (arg, ctx) {
   var state = this._state;
   var isDeferred = arg instanceof Deferred;
 
-  if (ctx === void 0) {
-    ctx = this;
-  }
-
   if (state === 3) {
     if (isDeferred) {
       arg.reject(this.value);
@@ -114,11 +106,11 @@ Promise.prototype.fail = function fail (arg, ctx) {
 
   if (state === 0) {
     if (isDeferred) {
-      this.fail(function onArgFail (reason) {
+      this.fail(function onFail (reason) {
         arg.reject(reason);
       });
     } else {
-      pushCallback(this, 0, {
+      addCallback(this, '_failCallbacks', {
         fn: arg,
         ctx: ctx
       });
@@ -162,85 +154,99 @@ Promise.prototype.isResolved = function isResolved () {
  * Appends fulfillment and rejection handlers to the promise,
  * and returns a new promise resolving to the return value of the called handler,
  * or to its original settled value if the promise was not handled
- * (i.e. if the relevant handler onFulfilled or onRejected is undefined).
- * @param {Function} onResolve
- * @param {Function} onReject
- * @param {Object} [argCtx]
+ * (i.e. if the relevant handler onFulfilled or onRejected is void 0).
+ * @param   {Function}  onResolve
+ * @param   {Function}  onReject
+ * @param   {Object}    [argCtx]
+ * @returns {Function}
  * @public
  */
 
 Promise.prototype.then = function then (onResolve, onReject, argCtx) {
-  var lastArg = arguments[arguments.length - 1];
-  var isResolved = this._state === 2;
-  var isRejected = this._state === 3;
-  var deferred2 = new Deferred();
-  var func = 'function';
-  var ctx;
-
-  if (typeof lastArg !== func) {
-    ctx = lastArg;
-  } else {
-    ctx = argCtx;
+  var argsCount = arguments.length;
+  if (argsCount === 2) {
+    if (typeof onReject === 'object') {
+      argCtx = onReject;
+      onReject = null;
+    } else {
+      argCtx = this;
+    }
   }
-
-  if (ctx === void 0) {
-    ctx = this;
-  }
-
-  if (typeof onResolve === func) {
-    this.done(function onDone (value) {
-      var x;
-      var error;
-
-      try {
-        x = onResolve.call(ctx, value);
-      } catch (err) {
-        error = err;
-      }
-
-      // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
-      //          promise2 must be rejected with e as the reason.
-      if (error !== void 0) {
-        deferred2.reject(error);
-      } else {
-        // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
-        //          Promise Resolution Procedure [[Resolve]](promise2, x).
-        deferred2.resolve(x);
-      }
-    });
-  } else if (isResolved) {
-    deferred2.resolve(this.value);
-    return deferred2.promise;
-  }
-
-  // Если передан onReject, создаем вреппер rejected
-  if (typeof onReject === func) {
-    this.fail(function onFail (reason) {
-      var x;
-      var error;
-
-      try {
-        x = onReject.call(ctx, reason);
-      } catch (err) {
-        error = err;
-      }
-
-      // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
-      //          promise2 must be rejected with e as the reason.
-      if (error !== void 0) {
-        deferred2.reject(error);
-      } else {
-        // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
-        //          Promise Resolution Procedure [[Resolve]](promise2, x).
-        deferred2.resolve(x);
-      }
-    });
-  } else if (isRejected) {
-    deferred2.reject(this.value);
-  }
-
-  return deferred2.promise;
+  return _then(this, onResolve, onReject, argCtx);
 };
+
+/**
+ * Method `.then` with normalized arguments
+ * @param  {Promise}   parentPromise
+ * @param  {Function}  onResolve
+ * @param  {Function}  onReject
+ * @param  {Object}    ctx
+ * @private
+ */
+function _then (parentPromise, onResolve, onReject, ctx) {
+  var childDeferred = new Deferred();
+
+  if (parentPromise.isResolved() && typeof onResolve !== 'function') {
+    childDeferred.resolve(parentPromise.value);
+    return childDeferred.promise;
+  }
+
+  if (parentPromise.isRejected() && typeof onReject !== 'function') {
+    childDeferred.reject(parentPromise.value);
+    return childDeferred.promise;
+  }
+
+  var child = new Child(childDeferred, onResolve, onReject, ctx);
+
+  if (parentPromise.isPending()) {
+     addChild(parentPromise, child);
+  } else {
+     processChild(parentPromise, child);
+  }
+
+  return childDeferred.promise;
+}
+
+function Child (dfd, onResolve, onReject, ctx) {
+  this.deferred = dfd;
+  this.onResolve = onResolve;
+  this.onReject = onReject;
+  this.ctx = ctx;
+}
+
+function addChild (parentPromise, child) {
+  if (!parentPromise._children) {
+    parentPromise._children = [child];
+  } else {
+    parentPromise._children.push(child);
+  }
+}
+
+function processChild (parentPromise, child) {
+  var x;
+  var error;
+
+  var value = parentPromise.value;
+
+  var isResolved = parentPromise._state === 2;
+  var fn = isResolved ? child.onResolve : child.onReject;
+
+  try {
+    x = fn.call(child.ctx, value);
+  } catch (err) {
+    error = err;
+  }
+
+  if (error !== void 0) {
+    // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
+    //          promise2 must be rejected with e as the reason.
+    child.deferred.reject(error);
+  } else {
+    // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
+    //          Promise Resolution Procedure [[Resolve]](promise2, x).
+    child.deferred.resolve(x);
+  }
+}
 
 /**
  * Alias for Promise#then(null, fn)
@@ -253,9 +259,17 @@ Promise.prototype['catch'] = function _catch (onReject, ctx) {
   return this.then(null, onReject, ctx);
 };
 
-function pushCallback (promise, key, obj) {
-  if (!promise.hasOwnProperty(key)) {
-    promise[key] = [];
+/**
+ * @param {Promise} promise
+ * @param {String}  key
+ * @param {Object}  obj
+ * @private
+ */
+
+function addCallback (promise, key, obj) {
+  if (!promise[key]) {
+    promise[key] = [obj];
+  } else {
+    promise[key].push(obj);
   }
-  promise[key].push(obj);
 }

@@ -10,7 +10,8 @@ describe('Deferred.resolve', function () {
         .then(function (value) {
           expect(value).toBe(obj);
           done();
-        });
+        })
+        .catch(done.fail);
     });
   });
 
@@ -25,7 +26,7 @@ describe('Deferred.resolve', function () {
   });
 
   describe('with undefined', function () {
-    it('should return a promise resolved with undefined', function () {
+    it('should return a promise resolved with undefined', function (done) {
       Deferred.resolve(undefined)
         .then(function (value) {
           expect(value).toBe(void 0);

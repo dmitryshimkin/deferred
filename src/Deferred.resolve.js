@@ -2,30 +2,30 @@
 
 /**
  * Returns a Promise object that is resolved with the given value.
- * @param   {*} [value]
+ * @param   {*} [x]
  * @returns {Promise}
  * @public
  */
 
-Deferred.resolve = function resolve (value) {
-  if (Deferred.isPromise(value)) {
-    return value;
+Deferred.resolve = function resolve (x) {
+  if (Deferred.isPromise(x)) {
+    return x;
   }
 
-  if (Deferred.isDeferred(value)) {
-    return value.promise;
+  if (Deferred.isDeferred(x)) {
+    return x.promise;
   }
 
   var dfd = new Deferred();
 
-  if (Deferred.isThenable(value)) {
-    value.then(function onValueResolve (val) {
+  if (Deferred.isThenable(x)) {
+    x.then(function onArgResolve (val) {
       dfd.resolve(val);
     }, function onValueReject (reason) {
       dfd.reject(reason);
     });
   } else {
-    dfd.resolve(value);
+    dfd.resolve(x);
   }
 
   return dfd.promise;

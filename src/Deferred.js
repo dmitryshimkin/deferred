@@ -22,13 +22,7 @@ Deferred.prototype.reject = function reject (reason) {
     return this;
   }
 
-  this.promise._state = 3;
-  this.promise.value = reason;
-
-  runCallbacks(this.promise[0] /** fail callbacks */, reason);
-  cleanUp(this.promise);
-
-  return this;
+  return rejectWithReason(this, reason);
 };
 
 /**
@@ -44,57 +38,110 @@ Deferred.prototype.resolve = function resolve (x) {
 
   // ignore non-pending promises
   if (promise._state !== 0) {
-    return this;
+    return dfd;
   }
 
   // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
   if (x === this || x === promise) {
-    var e = new TypeError('Promise and argument refer to the same object');
-    this.reject(e);
-    return this;
+    return rejectWithSameArgError(dfd);
   }
 
   // Resolve with promise
   if (x instanceof Promise) {
-    // lock promise
-    promise._state = 1;
-
-    // 2.3.2.2. if/when x is fulfilled, fulfill promise with the same value.
-    // 2.3.2.3. if/When x is rejected, reject promise with the same reason.
-    x
-      .done(function onValueResolve (xValue) {
-        // unlock promise before resolving
-        promise._state = 0;
-        dfd.resolve(xValue);
-      })
-      .fail(function onValueReject (xReason) {
-        // unlock promise before resolving
-        promise._state = 0;
-        dfd.reject(xReason);
-      });
-
-    return this;
+    return resolveWithPromise(dfd, x);
   }
 
-  // Resolve with value
-  promise._state = 2;
-  promise.value = x;
-
-  runCallbacks(promise[1], promise.value);
-  cleanUp(promise);
-
-  return this;
+  return resolveWithValue(dfd, x);
 };
 
-function cleanUp (promise) {
-  promise[0] = null;
-  promise[1] = null;
+/**
+ * @private
+ */
+
+function rejectWithReason (dfd, reason) {
+  var promise = dfd.promise;
+
+  promise._state = 3;
+  promise.value = reason;
+
+  runCallbacks(promise._failCallbacks, reason);
+  processChildren(dfd);
+  cleanUpPromise(promise);
+
+  return dfd;
 }
+
+/**
+ * @private
+ */
+
+function rejectWithSameArgError (dfd) {
+  var err = new TypeError('Promise and argument refer to the same object');
+  dfd.reject(err);
+  return dfd;
+}
+
+/**
+ * @private
+ */
+
+function resolveWithPromise (dfd, promise) {
+  // lock promise
+  lockPromise(dfd.promise);
+
+  // 2.3.2.2. if/when x is fulfilled, fulfill promise with the same value.
+  // 2.3.2.3. if/When x is rejected, reject promise with the same reason.
+  promise
+    .done(function onValueResolve (xValue) {
+      // unlock promise before resolving
+      dfd.promise._state = 0;
+      resolveWithValue(dfd, xValue);
+    })
+    .fail(function onValueReject (xReason) {
+      // unlock promise before resolving
+      dfd.promise._state = 0;
+      rejectWithReason(dfd, xReason);
+    });
+
+  return dfd;
+}
+
+/**
+ * @private
+ */
+
+function resolveWithValue (dfd, value) {
+  dfd.promise._state = 2;
+  dfd.promise.value = value;
+
+  runCallbacks(dfd.promise._doneCallbacks, value);
+  processChildren(dfd);
+  cleanUpPromise(dfd.promise);
+
+  return dfd;
+}
+
+/**
+ * @private
+ */
+
+function processChildren (dfd) {
+  var children = dfd.promise._children;
+  if (children) {
+    for (var i = 0; i < children.length; i++) {
+      processChild(dfd.promise, children[i]);
+    }
+  }
+}
+
+/**
+ * @private
+ */
 
 function runCallbacks (callbacks, value) {
   var callback;
   if (callbacks) {
-    for (var i = 0, l = callbacks.length; i < l; i++) {
+    for (var i = 0; i < callbacks.length; i++) {
       callback = callbacks[i];
       callback.fn.call(callback.ctx, value);
     }
@@ -135,3 +182,21 @@ Deferred.isDeferred = function isDeferred (arg) {
 Deferred.isThenable = function isThenable (arg) {
   return arg !== null && typeof arg === 'object' && typeof arg.then === 'function';
 };
+
+/**
+ * @private
+ */
+
+function cleanUpPromise (promise) {
+  promise._doneCallbacks = null;
+  promise._failCallbacks = null;
+}
+
+/**
+ * @param {Promise} promise
+ * @private
+ */
+
+function lockPromise (promise) {
+  promise._state = 1;
+}
