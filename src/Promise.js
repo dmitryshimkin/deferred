@@ -18,10 +18,10 @@ function Promise () {
 }
 
 /**
- * @TBD
+ * Adds the given handler to be called when the promise is either resolved or rejected.
  * @TODO: test this ==== arg
- * @param arg {Function|Deferred} Listener or another deferred
- * @param ctx {Object}
+ * @param {Function|Deferred} arg  Listener or another deferred
+ * @param {Object}            ctx
  * @returns {Object} Instance
  * @public
  */
@@ -47,8 +47,8 @@ Promise.prototype.always = function always (arg, ctx) {
 /**
  * Adds onResolve listener and returns this promise
  * @TODO: test this === arg
- * @param arg {Function|Deferred} Listener or another deferred
- * @param [ctx] {Object} Listener context
+ * @param {Function|Deferred} arg    Listener or another deferred
+ * @param {Object}            [ctx]  Listener context
  * @returns {Object} Instance
  * @public
  */
@@ -89,8 +89,8 @@ Promise.prototype.done = function done (arg, ctx) {
 /**
  * Adds onReject listener
  * @TODO: test this === arg
- * @param arg {Function|Deferred} Listener or another deferred
- * @param [ctx] {Object} Listener context
+ * @param  {Function|Deferred} arg   Listener or another deferred
+ * @param  {Object}            [ctx] Listener context
  * @returns {Object} Instance
  * @public
  */
@@ -159,10 +159,13 @@ Promise.prototype.isResolved = function isResolved () {
 };
 
 /**
- * @TBD
- * @param onResolve {Function}
- * @param onReject {Function}
- * @param [argCtx] {Object} Context for listeners
+ * Appends fulfillment and rejection handlers to the promise,
+ * and returns a new promise resolving to the return value of the called handler,
+ * or to its original settled value if the promise was not handled
+ * (i.e. if the relevant handler onFulfilled or onRejected is undefined).
+ * @param {Function} onResolve
+ * @param {Function} onReject
+ * @param {Object} [argCtx]
  * @public
  */
 
@@ -241,22 +244,13 @@ Promise.prototype.then = function then (onResolve, onReject, argCtx) {
 
 /**
  * Alias for Promise#then(null, fn)
- * @param onReject {Function}
- * @param [ctx] {Object}
+ * @param {Function} onReject
+ * @param {Object}   [ctx]
  * @returns {Promise}
  */
 
 Promise.prototype['catch'] = function _catch (onReject, ctx) {
   return this.then(null, onReject, ctx);
-};
-
-/**
- * TBD
- * @public
- */
-
-Promise.prototype.valueOf = function valueOf () {
-  return this;
 };
 
 function pushCallback (promise, key, obj) {

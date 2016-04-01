@@ -1,3 +1,8 @@
+#### v1.0.2 - 01/03/2016
+
+- Add names for internal functions
+- Update jsdoc
+
 #### v1.0.1 - 31/03/2016
 
 - Add documentation
