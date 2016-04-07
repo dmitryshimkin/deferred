@@ -1,3 +1,7 @@
+#### v1.2.1 - 07/04/2016
+
+- Fix links in README
+
 #### v1.2.0 - 07/04/2016
 
 - Properly handle exceptions in `done`, `fail`, and `always` callbacks

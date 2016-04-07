@@ -1,7 +1,7 @@
 {
   "name": "deferred2",
   "preferGlobal": false,
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Dmitry Shimkin <dmitryshimkin@gmail.com>",
   "description": "Promises/A+ with synchronous calls and context support",
   "repository": {
@@ -11,6 +11,7 @@
   "keywords": [
     "async",
     "deferred",
+    "defer",
     "promise"
   ],
   "scripts": {

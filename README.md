@@ -49,14 +49,14 @@ Any ES3 compliant browser.
 - [Performance](#performance)
 - [License](#license)
 
-<a name="install">
+<a name="install"></a>
 ## Install
 
 ```
 npm install deferred2
 ```
 
-<a name="usage">
+<a name="usage"></a>
 ## Usage
 
 As a script tag:
@@ -92,11 +92,11 @@ import {Deferred} from 'deferred2'
 // Deferred is available here
 ```
 
-<a name="api">
+<a name="api"></a>
 ## API
 
 
-<a name="deferred">
+<a name="deferred"></a>
 ### Deferred
 
 A new instance of Deferred can be created by calling Deferred as a constructor
@@ -108,10 +108,10 @@ import {Deferred} from 'deferred2'
 const dfd = new Deferred();
 ```
 
-<a name="deferred-static">
+<a name="deferred-static"></a>
 ### Static methods
 
-<a name="deferred-resolve">
+<a name="deferred-resolve"></a>
 #### Deferred.resolve()
 
 Returns a Promise object that is resolved with the given value.
@@ -179,7 +179,7 @@ Deferred.resolve(thenable)
 ```
 
 
-<a name="deferred-reject">
+<a name="deferred-reject"></a>
 #### Deferred.reject()
 
 Returns a Promise object that is rejected with the given reason.
@@ -206,7 +206,7 @@ Deferred.reject('Some error')
 ```
 
 
-<a name="deferred-all">
+<a name="deferred-all"></a>
 #### Deferred.all()
 
 Returns a promise that resolves when all of the promises in the given array have resolved,
@@ -243,7 +243,7 @@ dfdC.resolve('xyz'); // ["foo", "bar", "xyz"]
 ```
 
 
-<a name="deferred-race">
+<a name="deferred-race"></a>
 #### Deferred.race()
 
 Returns a promise that resolves or rejects as soon as one of the promises
@@ -284,7 +284,7 @@ setTimeout(() => {
 ```
 
 
-<a name="deferred-isdeferred">
+<a name="deferred-isdeferred"></a>
 #### Deferred.isDeferred()
 
 Returns `true` if the given argument is an instance of Deferred, `false` if it is not.
@@ -311,7 +311,7 @@ Deferred.isDeferred('foo');                    // false
 ```
 
 
-<a name="deferred-ispromise">
+<a name="deferred-ispromise"></a>
 #### Deferred.isPromise()
 
 Returns `true` if the given argument is an instance of Promise, produced by Deferred,
@@ -340,7 +340,7 @@ Deferred.isPromise((new Promise(function (resolve, reject) {}))); // false
 ```
 
 
-<a name="deferred-isthenable">
+<a name="deferred-isthenable"></a>
 #### Deferred.isThenable()
 
 Returns `true` if the given argument is a thenable object (has `then` method),
@@ -369,10 +369,10 @@ Deferred.isThenable((new Promise(function (resolve, reject) {}))); // true
 ```
 
 
-<a name="deferred-instance">
+<a name="deferred-instance"></a>
 ### Deferred instance
 
-<a name="deferred-instance-resolve">
+<a name="deferred-instance-resolve"></a>
 #### .resolve()
 
 Resolves the promise with the given value.
@@ -466,7 +466,7 @@ dfd.resolve(thenable);
 ```
 
 
-<a name="deferred-instance-reject">
+<a name="deferred-instance-reject"></a>
 #### .reject()
 
 Rejects the promise with the given reason.
@@ -495,7 +495,7 @@ dfd.reject('Error'); // "Error"
 ```
 
 
-<a name="deferred-instance-promise">
+<a name="deferred-instance-promise"></a>
 #### .promise
 
 Promise instance associated with this deferred. See [Promise instance API](#Promise).
@@ -511,7 +511,7 @@ dfd.promise.then(onResolve, onReject);
 ```
 
 
-<a name="promise-instance">
+<a name="promise-instance"></a>
 ### Promise instance
 
 Promise cannot be instantiated directly. Instead you need to create an instance of Deferred
@@ -528,7 +528,7 @@ promise.then(/*...*/)
 
 ### Promise instance methods
 
-<a name="promise-instance-then">
+<a name="promise-instance-then"></a>
 #### .then()
 
 Appends fulfillment and rejection handlers to the promise,
@@ -656,7 +656,7 @@ class Component {
 }
 ```
 
-<a name="promise-instance-catch">
+<a name="promise-instance-catch"></a>
 #### .catch()
 
 Adds the given handler to be called when the promise is reject.
@@ -688,7 +688,7 @@ dfd.reject('Error'); // "Error"
 ```
 
 
-<a name="promise-instance-done">
+<a name="promise-instance-done"></a>
 #### .done()
 
 Adds the given handler to be called when the promise is resolved.
@@ -743,7 +743,7 @@ class Component {
 ```
 
 
-<a name="promise-instance-fail">
+<a name="promise-instance-fail"></a>
 #### .fail()
 
 Adds the given handler to be called when the promise is rejected.
@@ -798,7 +798,7 @@ class Component {
 ```
 
 
-<a name="promise-instance-always">
+<a name="promise-instance-always"></a>
 #### .always()
 
 Adds the given handler to be called when the promise is either resolved or rejected.
@@ -854,7 +854,7 @@ NOTE: Most descriptions here are taken from
 [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
 
 
-<a name="performance">
+<a name="performance"></a>
 ## Performance
 
 In the benchmark suite I create an instance of the Deferred.
@@ -889,7 +889,7 @@ On Macbook Pro 2015 with `NodeJS v4.0.0` I got the following result:
 | [jQuery](https://api.jquery.com/category/deferred-object/)  |    41,247 |
 
 
-<a name="license">
+<a name="license"></a>
 ## License
 
 MIT
