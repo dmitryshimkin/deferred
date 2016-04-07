@@ -10,7 +10,7 @@ Based on Deferred pattern.
 - Cross-browser
 - Sync calls when it's possible
 - Support context for the handlers
-- Small size: 1.3 KB (min and gzipped)
+- Small size: 1.4 KB (min and gzipped)
 - No dependencies
 - Performance
 

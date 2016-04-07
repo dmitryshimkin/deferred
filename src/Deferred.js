@@ -137,15 +137,34 @@ function processChildren (dfd) {
 /**
  * @private
  */
-
 function runCallbacks (callbacks, value) {
   var callback;
+  var err;
   if (callbacks) {
     for (var i = 0; i < callbacks.length; i++) {
-      callback = callbacks[i];
-      callback.fn.call(callback.ctx, value);
+      runCallback(callbacks[i], value);
     }
   }
+}
+
+/**
+ * @private
+ */
+function runCallback (callback, value) {
+  try {
+    callback.fn.call(callback.ctx, value);
+  } catch (err) {
+    throwAsync(err);
+  }
+}
+
+/**
+ * @private
+ */
+function throwAsync (err) {
+  setTimeout(function onAsyncErrorTimeout () {
+    throw err;
+  }, 0);
 }
 
 /**

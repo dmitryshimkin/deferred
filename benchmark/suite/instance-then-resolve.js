@@ -62,13 +62,13 @@ function vowSuite () {
 
 suite = suite
   .add('Deferred', DeferredSuite)
-  .add('kew', kewSuite)
+  //.add('kew', kewSuite)
   .add('Bluebird', BluebirdSuite)
-  .add('ES6 promise', ES6PromiseSuite)
-  .add('vow', vowSuite)
-  .add('RSVP', rsvpSuite)
-  .add('Q', qSuite)
-  .add('jQuery', jquerySuite);
+  // .add('ES6 promise', ES6PromiseSuite)
+  // .add('vow', vowSuite)
+  // .add('RSVP', rsvpSuite)
+  // .add('Q', qSuite)
+  // .add('jQuery', jquerySuite);
 
 module.exports = {
   name: 'Create new instance, call .then(), and call .resolve()',

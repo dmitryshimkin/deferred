@@ -1,3 +1,7 @@
+#### v1.2.0 - 07/04/2016
+
+- Properly handle exceptions in `done`, `fail`, and `always` callbacks
+
 #### v1.1.0 - 06/04/2016
 
 - Add benchmark

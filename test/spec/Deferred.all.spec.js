@@ -18,112 +18,112 @@ describe('Deferred.all', function () {
 
   describe('returned promise', function () {
     it('should be resolved if all passed promises are resolved', function () {
-      var d1 = new Deferred();
-      var d2 = new Deferred();
-      var d3 = new Deferred();
+      var dfdA = new Deferred();
+      var dfdB = new Deferred();
+      var dfdC = new Deferred();
 
-      d1.resolve();
-      d2.resolve();
-      d3.resolve();
+      dfdA.resolve();
+      dfdB.resolve();
+      dfdC.resolve();
 
-      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+      var promise = Deferred.all([dfdA.promise, dfdB.promise, dfdC.promise]);
       expect(promise.isResolved()).toBe(true);
     });
 
     it('should be resolved when all passed promises are resolved', function () {
-      var d1 = new Deferred();
-      var d2 = new Deferred();
-      var d3 = new Deferred();
+      var dfdA = new Deferred();
+      var dfdB = new Deferred();
+      var dfdC = new Deferred();
 
-      d1.resolve();
+      dfdA.resolve();
 
-      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+      var promise = Deferred.all([dfdA.promise, dfdB.promise, dfdC.promise]);
       expect(promise.isPending()).toBe(true);
 
-      d2.resolve();
+      dfdB.resolve();
       expect(promise.isPending()).toBe(true);
 
-      d3.resolve();
+      dfdC.resolve();
       expect(promise.isResolved()).toBe(true);
     });
 
     it('should be rejected if at least one of passed promises is rejected', function () {
-      var d1 = new Deferred();
-      var d2 = new Deferred();
-      var d3 = new Deferred();
+      var dfdA = new Deferred();
+      var dfdB = new Deferred();
+      var dfdC = new Deferred();
 
-      d1.resolve();
-      d2.reject();
-      d3.resolve();
+      dfdA.resolve();
+      dfdB.reject();
+      dfdC.resolve();
 
-      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+      var promise = Deferred.all([dfdA.promise, dfdB.promise, dfdC.promise]);
       expect(promise.isRejected()).toBe(true);
     });
 
     it('should be rejected once one of passed promises is rejected', function () {
-      var d1 = new Deferred();
-      var d2 = new Deferred();
-      var d3 = new Deferred();
+      var dfdA = new Deferred();
+      var dfdB = new Deferred();
+      var dfdC = new Deferred();
 
-      d1.resolve();
+      dfdA.resolve();
 
-      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+      var promise = Deferred.all([dfdA.promise, dfdB.promise, dfdC.promise]);
       expect(promise.isPending()).toBe(true);
 
-      d2.reject();
+      dfdB.reject();
       expect(promise.isRejected()).toBe(true);
 
-      d3.resolve();
+      dfdC.resolve();
       expect(promise.isRejected()).toBe(true);
     });
 
     it('should be resolved with array of passed promises values', function () {
-      var d1 = new Deferred();
-      var d2 = new Deferred();
-      var d3 = new Deferred();
+      var dfdA = new Deferred();
+      var dfdB = new Deferred();
+      var dfdC = new Deferred();
       var value1 = {};
 
-      d2.resolve(value1);
+      dfdB.resolve(value1);
 
-      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+      var promise = Deferred.all([dfdA.promise, dfdB.promise, dfdC.promise]);
 
-      d3.resolve('foo');
-      d1.resolve();
+      dfdC.resolve('foo');
+      dfdA.resolve();
 
       expect(promise.value).toEqual([undefined, value1, 'foo']);
     });
 
     it('should be rejected with reason of passed rejected promise', function () {
-      var d1 = new Deferred();
-      var d2 = new Deferred();
-      var d3 = new Deferred();
+      var dfdA = new Deferred();
+      var dfdB = new Deferred();
+      var dfdC = new Deferred();
       var reason = {};
 
-      d2.resolve('foo');
+      dfdB.resolve('foo');
 
-      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+      var promise = Deferred.all([dfdA.promise, dfdB.promise, dfdC.promise]);
 
-      d3.reject(reason);
-      d1.resolve();
+      dfdC.reject(reason);
+      dfdA.resolve();
 
       expect(promise.value).toBe(reason);
     });
 
     it('should be resolved correctly if promise in arguments is resolved with another promise', function (done) {
-      var d1 = new Deferred();
-      var d2 = new Deferred();
-      var d3 = new Deferred();
+      var dfdA = new Deferred();
+      var dfdB = new Deferred();
+      var dfdC = new Deferred();
       var d4 = new Deferred();
 
-      d1.resolve(1);
+      dfdA.resolve(1);
 
-      var promise = Deferred.all([d1.promise, d2.promise, d3.promise]);
+      var promise = Deferred.all([dfdA.promise, dfdB.promise, dfdC.promise]);
       expect(promise.isPending()).toBe(true);
 
-      d2.resolve(d4.promise);
+      dfdB.resolve(d4.promise);
       expect(promise.isPending()).toBe(true);
 
-      d3.resolve(3);
+      dfdC.resolve(3);
       expect(promise.isPending()).toBe(true);
 
       setTimeout(function () {
