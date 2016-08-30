@@ -1,9 +1,9 @@
 # Deferred
 
-The [fastest](#performance) Promises/A+ implementation
-with synchronous calls and context support.
+The [fastest](#performance) implementation of Deferred pattern with synchronous calls and context support. 
 
-Based on Deferred pattern.
+12 times less and 5 times faster than Bluebird.
+
 
 ## Features
 
