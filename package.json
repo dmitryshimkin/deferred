@@ -1,10 +1,10 @@
 {
   "name": "deferred2",
   "preferGlobal": false,
-  "version": "1.2.2",
+  "version": "1.2.3",
   "author": "Dmitry Shimkin <dmitryshimkin@gmail.com>",
   "description": "Promises/A+ with synchronous calls and context support",
-  "main": "./dist/deferred.js",
+  "main": "./dist/deferred.min.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/dmitryshimkin/deferred.git"

@@ -1,6 +1,6 @@
 /**
  * Deferred
- * Version: 1.2.2
+ * Version: 1.2.3
  * Author: Dmitry Shimkin <dmitryshimkin@gmail.com>
  * License: MIT
  * https://github.com/dmitryshimkin/deferred

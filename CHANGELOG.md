@@ -1,3 +1,7 @@
+#### v1.2.3 - 18/09/2016
+
+- Change "main" to minified version
+
 #### v1.2.2 - 18/09/2016
 
 - Add "main" to package.json
