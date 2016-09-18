@@ -1,3 +1,7 @@
+#### v1.2.2 - 18/09/2016
+
+- Add "main" to package.json
+
 #### v1.2.1 - 07/04/2016
 
 - Fix links in README
