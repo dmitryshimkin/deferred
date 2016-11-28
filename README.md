@@ -1,6 +1,6 @@
 # Deferred
 
-The [fastest](#performance) implementation of Deferred pattern with synchronous calls and context support. 
+The [fastest](#performance) implementation of Deferred pattern with synchronous calls and context support.
 
 12 times less and 5 times faster than Bluebird.
 
@@ -10,7 +10,7 @@ The [fastest](#performance) implementation of Deferred pattern with synchronous 
 - Cross-browser
 - Sync calls when it's possible
 - Support context for the handlers
-- Small size: 1.4 KB (min and gzipped)
+- Small size: 1.84 KB (minified and gzipped)
 - No dependencies
 - Performance
 
@@ -869,7 +869,7 @@ The code of the benchmark suite can be found in [benchmark/suite](./benchmark/su
 Start benchmark:
 
 ```
-npm run benchmark
+npm run bench
 ```
 
 If you get `out of memory` error, try to run the suites separately one by one by commenting out

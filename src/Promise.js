@@ -1,4 +1,5 @@
-'use strict';
+import Deferred from './Deferred'
+import { isDeferred, processChild } from './utils'
 
 /**
  * Promise constructor
@@ -11,7 +12,6 @@
  *
  * @class
  */
-
 function Promise () {
   this.value = void 0;
   this._state = 0;
@@ -25,9 +25,8 @@ function Promise () {
  * @returns {Object} Instance
  * @public
  */
-
-Promise.prototype.always = function always (arg, ctx) {
-  if (arg instanceof Deferred) {
+function always (arg, ctx) {
+  if (isDeferred(arg)) {
     this
       .done(function onArgDone (value) {
         arg.resolve(value);
@@ -42,7 +41,7 @@ Promise.prototype.always = function always (arg, ctx) {
   }
 
   return this;
-};
+}
 
 /**
  * Adds onResolve listener and returns this promise
@@ -52,13 +51,12 @@ Promise.prototype.always = function always (arg, ctx) {
  * @returns {Object} Instance
  * @public
  */
-
-Promise.prototype.done = function done (arg, ctx) {
+function done (arg, ctx) {
   var state = this._state;
-  var isDeferred = arg instanceof Deferred;
+  var isDfd = isDeferred(arg);
 
   if (state === 2) {
-    if (isDeferred) {
+    if (isDfd) {
       arg.resolve(this.value);
     } else {
       arg.call(ctx, this.value);
@@ -67,7 +65,7 @@ Promise.prototype.done = function done (arg, ctx) {
   }
 
   if (state === 0) {
-    if (isDeferred) {
+    if (isDfd) {
       this.done(function onDone (value) {
         arg.resolve.call(arg, value);
       });
@@ -80,7 +78,7 @@ Promise.prototype.done = function done (arg, ctx) {
   }
 
   return this;
-};
+}
 
 /**
  * Adds onReject listener
@@ -90,13 +88,12 @@ Promise.prototype.done = function done (arg, ctx) {
  * @returns {Object} Instance
  * @public
  */
-
-Promise.prototype.fail = function fail (arg, ctx) {
+function fail (arg, ctx) {
   var state = this._state;
-  var isDeferred = arg instanceof Deferred;
+  var isDfd = isDeferred(arg);
 
   if (state === 3) {
-    if (isDeferred) {
+    if (isDfd) {
       arg.reject(this.value);
     } else {
       arg.call(ctx, this.value);
@@ -105,7 +102,7 @@ Promise.prototype.fail = function fail (arg, ctx) {
   }
 
   if (state === 0) {
-    if (isDeferred) {
+    if (isDfd) {
       this.fail(function onFail (reason) {
         arg.reject(reason);
       });
@@ -118,37 +115,34 @@ Promise.prototype.fail = function fail (arg, ctx) {
   }
 
   return this;
-};
+}
 
 /**
  * Returns true, if promise has pending state
  * @returns {Boolean}
  * @public
  */
-
-Promise.prototype.isPending = function isPending () {
+function isPending () {
   return this._state <= 1;
-};
+}
 
 /**
  * Returns true, if promise is rejected
  * @returns {Boolean}
  * @public
  */
-
-Promise.prototype.isRejected = function isRejected () {
+function isRejected () {
   return this._state === 3;
-};
+}
 
 /**
  * Returns true, if promise is resolved
  * @returns {Boolean}
  * @public
  */
-
-Promise.prototype.isResolved = function isResolved () {
+function isResolved () {
   return this._state === 2;
-};
+}
 
 /**
  * Appends fulfillment and rejection handlers to the promise,
@@ -161,8 +155,7 @@ Promise.prototype.isResolved = function isResolved () {
  * @returns {Function}
  * @public
  */
-
-Promise.prototype.then = function then (onResolve, onReject, argCtx) {
+function then (onResolve, onReject, argCtx) {
   var argsCount = arguments.length;
   if (argsCount === 2) {
     if (typeof onReject === 'object') {
@@ -173,7 +166,7 @@ Promise.prototype.then = function then (onResolve, onReject, argCtx) {
     }
   }
   return _then(this, onResolve, onReject, argCtx);
-};
+}
 
 /**
  * Method `.then` with normalized arguments
@@ -222,42 +215,15 @@ function addChild (parentPromise, child) {
   }
 }
 
-function processChild (parentPromise, child) {
-  var x;
-  var error;
-
-  var value = parentPromise.value;
-
-  var isResolved = parentPromise._state === 2;
-  var fn = isResolved ? child.onResolve : child.onReject;
-
-  try {
-    x = fn.call(child.ctx, value);
-  } catch (err) {
-    error = err;
-  }
-
-  if (error !== void 0) {
-    // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
-    //          promise2 must be rejected with e as the reason.
-    child.deferred.reject(error);
-  } else {
-    // 2.2.7.1. If either onFulfilled or onReject returns a value x, run the
-    //          Promise Resolution Procedure [[Resolve]](promise2, x).
-    child.deferred.resolve(x);
-  }
-}
-
 /**
  * Alias for Promise#then(null, fn)
  * @param {Function} onReject
  * @param {Object}   [ctx]
  * @returns {Promise}
  */
-
-Promise.prototype['catch'] = function _catch (onReject, ctx) {
+function _catch (onReject, ctx) {
   return this.then(null, onReject, ctx);
-};
+}
 
 /**
  * @param {Promise} promise
@@ -265,7 +231,6 @@ Promise.prototype['catch'] = function _catch (onReject, ctx) {
  * @param {Object}  obj
  * @private
  */
-
 function addCallback (promise, key, obj) {
   if (!promise[key]) {
     promise[key] = [obj];
@@ -273,3 +238,14 @@ function addCallback (promise, key, obj) {
     promise[key].push(obj);
   }
 }
+
+Promise.prototype.always = always;
+Promise.prototype.done = done;
+Promise.prototype.fail = fail;
+Promise.prototype['catch'] = _catch;
+Promise.prototype.isPending = isPending;
+Promise.prototype.isResolved = isResolved;
+Promise.prototype.isRejected = isRejected;
+Promise.prototype.then = then;
+
+export default Promise

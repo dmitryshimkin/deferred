@@ -1,4 +1,5 @@
-'use strict';
+import Deferred from './Deferred'
+import { indexOf } from './utils'
 
 /**
  * Returns a promise that resolves or rejects as soon as one of the promises
@@ -7,8 +8,7 @@
  * @returns {Promise}
  * @public
  */
-
-Deferred.race = function race (promises) {
+function race (promises) {
   var dfd = new Deferred();
 
   if (!promises) {
@@ -61,4 +61,6 @@ Deferred.race = function race (promises) {
   }
 
   return dfd.promise;
-};
+}
+
+export default race

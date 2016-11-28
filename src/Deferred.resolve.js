@@ -1,4 +1,4 @@
-'use strict';
+import Deferred from './Deferred'
 
 /**
  * Returns a Promise object that is resolved with the given value.
@@ -6,8 +6,7 @@
  * @returns {Promise}
  * @public
  */
-
-Deferred.resolve = function resolve (x) {
+function resolve (x) {
   if (Deferred.isPromise(x)) {
     return x;
   }
@@ -29,4 +28,6 @@ Deferred.resolve = function resolve (x) {
   }
 
   return dfd.promise;
-};
+}
+
+export default resolve

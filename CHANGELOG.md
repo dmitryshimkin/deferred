@@ -1,3 +1,7 @@
+#### v1.3.0 - 29/11/2016
+
+- Use ES2015 modules
+
 #### v1.2.3 - 18/09/2016
 
 - Change "main" to minified version

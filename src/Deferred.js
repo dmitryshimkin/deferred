@@ -1,10 +1,10 @@
-'use strict';
+import Promise from './Promise'
+import { isDeferred, processChild } from './utils'
 
 /**
  * Deferred class
  * @class
  */
-
 function Deferred () {
   this.promise = new Promise();
 }
@@ -15,15 +15,14 @@ function Deferred () {
  * @returns {Deferred}
  * @public
  */
-
-Deferred.prototype.reject = function reject (reason) {
+function reject (reason) {
   // ignore non-pending promises
   if (this.promise._state !== 0) {
     return this;
   }
 
   return rejectWithReason(this, reason);
-};
+}
 
 /**
  * Translates the promise into resolved state.
@@ -31,8 +30,7 @@ Deferred.prototype.reject = function reject (reason) {
  * @returns {Deferred}
  * @public
  */
-
-Deferred.prototype.resolve = function resolve (x) {
+function resolve (x) {
   var dfd = this;
   var promise = this.promise;
 
@@ -52,12 +50,11 @@ Deferred.prototype.resolve = function resolve (x) {
   }
 
   return resolveWithValue(dfd, x);
-};
+}
 
 /**
  * @private
  */
-
 function rejectWithReason (dfd, reason) {
   var promise = dfd.promise;
 
@@ -74,7 +71,6 @@ function rejectWithReason (dfd, reason) {
 /**
  * @private
  */
-
 function rejectWithSameArgError (dfd) {
   var err = new TypeError('Promise and argument refer to the same object');
   dfd.reject(err);
@@ -84,7 +80,6 @@ function rejectWithSameArgError (dfd) {
 /**
  * @private
  */
-
 function resolveWithPromise (dfd, promise) {
   // lock promise
   lockPromise(dfd.promise);
@@ -109,7 +104,6 @@ function resolveWithPromise (dfd, promise) {
 /**
  * @private
  */
-
 function resolveWithValue (dfd, value) {
   dfd.promise._state = 2;
   dfd.promise.value = value;
@@ -124,7 +118,6 @@ function resolveWithValue (dfd, value) {
 /**
  * @private
  */
-
 function processChildren (dfd) {
   var children = dfd.promise._children;
   if (children) {
@@ -173,22 +166,9 @@ function throwAsync (err) {
  * @returns {Boolean}
  * @public
  */
-
-Deferred.isPromise = function isPromise (arg) {
+function isPromise (arg) {
   return arg instanceof Promise;
-};
-
-/**
- * Returns true if the given argument is an instance of Promise, produced by Deferred,
- * false if it is not.
- * @param {*} arg
- * @returns {Boolean}
- * @public
- */
-
-Deferred.isDeferred = function isDeferred (arg) {
-  return arg instanceof Deferred;
-};
+}
 
 /**
  * Returns true if the given argument is a thenable object (has `then` method),
@@ -197,15 +177,13 @@ Deferred.isDeferred = function isDeferred (arg) {
  * @returns {Boolean}
  * @public
  */
-
-Deferred.isThenable = function isThenable (arg) {
+function isThenable (arg) {
   return arg !== null && typeof arg === 'object' && typeof arg.then === 'function';
-};
+}
 
 /**
  * @private
  */
-
 function cleanUpPromise (promise) {
   promise._doneCallbacks = null;
   promise._failCallbacks = null;
@@ -215,7 +193,15 @@ function cleanUpPromise (promise) {
  * @param {Promise} promise
  * @private
  */
-
 function lockPromise (promise) {
   promise._state = 1;
 }
+
+Deferred.isDeferred = isDeferred;
+Deferred.isPromise = isPromise;
+Deferred.isThenable = isThenable;
+
+Deferred.prototype.reject = reject;
+Deferred.prototype.resolve = resolve;
+
+export default Deferred

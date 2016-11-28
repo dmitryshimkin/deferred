@@ -1,4 +1,4 @@
-'use strict';
+import Deferred from './Deferred'
 
 /**
  * Returns a Promise object that is rejected with the given reason.
@@ -6,9 +6,10 @@
  * @returns {Promise}
  * @public
  */
-
-Deferred.reject = function reject (reason) {
+function reject (reason) {
   var dfd = new Deferred();
   dfd.reject(reason);
   return dfd.promise;
-};
+}
+
+export default reject

@@ -1,15 +1,5 @@
-'use strict';
-
-function indexOf (promises, promise) {
-  var i = promises.length;
-  while (i--) {
-    if (promises[i] === promise) {
-      return i;
-    }
-  }
-  /* istanbul ignore next */
-  return -1;
-}
+import Deferred from './Deferred'
+import { indexOf } from './utils'
 
 /**
  * Returns a promise that resolves when all of the promises in the given array have resolved,
@@ -18,8 +8,7 @@ function indexOf (promises, promise) {
  * @returns {Promise}
  * @public
  */
-
-Deferred.all = function all (promises) {
+function all (promises) {
   var dfd = new Deferred();
 
   if (!promises) {
@@ -72,4 +61,6 @@ Deferred.all = function all (promises) {
   }
 
   return dfd.promise;
-};
+}
+
+export default all
