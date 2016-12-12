@@ -87,7 +87,7 @@ define(['Deferred'], function (Deferred) {
 As an ES2015 module:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 // Deferred is available here
 ```
@@ -103,7 +103,7 @@ A new instance of Deferred can be created by calling Deferred as a constructor
 (e.g. with a `new` keyword):
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 ```
@@ -133,7 +133,7 @@ Returns: `Promise`.
 Resolving with value:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 Deferred.resolve(2)
   .then(function(val) {
@@ -144,7 +144,7 @@ Deferred.resolve(2)
 Resolving with another deferred:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 Deferred.resolve(dfd) ==== dfd.promise; // true
@@ -153,7 +153,7 @@ Deferred.resolve(dfd) ==== dfd.promise; // true
 Resolving with promise:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 Deferred.resolve(dfd.promise) === dfd.promise; // true
@@ -162,7 +162,7 @@ Deferred.resolve(dfd.promise) === dfd.promise; // true
 Resolving with thenable:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const thenable = {
   then: function (onResolve, onReject) {
@@ -197,7 +197,7 @@ Returns: `Promise`.
 Rejection with value:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 Deferred.reject('Some error')
   .catch(function(val) {
@@ -223,7 +223,7 @@ Returns: `Promise`.
 ##### Examples
 
 ```javascript
-import {Deferred} from 'deferred'
+import Deferred from 'deferred'
 
 const dfdA = new Deferred();
 const dfdB = new Deferred();
@@ -260,7 +260,7 @@ Returns: `Promise`.
 ##### Examples
 
 ```javascript
-import {Deferred} from 'deferred'
+import Deferred from 'deferred'
 
 const dfdA = new Deferred();
 const dfdB = new Deferred();
@@ -300,7 +300,7 @@ Returns: `Boolean`.
 ##### Examples
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -328,7 +328,7 @@ Returns: `Boolean`.
 ##### Examples
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -357,7 +357,7 @@ Returns: `Boolean`.
 ##### Examples
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -394,7 +394,7 @@ Returns: `Deferred` – the same deferred instance for the chaining.
 Resolving with value:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -409,7 +409,7 @@ dfd.resolve(2); // 2
 Resolving with another deferred:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfdA = new Deferred();
 const dfdB = new Deferred();
@@ -427,7 +427,7 @@ dfdB.resolve('foo'); // "foo"
 Resolving with promise:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfdA = new Deferred();
 const dfdB = new Deferred();
@@ -445,7 +445,7 @@ dfdB.resolve('foo'); // "foo"
 Resolving with thenable:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -482,7 +482,7 @@ Returns: `Deferred` – the same deferred instance for the chaining.
 ##### Examples
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -503,7 +503,7 @@ Promise instance associated with this deferred. See [Promise instance API](#Prom
 ##### Examples
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -518,7 +518,7 @@ Promise cannot be instantiated directly. Instead you need to create an instance 
 and get the associated promise from it:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 const promise = dfd.promise;
@@ -553,7 +553,7 @@ Returns: `Promise` – a new promise based on the value, returned by the handler
 Handle resolve:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -570,7 +570,7 @@ dfd.resolve('foo'); // "foo"
 Handle reject:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -587,7 +587,7 @@ dfd.reject('Error'); // "Error"
 Pass only `onResolve`:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -602,7 +602,7 @@ dfd.resolve('bar'); // "bar"
 Pass only `onReject`:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -617,7 +617,7 @@ dfd.reject('Error'); // "Error"
 Pass the context:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 class Component {
   constructor () {
@@ -642,7 +642,7 @@ class Component {
 Pass only `onResolve` and the context:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 class Component {
   constructor () {
@@ -675,7 +675,7 @@ Alias for `.then(null, onReject)`.
 ##### Examples
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -708,7 +708,7 @@ Returns: `Promise` – the same promise for the chaining.
 ##### Examples
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -723,7 +723,7 @@ dfd.resolve('foo'); // "foo"
 Context for the handler:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 class Component {
   constructor () {
@@ -763,7 +763,7 @@ Returns: `Promise` – the same promise for the chaining.
 ##### Examples
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfd = new Deferred();
 
@@ -778,7 +778,7 @@ dfd.reject('foo'); // "foo"
 Context for the handler:
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 class Component {
   constructor () {
@@ -815,7 +815,7 @@ Returns: `Promise` – the same promise for the chaining.
 ##### Examples
 
 ```javascript
-import {Deferred} from 'deferred2'
+import Deferred from 'deferred2'
 
 const dfdA = new Deferred();
 const dfdB = new Deferred();
