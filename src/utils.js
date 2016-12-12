@@ -26,7 +26,7 @@ export function isDeferred (arg) {
 }
 
 /**
- * @inner 
+ * @inner
  */
 export function processChild (parentPromise, child) {
   var x;
@@ -36,6 +36,16 @@ export function processChild (parentPromise, child) {
 
   var isResolved = parentPromise._state === 2;
   var fn = isResolved ? child.onResolve : child.onReject;
+  var hasHandler = typeof fn === 'function';
+
+  if (!hasHandler) {
+    if (isResolved) {
+      child.deferred.resolve(value);
+    } else {
+      child.deferred.reject(value);
+    }
+    return;
+  }
 
   try {
     x = fn.call(child.ctx, value);

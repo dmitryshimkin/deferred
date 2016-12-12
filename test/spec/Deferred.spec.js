@@ -32,6 +32,7 @@ describe('Deferred', function () {
   };
 
   /**
+   * --------------------------------------------------------------------------
    * Constructor
    * --------------------------------------------------------------------------
    */
@@ -48,6 +49,7 @@ describe('Deferred', function () {
   });
 
   /**
+   * --------------------------------------------------------------------------
    * Done
    * --------------------------------------------------------------------------
    */
@@ -300,6 +302,7 @@ describe('Deferred', function () {
   });
 
   /**
+   * --------------------------------------------------------------------------
    * Fail
    * --------------------------------------------------------------------------
    */
@@ -509,6 +512,7 @@ describe('Deferred', function () {
   });
 
   /**
+   * --------------------------------------------------------------------------
    * Always
    * --------------------------------------------------------------------------
    */
@@ -825,7 +829,7 @@ describe('Deferred', function () {
       // NOTE: this implementation ignores this bullshit. Use BlueBird.js if you need it
 
       // 2.2.5. Spec: onFulfilled and onReject must be called as functions (i.e. with no this value).
-      // NOTE: This is a shit. Context must be a promise or custom one
+      // NOTE: This is shit. Context must be a promise or a custom one
       describe('context', function () {
         it('should be undefined if no context specified', function () {
           var dfd = new Deferred();
@@ -1050,6 +1054,18 @@ describe('Deferred', function () {
       });
 
       describe('reject', function () {
+        it('returned promise1 should be rejected', function () {
+          var dfd = new Deferred();
+          var onResolve = jasmine.createSpy();
+          var reason = {};
+
+          var promise2 = dfd.promise.then(onResolve);
+
+          dfd.reject(reason);
+
+          expect(onResolve).not.toHaveBeenCalled();
+        });
+
         // 2.2.7.2. If either onFulfilled or onReject throws an exception e,
         //          promise2 must be rejected with e as the reason.
         describe('on exception', function () {
@@ -1106,6 +1122,21 @@ describe('Deferred', function () {
           promise2.fail(onFail);
 
           expect(promise2.isRejected()).toBe(true);
+          expect(onFail.calls.count()).toBe(1);
+          expect(onFail.calls.argsFor(0)[0]).toBe(reason);
+        });
+
+        it('returned promise2 should be rejected once promise1 is rejected', function () {
+          var dfd = new Deferred();
+          var onFail = jasmine.createSpy();
+          var reason = {};
+
+          dfd.promise
+            .then(function () {})
+            .catch(onFail);
+
+          dfd.reject(reason);
+
           expect(onFail.calls.count()).toBe(1);
           expect(onFail.calls.argsFor(0)[0]).toBe(reason);
         });
@@ -1378,6 +1409,7 @@ describe('Deferred', function () {
   });
 
   /**
+   * --------------------------------------------------------------------------
    * Reject
    * --------------------------------------------------------------------------
    */
@@ -1443,6 +1475,7 @@ describe('Deferred', function () {
   });
 
   /**
+   * --------------------------------------------------------------------------
    * API
    * --------------------------------------------------------------------------
    */

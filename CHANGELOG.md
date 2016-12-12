@@ -1,3 +1,7 @@
+#### v1.3.2 - 12/12/2016
+
+- Fix promise resolution procedure for promises that don't have corresponding callbacks
+
 #### v1.3.0 - 29/11/2016
 
 - Use `./src/index.js` as a main script in package.json

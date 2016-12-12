@@ -1,6 +1,6 @@
 /**
  * Deferred
- * Version: 1.3.1
+ * Version: 1.3.2
  * Author: Dmitry Shimkin <dmitryshimkin@gmail.com>
  * License: MIT
  * https://github.com/dmitryshimkin/deferred
@@ -38,7 +38,7 @@ function isDeferred (arg) {
 }
 
 /**
- * @inner 
+ * @inner
  */
 function processChild (parentPromise, child) {
   var x;
@@ -48,6 +48,16 @@ function processChild (parentPromise, child) {
 
   var isResolved = parentPromise._state === 2;
   var fn = isResolved ? child.onResolve : child.onReject;
+  var hasHandler = typeof fn === 'function';
+
+  if (!hasHandler) {
+    if (isResolved) {
+      child.deferred.resolve(value);
+    } else {
+      child.deferred.reject(value);
+    }
+    return;
+  }
 
   try {
     x = fn.call(child.ctx, value);
@@ -66,6 +76,8 @@ function processChild (parentPromise, child) {
   }
 }
 
+var counter = 0;
+
 /**
  * Promise constructor
  *
@@ -80,6 +92,9 @@ function processChild (parentPromise, child) {
 function Promise () {
   this.value = void 0;
   this._state = 0;
+
+  this.cid = "cid" + counter;
+  counter++;
 }
 
 /**

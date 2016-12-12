@@ -1,6 +1,8 @@
 import Deferred from './Deferred'
 import { isDeferred, processChild } from './utils'
 
+let counter = 0;
+
 /**
  * Promise constructor
  *
@@ -15,6 +17,9 @@ import { isDeferred, processChild } from './utils'
 function Promise () {
   this.value = void 0;
   this._state = 0;
+
+  this.cid = `cid${counter}`;
+  counter++;
 }
 
 /**
