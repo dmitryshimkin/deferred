@@ -2,7 +2,7 @@
 
 The [fastest](#performance) implementation of Deferred pattern with synchronous calls and context support.
 
-12 times less and 5 times faster than Bluebird.
+8 times less and 2 times faster than Bluebird.
 
 
 ## Features
