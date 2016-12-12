@@ -75,20 +75,23 @@ describe('Deferred.race', function () {
       expect(promise.isRejected()).toBe(true);
     });
 
-    it('should be resolved with value of first resolved promise', function () {
+    it('should be resolved with value of first resolved promise', function (done) {
       var dfdA = new Deferred();
       var dfdB = new Deferred();
       var dfdC = new Deferred();
-      var value = {};
+      var val = {};
 
-      dfdB.resolve(value);
+      dfdB.resolve(val);
 
       var promise = Deferred.race([dfdA.promise, dfdB.promise, dfdC.promise]);
 
-      expect(promise.value).toBe(value);
+      promise.then(function (value) {
+        expect(value).toBe(val);
+        done();
+      })
     });
 
-    it('should be rejected with array of reasons of rejected promises', function () {
+    it('should be rejected with array of reasons of rejected promises', function (done) {
       var dfdA = new Deferred();
       var dfdB = new Deferred();
       var dfdC = new Deferred();
@@ -101,7 +104,10 @@ describe('Deferred.race', function () {
       dfdC.reject(reason);
       dfdA.reject();
 
-      expect(promise.value).toEqual([undefined, 'foo', reason]);
+      promise.catch(function (err) {
+        expect(err).toEqual([undefined, 'foo', reason]);
+        done();
+      });
     });
 
     it('should be resolved correctly if one of passed promise is resolved with another promise', function (done) {
@@ -109,7 +115,7 @@ describe('Deferred.race', function () {
       var dfdB = new Deferred();
       var dfdC = new Deferred();
       var dfdD = new Deferred();
-      var value = {};
+      var val = {};
 
       dfdA.reject();
 
@@ -123,10 +129,12 @@ describe('Deferred.race', function () {
       expect(promise.isPending()).toBe(true);
 
       setTimeout(function () {
-        dfdD.resolve(value);
+        dfdD.resolve(val);
         expect(promise.isResolved()).toBe(true);
-        expect(promise.value).toBe(value);
-        done();
+        promise.then(function (value) {
+          expect(value).toBe(val);
+          done();
+        });
       }, 20);
     });
 
@@ -150,8 +158,11 @@ describe('Deferred.race', function () {
       setTimeout(function () {
         dfdD.reject(2);
         expect(promise.isRejected()).toBe(true);
-        expect(promise.value).toEqual([1, 2, 3]);
-        done();
+
+        promise.catch(function (err) {
+          expect(err).toEqual([1, 2, 3]);
+          done();
+        });
       }, 20);
     });
   });

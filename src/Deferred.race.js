@@ -1,5 +1,9 @@
 import Deferred from './Deferred'
-import { indexOf } from './utils'
+
+import {
+  getPromiseValue,
+  indexOf
+} from './utils'
 
 /**
  * Returns a promise that resolves or rejects as soon as one of the promises
@@ -23,13 +27,13 @@ function race (promises) {
   for (i = 0, l = promises.length; i < l; i++) {
     // If resolved argument found resolve promise and return it
     if (promises[i].isResolved()) {
-      dfd.resolve(promises[i].value);
+      dfd.resolve(getPromiseValue(promises[i]));
       return dfd.promise;
     }
 
     // If rejected argument found add its reason to array of reasons
     if (promises[i].isRejected()) {
-      reasons[i] = promises[i].value;
+      reasons[i] = getPromiseValue(promises[i]);
       continue;
     }
 

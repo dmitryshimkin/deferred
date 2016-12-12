@@ -10,7 +10,7 @@ The [fastest](#performance) implementation of Deferred pattern with synchronous 
 - Cross-browser
 - Sync calls when it's possible
 - Support context for the handlers
-- Small size: 1.84 KB (minified and gzipped)
+- Small size: 2.1 KB (minified and gzipped)
 - No dependencies
 - Performance
 
@@ -879,7 +879,7 @@ On Macbook Pro 2015 with `NodeJS v4.0.0` I got the following result:
 
 | Library                                                     | Ops/sec   |
 |:------------------------------------------------------------|----------:|
-| Deferred                                                    | 5,236,382 |
+| Deferred                                                    | 1,754,069 |
 | [Bluebird](http://bluebirdjs.com/)                          |   913,827 |
 | [ES6 promise](https://github.com/stefanpenner/es6-promise)  |   724,337 |
 | [RSVP](https://github.com/tildeio/rsvp.js/)                 |   590,330 |

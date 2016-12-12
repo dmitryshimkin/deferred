@@ -1,3 +1,7 @@
+#### v1.4.0 - 12/12/2016
+
+- Rename internal properties
+
 #### v1.3.2 - 12/12/2016
 
 - Fix promise resolution procedure for promises that don't have corresponding callbacks

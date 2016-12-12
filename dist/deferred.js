@@ -1,6 +1,6 @@
 /**
  * Deferred
- * Version: 1.3.2
+ * Version: 1.4.0
  * Author: Dmitry Shimkin <dmitryshimkin@gmail.com>
  * License: MIT
  * https://github.com/dmitryshimkin/deferred
@@ -13,7 +13,61 @@
 }(this, (function () { 'use strict';
 
 /**
- * @private
+ * Promise status property key
+ * @type {String}
+ */
+var PROMISE_STATUS_KEY = '[[PromiseStatus]]';
+
+/**
+ * Promise value property key
+ * @type {String}
+ */
+var PROMISE_VALUE_KEY = '[[PromiseValue]]';
+
+/**
+ * Promise locked status
+ * @type {String}
+ */
+var PROMISE_LOCKED = 'locked';
+
+/**
+ * Promise pending status
+ * @type {String}
+ */
+var PROMISE_PENDING = 'pending';
+
+/**
+ * Promise rejected status
+ * @type {String}
+ */
+var PROMISE_REJECTED = 'rejected';
+
+/**
+ * Promise resolved status
+ * @type {String}
+ */
+var PROMISE_RESOLVED = 'resolved';
+
+/**
+ * @param {Promise} promise
+ * @returns {String}
+ * @inner
+ */
+function getPromiseStatus (promise) {
+  return promise[PROMISE_STATUS_KEY];
+}
+
+/**
+ * @param {Promise} promise
+ * @returns {String}
+ * @inner
+ */
+function getPromiseValue (promise) {
+  return promise[PROMISE_VALUE_KEY];
+}
+
+/**
+ * @inner
  */
 function indexOf (promises, promise) {
   var i = promises.length;
@@ -44,23 +98,23 @@ function processChild (parentPromise, child) {
   var x;
   var error;
 
-  var value = parentPromise.value;
+  var parentValue = getPromiseValue(parentPromise);
 
-  var isResolved = parentPromise._state === 2;
+  var isResolved = parentPromise[PROMISE_STATUS_KEY] === PROMISE_RESOLVED;
   var fn = isResolved ? child.onResolve : child.onReject;
   var hasHandler = typeof fn === 'function';
 
   if (!hasHandler) {
     if (isResolved) {
-      child.deferred.resolve(value);
+      child.deferred.resolve(parentValue);
     } else {
-      child.deferred.reject(value);
+      child.deferred.reject(parentValue);
     }
     return;
   }
 
   try {
-    x = fn.call(child.ctx, value);
+    x = fn.call(child.ctx, parentValue);
   } catch (err) {
     error = err;
   }
@@ -76,22 +130,33 @@ function processChild (parentPromise, child) {
   }
 }
 
+/**
+ * @param {Promise} promise
+ * @param {String} status
+ * @inner
+ */
+function setPromiseStatus (promise, status) {
+  promise[PROMISE_STATUS_KEY] = status;
+}
+
+/**
+ * @param {Promise} promise
+ * @param {String} value
+ * @inner
+ */
+function setPromiseValue (promise, value) {
+  promise[PROMISE_VALUE_KEY] = value;
+}
+
 var counter = 0;
 
 /**
- * Promise constructor
- *
- * States
- *  pending:  0
- *  locked:   1
- *  resolved: 2
- *  rejected: 3
- *
+ * @name Promise
  * @class
  */
 function Promise () {
-  this.value = void 0;
-  this._state = 0;
+  setPromiseValue(this, void 0);
+  setPromiseStatus(this, PROMISE_PENDING);
 
   this.cid = "cid" + counter;
   counter++;
@@ -132,19 +197,19 @@ function always (arg, ctx) {
  * @public
  */
 function done (arg, ctx) {
-  var state = this._state;
+  var status = getPromiseStatus(this);
   var isDfd = isDeferred(arg);
 
-  if (state === 2) {
+  if (status === PROMISE_RESOLVED) {
     if (isDfd) {
-      arg.resolve(this.value);
+      arg.resolve(getPromiseValue(this));
     } else {
-      arg.call(ctx, this.value);
+      arg.call(ctx, getPromiseValue(this));
     }
     return this;
   }
 
-  if (state === 0) {
+  if (status === PROMISE_PENDING) {
     if (isDfd) {
       this.done(function onDone (value) {
         arg.resolve.call(arg, value);
@@ -169,19 +234,19 @@ function done (arg, ctx) {
  * @public
  */
 function fail (arg, ctx) {
-  var state = this._state;
+  var status = getPromiseStatus(this);
   var isDfd = isDeferred(arg);
 
-  if (state === 3) {
+  if (status === PROMISE_REJECTED) {
     if (isDfd) {
-      arg.reject(this.value);
+      arg.reject(getPromiseValue(this));
     } else {
-      arg.call(ctx, this.value);
+      arg.call(ctx, getPromiseValue(this));
     }
     return this;
   }
 
-  if (state === 0) {
+  if (status === PROMISE_PENDING) {
     if (isDfd) {
       this.fail(function onFail (reason) {
         arg.reject(reason);
@@ -198,12 +263,13 @@ function fail (arg, ctx) {
 }
 
 /**
- * Returns true, if promise has pending state
+ * Returns true, if promise has pending status
  * @returns {Boolean}
  * @public
  */
 function isPending () {
-  return this._state <= 1;
+  var status = getPromiseStatus(this);
+  return status === PROMISE_PENDING || status === PROMISE_LOCKED;
 }
 
 /**
@@ -212,7 +278,7 @@ function isPending () {
  * @public
  */
 function isRejected () {
-  return this._state === 3;
+  return getPromiseStatus(this) === PROMISE_REJECTED;
 }
 
 /**
@@ -221,7 +287,7 @@ function isRejected () {
  * @public
  */
 function isResolved () {
-  return this._state === 2;
+  return getPromiseStatus(this) === PROMISE_RESOLVED;
 }
 
 /**
@@ -260,16 +326,16 @@ function _then (parentPromise, onResolve, onReject, ctx) {
   var childDeferred = new Deferred$1();
 
   if (parentPromise.isResolved() && typeof onResolve !== 'function') {
-    childDeferred.resolve(parentPromise.value);
+    childDeferred.resolve(getPromiseValue(parentPromise));
     return childDeferred.promise;
   }
 
   if (parentPromise.isRejected() && typeof onReject !== 'function') {
-    childDeferred.reject(parentPromise.value);
+    childDeferred.reject(getPromiseValue(parentPromise));
     return childDeferred.promise;
   }
 
-  var child = new Child(childDeferred, onResolve, onReject, ctx);
+  var child = new ChildPromise(childDeferred, onResolve, onReject, ctx);
 
   if (parentPromise.isPending()) {
      addChild(parentPromise, child);
@@ -280,7 +346,7 @@ function _then (parentPromise, onResolve, onReject, ctx) {
   return childDeferred.promise;
 }
 
-function Child (dfd, onResolve, onReject, ctx) {
+function ChildPromise (dfd, onResolve, onReject, ctx) {
   this.deferred = dfd;
   this.onResolve = onResolve;
   this.onReject = onReject;
@@ -344,7 +410,7 @@ function Deferred$1 () {
  */
 function reject (reason) {
   // ignore non-pending promises
-  if (this.promise._state !== 0) {
+  if (getPromiseStatus(this.promise) !== PROMISE_PENDING) {
     return this;
   }
 
@@ -362,7 +428,7 @@ function resolve (x) {
   var promise = this.promise;
 
   // ignore non-pending promises
-  if (promise._state !== 0) {
+  if (getPromiseStatus(promise) !== PROMISE_PENDING) {
     return dfd;
   }
 
@@ -385,8 +451,8 @@ function resolve (x) {
 function rejectWithReason (dfd, reason) {
   var promise = dfd.promise;
 
-  promise._state = 3;
-  promise.value = reason;
+  setPromiseStatus(promise, PROMISE_REJECTED);
+  setPromiseValue(promise, reason);
 
   runCallbacks(promise._failCallbacks, reason);
   processChildren(dfd);
@@ -416,12 +482,12 @@ function resolveWithPromise (dfd, promise) {
   promise
     .done(function onValueResolve (xValue) {
       // unlock promise before resolving
-      dfd.promise._state = 0;
+      setPromiseStatus(dfd.promise, PROMISE_PENDING);
       resolveWithValue(dfd, xValue);
     })
     .fail(function onValueReject (xReason) {
       // unlock promise before resolving
-      dfd.promise._state = 0;
+      setPromiseStatus(dfd.promise, PROMISE_PENDING);
       rejectWithReason(dfd, xReason);
     });
 
@@ -432,11 +498,12 @@ function resolveWithPromise (dfd, promise) {
  * @private
  */
 function resolveWithValue (dfd, value) {
-  dfd.promise._state = 2;
-  dfd.promise.value = value;
+  setPromiseStatus(dfd.promise, PROMISE_RESOLVED);
+  setPromiseValue(dfd.promise, value);
 
   runCallbacks(dfd.promise._doneCallbacks, value);
   processChildren(dfd);
+
   cleanUpPromise(dfd.promise);
 
   return dfd;
@@ -458,8 +525,6 @@ function processChildren (dfd) {
  * @private
  */
 function runCallbacks (callbacks, value) {
-  var callback;
-  var err;
   if (callbacks) {
     for (var i = 0; i < callbacks.length; i++) {
       runCallback(callbacks[i], value);
@@ -521,7 +586,7 @@ function cleanUpPromise (promise) {
  * @private
  */
 function lockPromise (promise) {
-  promise._state = 1;
+  setPromiseStatus(promise, PROMISE_LOCKED);
 }
 
 Deferred$1.isDeferred = isDeferred;
@@ -553,13 +618,13 @@ function all (promises) {
   for (i = 0, l = promises.length; i < l; i++) {
     // If rejected argument found reject promise and return it
     if (promises[i].isRejected()) {
-      dfd.reject(promises[i].value);
+      dfd.reject(getPromiseValue(promises[i]));
       return dfd.promise;
     }
 
     // If resolved argument found add its value to array of values
     if (promises[i].isResolved()) {
-      values[i] = promises[i].value;
+      values[i] = getPromiseValue(promises[i]);
       continue;
     }
 
@@ -615,13 +680,13 @@ function race (promises) {
   for (i = 0, l = promises.length; i < l; i++) {
     // If resolved argument found resolve promise and return it
     if (promises[i].isResolved()) {
-      dfd.resolve(promises[i].value);
+      dfd.resolve(getPromiseValue(promises[i]));
       return dfd.promise;
     }
 
     // If rejected argument found add its reason to array of reasons
     if (promises[i].isRejected()) {
-      reasons[i] = promises[i].value;
+      reasons[i] = getPromiseValue(promises[i]);
       continue;
     }
 

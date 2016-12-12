@@ -1,5 +1,9 @@
 import Deferred from './Deferred'
-import { indexOf } from './utils'
+
+import {
+  getPromiseValue,
+  indexOf
+} from './utils'
 
 /**
  * Returns a promise that resolves when all of the promises in the given array have resolved,
@@ -23,13 +27,13 @@ function all (promises) {
   for (i = 0, l = promises.length; i < l; i++) {
     // If rejected argument found reject promise and return it
     if (promises[i].isRejected()) {
-      dfd.reject(promises[i].value);
+      dfd.reject(getPromiseValue(promises[i]));
       return dfd.promise;
     }
 
     // If resolved argument found add its value to array of values
     if (promises[i].isResolved()) {
-      values[i] = promises[i].value;
+      values[i] = getPromiseValue(promises[i]);
       continue;
     }
 

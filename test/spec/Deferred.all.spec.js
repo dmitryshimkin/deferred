@@ -77,7 +77,7 @@ describe('Deferred.all', function () {
       expect(promise.isRejected()).toBe(true);
     });
 
-    it('should be resolved with array of passed promises values', function () {
+    it('should be resolved with array of passed promises values', function (done) {
       var dfdA = new Deferred();
       var dfdB = new Deferred();
       var dfdC = new Deferred();
@@ -90,10 +90,13 @@ describe('Deferred.all', function () {
       dfdC.resolve('foo');
       dfdA.resolve();
 
-      expect(promise.value).toEqual([undefined, value1, 'foo']);
+      promise.then(function (value) {
+        expect(value).toEqual([undefined, value1, 'foo']);
+        done();
+      });
     });
 
-    it('should be rejected with reason of passed rejected promise', function () {
+    it('should be rejected with reason of passed rejected promise', function (done) {
       var dfdA = new Deferred();
       var dfdB = new Deferred();
       var dfdC = new Deferred();
@@ -106,7 +109,10 @@ describe('Deferred.all', function () {
       dfdC.reject(reason);
       dfdA.resolve();
 
-      expect(promise.value).toBe(reason);
+      promise.catch(function (err) {
+        expect(err).toBe(reason);
+        done();
+      });
     });
 
     it('should be resolved correctly if promise in arguments is resolved with another promise', function (done) {
@@ -129,8 +135,11 @@ describe('Deferred.all', function () {
       setTimeout(function () {
         d4.resolve(2);
         expect(promise.isResolved()).toBe(true);
-        expect(promise.value).toEqual([1, 2, 3]);
-        done();
+
+        promise.then(function (value) {
+          expect(value).toEqual([1, 2, 3]);
+          done();
+        });
       }, 20);
     });
   });

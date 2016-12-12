@@ -1,5 +1,20 @@
 import Promise from './Promise'
-import { isDeferred, processChild } from './utils'
+
+import {
+  getPromiseStatus,
+  getPromiseValue,
+  isDeferred,
+  processChild,
+  setPromiseStatus,
+  setPromiseValue
+} from './utils'
+
+import {
+  PROMISE_PENDING,
+  PROMISE_LOCKED,
+  PROMISE_RESOLVED,
+  PROMISE_REJECTED,
+} from './constant'
 
 /**
  * Deferred class
@@ -17,7 +32,7 @@ function Deferred () {
  */
 function reject (reason) {
   // ignore non-pending promises
-  if (this.promise._state !== 0) {
+  if (getPromiseStatus(this.promise) !== PROMISE_PENDING) {
     return this;
   }
 
@@ -35,7 +50,7 @@ function resolve (x) {
   var promise = this.promise;
 
   // ignore non-pending promises
-  if (promise._state !== 0) {
+  if (getPromiseStatus(promise) !== PROMISE_PENDING) {
     return dfd;
   }
 
@@ -58,8 +73,8 @@ function resolve (x) {
 function rejectWithReason (dfd, reason) {
   var promise = dfd.promise;
 
-  promise._state = 3;
-  promise.value = reason;
+  setPromiseStatus(promise, PROMISE_REJECTED);
+  setPromiseValue(promise, reason);
 
   runCallbacks(promise._failCallbacks, reason);
   processChildren(dfd);
@@ -89,12 +104,12 @@ function resolveWithPromise (dfd, promise) {
   promise
     .done(function onValueResolve (xValue) {
       // unlock promise before resolving
-      dfd.promise._state = 0;
+      setPromiseStatus(dfd.promise, PROMISE_PENDING);
       resolveWithValue(dfd, xValue);
     })
     .fail(function onValueReject (xReason) {
       // unlock promise before resolving
-      dfd.promise._state = 0;
+      setPromiseStatus(dfd.promise, PROMISE_PENDING);
       rejectWithReason(dfd, xReason);
     });
 
@@ -105,11 +120,12 @@ function resolveWithPromise (dfd, promise) {
  * @private
  */
 function resolveWithValue (dfd, value) {
-  dfd.promise._state = 2;
-  dfd.promise.value = value;
+  setPromiseStatus(dfd.promise, PROMISE_RESOLVED);
+  setPromiseValue(dfd.promise, value);
 
   runCallbacks(dfd.promise._doneCallbacks, value);
   processChildren(dfd);
+
   cleanUpPromise(dfd.promise);
 
   return dfd;
@@ -131,8 +147,6 @@ function processChildren (dfd) {
  * @private
  */
 function runCallbacks (callbacks, value) {
-  var callback;
-  var err;
   if (callbacks) {
     for (var i = 0; i < callbacks.length; i++) {
       runCallback(callbacks[i], value);
@@ -194,7 +208,7 @@ function cleanUpPromise (promise) {
  * @private
  */
 function lockPromise (promise) {
-  promise._state = 1;
+  setPromiseStatus(promise, PROMISE_LOCKED);
 }
 
 Deferred.isDeferred = isDeferred;

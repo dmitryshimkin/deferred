@@ -1,22 +1,30 @@
 import Deferred from './Deferred'
-import { isDeferred, processChild } from './utils'
+
+import {
+  getPromiseStatus,
+  getPromiseValue,
+  isDeferred,
+  processChild,
+  setPromiseStatus,
+  setPromiseValue
+} from './utils'
+
+import {
+  PROMISE_PENDING,
+  PROMISE_LOCKED,
+  PROMISE_RESOLVED,
+  PROMISE_REJECTED,
+} from './constant'
 
 let counter = 0;
 
 /**
- * Promise constructor
- *
- * States
- *  pending:  0
- *  locked:   1
- *  resolved: 2
- *  rejected: 3
- *
+ * @name Promise
  * @class
  */
 function Promise () {
-  this.value = void 0;
-  this._state = 0;
+  setPromiseValue(this, void 0);
+  setPromiseStatus(this, PROMISE_PENDING);
 
   this.cid = `cid${counter}`;
   counter++;
@@ -57,19 +65,19 @@ function always (arg, ctx) {
  * @public
  */
 function done (arg, ctx) {
-  var state = this._state;
+  var status = getPromiseStatus(this);
   var isDfd = isDeferred(arg);
 
-  if (state === 2) {
+  if (status === PROMISE_RESOLVED) {
     if (isDfd) {
-      arg.resolve(this.value);
+      arg.resolve(getPromiseValue(this));
     } else {
-      arg.call(ctx, this.value);
+      arg.call(ctx, getPromiseValue(this));
     }
     return this;
   }
 
-  if (state === 0) {
+  if (status === PROMISE_PENDING) {
     if (isDfd) {
       this.done(function onDone (value) {
         arg.resolve.call(arg, value);
@@ -94,19 +102,19 @@ function done (arg, ctx) {
  * @public
  */
 function fail (arg, ctx) {
-  var state = this._state;
+  var status = getPromiseStatus(this);
   var isDfd = isDeferred(arg);
 
-  if (state === 3) {
+  if (status === PROMISE_REJECTED) {
     if (isDfd) {
-      arg.reject(this.value);
+      arg.reject(getPromiseValue(this));
     } else {
-      arg.call(ctx, this.value);
+      arg.call(ctx, getPromiseValue(this));
     }
     return this;
   }
 
-  if (state === 0) {
+  if (status === PROMISE_PENDING) {
     if (isDfd) {
       this.fail(function onFail (reason) {
         arg.reject(reason);
@@ -123,12 +131,13 @@ function fail (arg, ctx) {
 }
 
 /**
- * Returns true, if promise has pending state
+ * Returns true, if promise has pending status
  * @returns {Boolean}
  * @public
  */
 function isPending () {
-  return this._state <= 1;
+  var status = getPromiseStatus(this);
+  return status === PROMISE_PENDING || status === PROMISE_LOCKED;
 }
 
 /**
@@ -137,7 +146,7 @@ function isPending () {
  * @public
  */
 function isRejected () {
-  return this._state === 3;
+  return getPromiseStatus(this) === PROMISE_REJECTED;
 }
 
 /**
@@ -146,7 +155,7 @@ function isRejected () {
  * @public
  */
 function isResolved () {
-  return this._state === 2;
+  return getPromiseStatus(this) === PROMISE_RESOLVED;
 }
 
 /**
@@ -185,16 +194,16 @@ function _then (parentPromise, onResolve, onReject, ctx) {
   var childDeferred = new Deferred();
 
   if (parentPromise.isResolved() && typeof onResolve !== 'function') {
-    childDeferred.resolve(parentPromise.value);
+    childDeferred.resolve(getPromiseValue(parentPromise));
     return childDeferred.promise;
   }
 
   if (parentPromise.isRejected() && typeof onReject !== 'function') {
-    childDeferred.reject(parentPromise.value);
+    childDeferred.reject(getPromiseValue(parentPromise));
     return childDeferred.promise;
   }
 
-  var child = new Child(childDeferred, onResolve, onReject, ctx);
+  var child = new ChildPromise(childDeferred, onResolve, onReject, ctx);
 
   if (parentPromise.isPending()) {
      addChild(parentPromise, child);
@@ -205,7 +214,7 @@ function _then (parentPromise, onResolve, onReject, ctx) {
   return childDeferred.promise;
 }
 
-function Child (dfd, onResolve, onReject, ctx) {
+function ChildPromise (dfd, onResolve, onReject, ctx) {
   this.deferred = dfd;
   this.onResolve = onResolve;
   this.onReject = onReject;
