@@ -34,7 +34,7 @@ Any ES3 compliant browser.
       - [.race()](#deferred-race)
       - [.isDeferred()](#deferred-isdeferred)
       - [.isPromise()](#deferred-ispromise)
-      - [.isThanable()](#deferred-isthenable)
+      - [.isThenable()](#deferred-isthenable)
     - [Instance methods](#deferred-instance-methods)
       - [.resolve()](#deferred-instance-resolve)
       - [.reject()](#deferred-instance-resolve)
